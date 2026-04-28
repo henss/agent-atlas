@@ -1,0 +1,12 @@
+id: test-scope:calendar-tests
+kind: test-scope
+title: Calendar Tests
+summary: Tests for calendar event reading, constraint extraction, and planned block writing.
+visibility: public
+commands:
+  - command: pnpm --filter @personal-ops/calendar test
+    cwd: .
+    purpose: Verify calendar adapter behavior.
+relations:
+  - type: verifies
+    target: component:google-calendar-adapter

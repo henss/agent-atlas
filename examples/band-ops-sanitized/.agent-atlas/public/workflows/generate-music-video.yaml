@@ -1,0 +1,14 @@
+id: workflow:generate-music-video
+kind: workflow
+title: Generate Music Video
+summary: Produces video drafts from song metadata, templates, lyric timing, and media assets.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:music-operations
+  - type: uses
+    target: component:video-generator
+  - type: reads-from
+    target: resource:video-template-library
+  - type: reads-from
+    target: resource:song-assets

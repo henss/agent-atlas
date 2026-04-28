@@ -1,0 +1,8 @@
+id: resource:song-assets
+kind: resource
+title: Song Assets
+summary: Private media asset storage for stems, images, lyric timing files, and release art.
+visibility: private
+access:
+  private_overlay_required: true
+relations: []

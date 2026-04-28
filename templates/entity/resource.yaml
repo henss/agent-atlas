@@ -1,0 +1,9 @@
+id: resource:<slug>
+kind: resource
+title: <Title>
+summary: >
+  <Short description of the resource.>
+visibility: private
+access:
+  private_overlay_required: true
+relations: []

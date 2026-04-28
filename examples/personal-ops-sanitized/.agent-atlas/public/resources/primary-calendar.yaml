@@ -1,0 +1,10 @@
+id: resource:primary-calendar
+kind: resource
+title: Primary Calendar
+summary: Calendar used by planning workflows for constraints and planned time blocks.
+visibility: private
+access:
+  private_overlay_required: true
+relations:
+  - type: source-of-truth-for
+    target: domain:calendar

@@ -1,0 +1,8 @@
+id: domain:customer-lifecycle
+kind: domain
+title: Customer Lifecycle
+summary: Company domain for acquisition, onboarding, activation, support, and retention workflows.
+visibility: internal
+relations:
+  - type: contains
+    target: system:onboarding-platform

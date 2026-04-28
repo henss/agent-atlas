@@ -1,0 +1,8 @@
+id: resource:grocery-list
+kind: resource
+title: Grocery List
+summary: Target list or task collection produced by grocery planning automation.
+visibility: private
+access:
+  private_overlay_required: true
+relations: []

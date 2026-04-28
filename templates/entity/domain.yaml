@@ -1,0 +1,7 @@
+id: domain:<slug>
+kind: domain
+title: <Title>
+summary: >
+  <Short description of the domain and why an agent would care.>
+visibility: public
+relations: []

@@ -1,0 +1,10 @@
+id: domain:calendar
+kind: domain
+title: Calendar
+summary: Calendar tooling for reading constraints and writing planned time blocks.
+visibility: public
+relations:
+  - type: contains
+    target: component:google-calendar-adapter
+  - type: related-to
+    target: workflow:plan-week

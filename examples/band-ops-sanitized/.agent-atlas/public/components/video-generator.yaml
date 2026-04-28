@@ -1,0 +1,21 @@
+id: component:video-generator
+kind: component
+title: Video Generator
+summary: Generates video drafts and final assets from templates, timing data, images, and song metadata.
+visibility: public
+code:
+  paths:
+    - packages/video-generator/**
+  entrypoints:
+    - packages/video-generator/src/index.ts
+relations:
+  - type: part-of
+    target: domain:music-operations
+  - type: used-by
+    target: workflow:generate-music-video
+  - type: used-by
+    target: workflow:publish-single
+  - type: reads-from
+    target: resource:video-template-library
+  - type: tested-by
+    target: test-scope:video-generation-tests

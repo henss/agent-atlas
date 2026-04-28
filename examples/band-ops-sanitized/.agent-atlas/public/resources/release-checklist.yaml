@@ -1,0 +1,10 @@
+id: resource:release-checklist
+kind: resource
+title: Release Checklist
+summary: Checklist or project board used to coordinate single release tasks.
+visibility: private
+access:
+  private_overlay_required: true
+relations:
+  - type: source-of-truth-for
+    target: workflow:publish-single

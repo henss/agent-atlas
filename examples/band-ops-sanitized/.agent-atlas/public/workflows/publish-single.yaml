@@ -1,0 +1,26 @@
+id: workflow:publish-single
+kind: workflow
+title: Publish Single
+summary: Coordinates song metadata, video assets, release checklist, and marketing materials for a single release.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:music-operations
+  - type: uses
+    target: component:song-library
+  - type: uses
+    target: component:video-generator
+  - type: uses
+    target: component:marketing-copy-tools
+  - type: writes-to
+    target: resource:release-checklist
+  - type: documented-in
+    target: document:release-process
+  - type: tested-by
+    target: test-scope:release-workflow-tests
+agent:
+  load_when:
+    - Changing release workflow automation
+    - Generating or modifying release campaign assets
+    - Debugging song metadata usage in release tooling
+  token_budget_hint: 1600

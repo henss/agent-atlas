@@ -1,0 +1,17 @@
+{
+  "name": "@agent-atlas/adapters",
+  "version": "0.0.0-seed",
+  "description": "Adapter interfaces and generic adapters for Agent Atlas.",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@agent-atlas/schema": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  }
+}

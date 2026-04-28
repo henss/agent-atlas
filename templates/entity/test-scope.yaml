@@ -1,0 +1,10 @@
+id: test-scope:<slug>
+kind: test-scope
+title: <Title>
+summary: >
+  <What this verification scope checks.>
+commands:
+  - command: <test command>
+    cwd: .
+    purpose: <why this command matters>
+relations: []

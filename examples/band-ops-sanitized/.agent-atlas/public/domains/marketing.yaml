@@ -1,0 +1,10 @@
+id: domain:marketing
+kind: domain
+title: Marketing
+summary: Campaign copy, social posts, release announcements, and audience-facing materials.
+visibility: public
+relations:
+  - type: contains
+    target: component:marketing-copy-tools
+  - type: related-to
+    target: workflow:publish-single

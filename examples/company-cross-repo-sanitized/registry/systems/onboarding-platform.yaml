@@ -1,0 +1,16 @@
+id: system:onboarding-platform
+kind: system
+title: Onboarding Platform
+summary: Cross-repo system for account setup, onboarding tasks, notifications, and analytics.
+visibility: internal
+relations:
+  - type: part-of
+    target: domain:customer-lifecycle
+  - type: contains
+    target: repository:onboarding-api
+  - type: contains
+    target: repository:onboarding-web
+  - type: contains
+    target: repository:notification-worker
+  - type: documented-in
+    target: document:onboarding-architecture

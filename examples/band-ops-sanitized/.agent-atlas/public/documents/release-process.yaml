@@ -1,0 +1,10 @@
+id: document:release-process
+kind: document
+title: Release Process
+summary: Private process document describing release sequencing, approval points, and publishing checklist expectations.
+visibility: private
+access:
+  private_overlay_required: true
+relations:
+  - type: documents
+    target: workflow:publish-single

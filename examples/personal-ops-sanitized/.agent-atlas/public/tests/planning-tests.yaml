@@ -1,0 +1,14 @@
+id: test-scope:planning-tests
+kind: test-scope
+title: Planning Tests
+summary: Tests for weekly planning logic and plan output structure.
+visibility: public
+commands:
+  - command: pnpm --filter @personal-ops/planning test
+    cwd: .
+    purpose: Verify weekly planning behavior.
+relations:
+  - type: verifies
+    target: workflow:plan-week
+  - type: verifies
+    target: component:weekly-planner

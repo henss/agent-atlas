@@ -1,0 +1,18 @@
+{
+  "name": "@agent-atlas/mcp-server",
+  "version": "0.0.0-seed",
+  "description": "Read-only MCP server skeleton for Agent Atlas.",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@agent-atlas/core": "workspace:*",
+    "@agent-atlas/schema": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  }
+}

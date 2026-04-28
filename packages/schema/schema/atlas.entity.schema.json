@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-atlas.dev/schema/atlas.entity.schema.json",
+  "title": "Agent Atlas Entity",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "title",
+    "summary"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*:[a-z0-9][a-z0-9._/-]*$"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "domain",
+        "system",
+        "workflow",
+        "repository",
+        "component",
+        "interface",
+        "tool",
+        "resource",
+        "document",
+        "dataset",
+        "secret-scope",
+        "test-scope"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "planned",
+        "experimental",
+        "deprecated",
+        "archived"
+      ]
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "internal",
+        "restricted"
+      ]
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "owners": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "uri": {
+      "type": "string"
+    },
+    "code": {
+      "type": "object",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "entrypoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "public_symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "access": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "mcp",
+            "url",
+            "file",
+            "manual",
+            "private-overlay"
+          ]
+        },
+        "server": {
+          "type": "string"
+        },
+        "permission": {
+          "type": "string"
+        },
+        "private_overlay_required": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "cwd": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "target"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "strength": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "secondary",
+              "weak",
+              "inferred"
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private",
+              "internal",
+              "restricted"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "agent": {
+      "type": "object",
+      "properties": {
+        "load_when": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "avoid_loading_when": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "token_budget_hint": {
+          "type": "number"
+        },
+        "risk_notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

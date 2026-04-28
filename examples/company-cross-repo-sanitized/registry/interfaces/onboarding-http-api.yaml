@@ -1,0 +1,8 @@
+id: interface:onboarding-http-api
+kind: interface
+title: Onboarding HTTP API
+summary: HTTP API for onboarding workflow state, task completion, and customer setup progress.
+visibility: internal
+relations:
+  - type: implemented-by
+    target: repository:onboarding-api

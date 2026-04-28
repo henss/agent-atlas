@@ -1,0 +1,8 @@
+id: interface:onboarding-events
+kind: interface
+title: Onboarding Events
+summary: Event stream for onboarding state changes consumed by workers and analytics.
+visibility: internal
+relations:
+  - type: used-by
+    target: repository:notification-worker

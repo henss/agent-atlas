@@ -1,0 +1,12 @@
+id: test-scope:video-generation-tests
+kind: test-scope
+title: Video Generation Tests
+summary: Tests video rendering pipeline configuration and template resolution.
+visibility: public
+commands:
+  - command: pnpm --filter @band-ops/video-generator test
+    cwd: .
+    purpose: Verify video generation behavior.
+relations:
+  - type: verifies
+    target: component:video-generator

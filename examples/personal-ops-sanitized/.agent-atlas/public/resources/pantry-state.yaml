@@ -1,0 +1,10 @@
+id: resource:pantry-state
+kind: resource
+title: Pantry State
+summary: Pantry and inventory state used by grocery planning workflows.
+visibility: private
+access:
+  private_overlay_required: true
+relations:
+  - type: source-of-truth-for
+    target: workflow:grocery-loop

@@ -1,0 +1,11 @@
+id: repository:notification-worker
+kind: repository
+title: Notification Worker
+summary: Worker repository for sending onboarding reminders and lifecycle messages.
+visibility: internal
+uri: github://example-org/notification-worker
+relations:
+  - type: part-of
+    target: system:onboarding-platform
+  - type: depends-on
+    target: interface:onboarding-events

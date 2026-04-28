@@ -1,0 +1,10 @@
+id: document:onboarding-architecture
+kind: document
+title: Onboarding Architecture
+summary: Internal architecture document for onboarding platform boundaries, dependencies, and operational expectations.
+visibility: internal
+access:
+  private_overlay_required: true
+relations:
+  - type: documents
+    target: system:onboarding-platform

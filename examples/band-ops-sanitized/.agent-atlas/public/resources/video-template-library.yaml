@@ -1,0 +1,10 @@
+id: resource:video-template-library
+kind: resource
+title: Video Template Library
+summary: Private collection of templates used by the video generation workflow.
+visibility: private
+access:
+  private_overlay_required: true
+relations:
+  - type: source-of-truth-for
+    target: workflow:generate-music-video

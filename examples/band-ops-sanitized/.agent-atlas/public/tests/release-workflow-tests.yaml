@@ -1,0 +1,12 @@
+id: test-scope:release-workflow-tests
+kind: test-scope
+title: Release Workflow Tests
+summary: Tests release workflow orchestration and required asset/copy generation behavior.
+visibility: public
+commands:
+  - command: pnpm --filter @band-ops/release test
+    cwd: .
+    purpose: Verify release orchestration.
+relations:
+  - type: verifies
+    target: workflow:publish-single

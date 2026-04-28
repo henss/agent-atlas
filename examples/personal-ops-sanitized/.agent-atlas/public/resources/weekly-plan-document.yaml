@@ -1,0 +1,10 @@
+id: resource:weekly-plan-document
+kind: resource
+title: Weekly Plan Document
+summary: Private document where the generated weekly plan is written.
+visibility: private
+access:
+  private_overlay_required: true
+relations:
+  - type: source-of-truth-for
+    target: workflow:plan-week

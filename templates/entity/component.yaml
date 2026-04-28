@@ -1,0 +1,14 @@
+id: component:<slug>
+kind: component
+title: <Title>
+summary: >
+  <Short description of the code component.>
+visibility: public
+code:
+  paths:
+    - <repo-relative-glob>
+  entrypoints:
+    - <repo-relative-entrypoint>
+relations:
+  - type: part-of
+    target: domain:<slug>

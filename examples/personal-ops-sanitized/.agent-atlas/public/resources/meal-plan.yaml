@@ -1,0 +1,10 @@
+id: resource:meal-plan
+kind: resource
+title: Meal Plan
+summary: Meal planning data used to coordinate weekly planning and grocery workflows.
+visibility: private
+access:
+  private_overlay_required: true
+relations:
+  - type: source-of-truth-for
+    target: domain:food

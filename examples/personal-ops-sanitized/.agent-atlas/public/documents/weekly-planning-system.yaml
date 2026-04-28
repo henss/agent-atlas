@@ -1,0 +1,10 @@
+id: document:weekly-planning-system
+kind: document
+title: Weekly Planning System
+summary: Private planning doctrine, templates, and expected output structure for weekly planning.
+visibility: private
+access:
+  private_overlay_required: true
+relations:
+  - type: documents
+    target: workflow:plan-week

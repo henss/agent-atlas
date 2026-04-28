@@ -1,0 +1,13 @@
+id: workflow:<slug>
+kind: workflow
+title: <Title>
+summary: >
+  <Short description of the process or workflow.>
+visibility: public
+relations:
+  - type: part-of
+    target: domain:<slug>
+agent:
+  load_when:
+    - <Task pattern where this workflow is relevant>
+  token_budget_hint: 1000

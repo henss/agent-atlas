@@ -1,0 +1,6 @@
+id: domain:example
+kind: domain
+title: Example Domain
+summary: Replace this with a broad area of the repository or organization.
+visibility: public
+relations: []

@@ -1,0 +1,17 @@
+id: component:song-library
+kind: component
+title: Song Library
+summary: Stores song metadata, lyrics references, release state, and asset links used by downstream workflows.
+visibility: public
+code:
+  paths:
+    - packages/song-library/**
+  entrypoints:
+    - packages/song-library/src/index.ts
+relations:
+  - type: part-of
+    target: domain:music-operations
+  - type: used-by
+    target: workflow:publish-single
+  - type: tested-by
+    target: test-scope:song-library-tests

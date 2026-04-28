@@ -1,0 +1,13 @@
+id: component:grocy-adapter
+kind: component
+title: Grocy Adapter
+summary: Reads pantry state and helps derive grocery needs.
+visibility: public
+code:
+  paths:
+    - packages/grocy/**
+relations:
+  - type: part-of
+    target: domain:food
+  - type: reads-from
+    target: resource:pantry-state

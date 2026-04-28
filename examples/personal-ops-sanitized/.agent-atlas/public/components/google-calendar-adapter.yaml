@@ -1,0 +1,20 @@
+id: component:google-calendar-adapter
+kind: component
+title: Google Calendar Adapter
+summary: Reads calendar events and writes planned time blocks for personal planning workflows.
+visibility: public
+code:
+  paths:
+    - packages/calendar/**
+  entrypoints:
+    - packages/calendar/src/index.ts
+relations:
+  - type: part-of
+    target: domain:calendar
+  - type: writes-to
+    target: resource:primary-calendar
+  - type: tested-by
+    target: test-scope:calendar-tests
+agent:
+  risk_notes:
+    - Calendar writes may affect live data when production credentials are used.

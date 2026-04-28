@@ -1,0 +1,13 @@
+id: component:mealie-adapter
+kind: component
+title: Mealie Adapter
+summary: Reads meal plans and recipe metadata for planning and grocery workflows.
+visibility: public
+code:
+  paths:
+    - packages/mealie/**
+relations:
+  - type: part-of
+    target: domain:food
+  - type: reads-from
+    target: resource:meal-plan

@@ -1,0 +1,19 @@
+id: component:weekly-planner
+kind: component
+title: Weekly Planner
+summary: Combines goals, calendar constraints, meals, and task signals into a weekly plan.
+visibility: public
+code:
+  paths:
+    - packages/planning/**
+  entrypoints:
+    - packages/planning/src/weeklyPlanner.ts
+relations:
+  - type: implements
+    target: workflow:plan-week
+  - type: uses
+    target: component:google-calendar-adapter
+  - type: uses
+    target: component:mealie-adapter
+  - type: tested-by
+    target: test-scope:planning-tests

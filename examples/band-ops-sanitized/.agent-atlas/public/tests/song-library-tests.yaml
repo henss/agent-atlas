@@ -1,0 +1,12 @@
+id: test-scope:song-library-tests
+kind: test-scope
+title: Song Library Tests
+summary: Tests song metadata parsing, validation, and lookup behavior.
+visibility: public
+commands:
+  - command: pnpm --filter @band-ops/song-library test
+    cwd: .
+    purpose: Verify song library behavior.
+relations:
+  - type: verifies
+    target: component:song-library

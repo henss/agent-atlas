@@ -1,0 +1,11 @@
+id: repository:onboarding-api
+kind: repository
+title: Onboarding API
+summary: API repository for onboarding workflow state and customer setup operations.
+visibility: internal
+uri: github://example-org/onboarding-api
+relations:
+  - type: part-of
+    target: system:onboarding-platform
+  - type: exposes
+    target: interface:onboarding-http-api

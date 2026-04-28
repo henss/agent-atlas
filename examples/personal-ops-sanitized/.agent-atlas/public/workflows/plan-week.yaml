@@ -1,0 +1,24 @@
+id: workflow:plan-week
+kind: workflow
+title: Plan Week
+summary: Produces a weekly plan from goals, calendar constraints, meal planning, and task inputs.
+visibility: public
+relations:
+  - type: uses
+    target: component:weekly-planner
+  - type: uses
+    target: component:google-calendar-adapter
+  - type: uses
+    target: component:mealie-adapter
+  - type: writes-to
+    target: resource:weekly-plan-document
+  - type: documented-in
+    target: document:weekly-planning-system
+  - type: tested-by
+    target: test-scope:planning-tests
+agent:
+  load_when:
+    - Changing weekly planning behavior
+    - Debugging calendar block generation
+    - Updating plan output structure
+  token_budget_hint: 1400

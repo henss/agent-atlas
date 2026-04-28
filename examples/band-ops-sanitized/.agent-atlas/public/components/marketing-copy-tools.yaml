@@ -1,0 +1,13 @@
+id: component:marketing-copy-tools
+kind: component
+title: Marketing Copy Tools
+summary: Generates release copy, social captions, and campaign variants from song and release metadata.
+visibility: public
+code:
+  paths:
+    - packages/marketing/**
+relations:
+  - type: part-of
+    target: domain:marketing
+  - type: used-by
+    target: workflow:publish-single

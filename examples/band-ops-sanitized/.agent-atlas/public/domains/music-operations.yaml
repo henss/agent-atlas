@@ -1,0 +1,12 @@
+id: domain:music-operations
+kind: domain
+title: Music Operations
+summary: Song library, release planning, creative assets, and automation around band operations.
+visibility: public
+relations:
+  - type: contains
+    target: workflow:publish-single
+  - type: contains
+    target: component:song-library
+  - type: contains
+    target: component:video-generator

@@ -1,0 +1,10 @@
+id: domain:food
+kind: domain
+title: Food Planning
+summary: Meal planning, grocery planning, pantry resources, and integrations with food tools.
+visibility: public
+relations:
+  - type: contains
+    target: component:mealie-adapter
+  - type: related-to
+    target: workflow:grocery-loop

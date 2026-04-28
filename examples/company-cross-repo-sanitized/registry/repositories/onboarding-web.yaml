@@ -1,0 +1,11 @@
+id: repository:onboarding-web
+kind: repository
+title: Onboarding Web
+summary: Web application repository for onboarding UI flows.
+visibility: internal
+uri: github://example-org/onboarding-web
+relations:
+  - type: part-of
+    target: system:onboarding-platform
+  - type: depends-on
+    target: interface:onboarding-http-api

@@ -1,0 +1,14 @@
+id: workflow:grocery-loop
+kind: workflow
+title: Grocery Loop
+summary: Converts meal plans and pantry state into grocery tasks and shopping support.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:food
+  - type: uses
+    target: component:mealie-adapter
+  - type: uses
+    target: component:grocy-adapter
+  - type: writes-to
+    target: resource:grocery-list
