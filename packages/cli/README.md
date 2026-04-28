@@ -88,6 +88,18 @@ atlas resolve-path packages/planning/src/shared/format.ts examples/personal-ops-
 
 Use `--depth N` to control related-context traversal depth, or `--json` for machine-readable output.
 
+## Local checkout use before publishing
+
+Until packages are published, portfolio repos should build the CLI in a sibling `agent-atlas` checkout and call the built entrypoint directly:
+
+```sh
+pnpm --dir ../agent-atlas --filter @agent-atlas/cli build
+node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts .
+```
+
+Keep first-rollout adoption to M1-M3 commands: `validate`, `show`, `neighbors`, and `resolve-path`.
+
 ## `atlas generate markdown [path]`
 
 Generates compact agent-facing Markdown views.
