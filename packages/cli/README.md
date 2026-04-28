@@ -112,10 +112,11 @@ Until packages are published, portfolio repos should build the CLI in a sibling 
 pnpm --dir ../agent-atlas --filter @agent-atlas/cli build
 node ../agent-atlas/packages/cli/dist/index.js validate .
 node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts .
-node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" .
+node ../agent-atlas/packages/cli/dist/index.js generate markdown . --output docs/agents --profile private
+node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" . --budget 4000 --profile private
 ```
 
-Keep first-rollout adoption to implemented local graph commands: `validate`, `show`, `neighbors`, `resolve-path`, `context-pack`, and `generate markdown`.
+Keep rollout adoption limited to implemented commands. As of M5, downstream repos may use `validate`, `show`, `neighbors`, `resolve-path`, `generate markdown`, and `context-pack`; leave overlays, MCP resources, and cross-repo global packs for later milestones.
 
 ## `atlas generate markdown [path]`
 
