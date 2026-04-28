@@ -66,9 +66,9 @@ pnpm --filter @example/calendar test
 - Calendar-writing code may affect live data when run with production credentials.
 ```
 
-## Selection algorithm draft
+## Selection algorithm
 
-Initial implementation can be simple:
+The implemented selection flow is deterministic:
 
 1. Extract terms from task.
 2. Match terms against entity IDs, kinds, titles, aliases, summaries, tags, and code paths.

@@ -2,12 +2,10 @@
 
 CLI for Agent Atlas.
 
-Planned commands:
+Implemented commands:
 
 ```sh
-atlas init
 atlas validate [path]
-atlas list [kind]
 atlas show <entity-id>
 atlas neighbors <entity-id> --depth 2
 atlas resolve-path <path>
@@ -21,6 +19,8 @@ atlas global context-pack "<task>" --budget 8000
 ```
 
 Output should be concise Markdown by default. Add `--json` for machine-readable output.
+
+Known M11 follow-up: path argument ergonomics are intentionally being tightened next. For now, prefer the explicit `--path <root>` form when an invocation also includes flags or free-form task text.
 
 ## `atlas validate [path]`
 
@@ -149,7 +149,7 @@ The generator refreshes known generated files and directories while preserving n
 
 ## `atlas migrate [path]`
 
-Previews or writes schema migrations. M10 supports `schema_version: 1`.
+Previews or writes schema migrations. The current migration supports `schema_version: 1`.
 
 ```sh
 atlas migrate . --to 1

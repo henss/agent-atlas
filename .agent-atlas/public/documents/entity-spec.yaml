@@ -1,7 +1,7 @@
 id: document:entity-spec
 kind: document
 title: Entity Specification
-summary: Draft specification for atlas entity identity, common fields, kinds, agent hints, and source references.
+summary: Specification for atlas entity identity, common fields, kinds, agent hints, schema versions, and source references.
 visibility: public
 uri: docs/spec/entities.md
 relations:

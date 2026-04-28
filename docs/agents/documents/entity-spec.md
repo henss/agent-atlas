@@ -6,7 +6,7 @@ ID: `document:entity-spec`
 Kind: `document`
 Profile: `public`
 
-Draft specification for atlas entity identity, common fields, kinds, agent hints, and source references.
+Specification for atlas entity identity, common fields, kinds, agent hints, schema versions, and source references.
 
 ## Metadata
 

@@ -6,7 +6,7 @@ ID: `document:roadmap`
 Kind: `document`
 Profile: `public`
 
-Staged implementation plan for Agent Atlas milestones.
+Roadmap showing completed M0-M10 implementation milestones and active M11-M16 hardening and adoption work.
 
 ## Metadata
 

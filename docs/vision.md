@@ -15,6 +15,8 @@ Agent Atlas gives agents a compact map:
 - tests and verification scopes
 - typed relationships between all of them
 
+The M0-M10 implementation now includes the core schema, validation, graph traversal, path resolution, generated Markdown, context packs, overlays, read-only MCP resources and tools, adapter interfaces, cross-repo registries, migrations, diagnostics, and benchmarks.
+
 The atlas should support both traversal directions:
 
 ```text
@@ -64,3 +66,5 @@ And receive a compact answer:
 ## Public repo philosophy
 
 The open-source project defines the standards and tooling. Real personal/company atlas contents stay private unless intentionally published.
+
+Current roadmap work is about making adoption safer and more measurable: consumer ergonomics, usage evidence, boundary checks, incremental authoring, registry hardening, and MCP operational hardening.

@@ -18,8 +18,6 @@ Implemented responsibilities:
 - run lightweight load benchmarks
 - emit validation, orphan, and cycle diagnostics
 
-Planned responsibilities:
-
-- richer overlay provenance and generated overlays
-
 Keep this package UI-free and vendor-neutral.
+
+Roadmap work after M10 should keep shared behavior here when it is not UI-specific, especially diagnostics, boundary checks, registry checks, generated-doc checks, and authoring analysis.

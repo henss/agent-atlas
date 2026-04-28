@@ -16,18 +16,21 @@ From the target repo, call the built CLI from the sibling checkout:
 
 ```sh
 node ../agent-atlas/packages/cli/dist/index.js validate .
-node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts .
-node ../agent-atlas/packages/cli/dist/index.js show component:example .
-node ../agent-atlas/packages/cli/dist/index.js neighbors component:example . --depth 2
-node ../agent-atlas/packages/cli/dist/index.js generate markdown . --output docs/agents --profile private
-node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" . --budget 4000 --profile private
-node ../agent-atlas/packages/cli/dist/index.js migrate . --to 1
-node ../agent-atlas/packages/cli/dist/index.js global validate .
-node ../agent-atlas/packages/cli/dist/index.js global context-pack "change onboarding workflow" . --budget 8000 --profile private
+node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts --path .
+node ../agent-atlas/packages/cli/dist/index.js show component:example --path .
+node ../agent-atlas/packages/cli/dist/index.js neighbors component:example --path . --depth 2
+node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile private
+node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000 --profile private
+node ../agent-atlas/packages/cli/dist/index.js migrate --path . --to 1
+node ../agent-atlas/packages/cli/dist/index.js benchmark --path . --iterations 3
+node ../agent-atlas/packages/cli/dist/index.js global validate --path .
+node ../agent-atlas/packages/cli/dist/index.js global context-pack "change onboarding workflow" --path . --budget 8000 --profile private
 node ../agent-atlas/packages/mcp-server/dist/stdio.js --path . --profile private
 ```
 
 Repos may wrap these commands in local package scripts while Agent Atlas remains unpublished.
+
+Prefer explicit `--path <root>` in downstream scripts. Positional path forms exist for compatibility, but M11 is reserved for making path arguments boringly consistent across commands.
 
 ## Consumer rollout checklist
 

@@ -1,6 +1,6 @@
 # Entity Specification
 
-This document defines the draft entity model.
+This document defines the implemented entity model.
 
 ## Entity identity
 

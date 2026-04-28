@@ -38,13 +38,11 @@ const [, , command, ...args] = process.argv;
 function printHelp(): void {
   console.log(`# Agent Atlas CLI
 
-Status: seed implementation
+Status: implemented toolkit
 
-Planned commands:
+Implemented commands:
 
-- atlas init
 - atlas validate [path]
-- atlas list [kind]
 - atlas show <entity-id>
 - atlas neighbors <entity-id> --depth 2
 - atlas resolve-path <path>

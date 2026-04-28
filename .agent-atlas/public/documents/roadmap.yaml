@@ -1,7 +1,7 @@
 id: document:roadmap
 kind: document
 title: Roadmap
-summary: Staged implementation plan for Agent Atlas milestones.
+summary: Roadmap showing completed M0-M10 implementation milestones and active M11-M16 hardening and adoption work.
 visibility: public
 uri: ROADMAP.md
 relations:

@@ -2,6 +2,8 @@
 
 This roadmap is intentionally staged. Building everything at once is how frameworks become haunted furniture.
 
+Status: M0-M10 are complete. M11-M16 are the next hardening and adoption milestones for downstream consumers, control planes, boundary safety, and MCP operations.
+
 ## M0: Foundations
 
 Goal: make the public framework understandable and implementable.

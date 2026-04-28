@@ -1,4 +1,4 @@
-# Validation Specification Draft
+# Validation Specification
 
 Validation should catch structural problems early and produce diagnostics that are useful to both humans and agents.
 

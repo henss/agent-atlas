@@ -2,14 +2,14 @@
 
 Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 
-It helps agents answer four questions before they burn tokens spelunking through a repository like a caffeinated raccoon:
+It helps agents answer four questions before they spend tokens searching blindly through a repository:
 
 1. **What exists?** Domains, workflows, components, tools, interfaces, resources, documents, datasets, and tests.
 2. **How does it relate?** Typed links such as `uses`, `implements`, `documented-in`, `writes-to`, and `tested-by`.
 3. **What should be loaded next?** Token-aware context packs, generated docs, and MCP resources.
 4. **How should changes be verified?** Scope-aware test and validation guidance.
 
-This repository is intentionally a **foundation**, not a finished product. It contains the specification, schema skeletons, package layout, examples, LLM-facing instructions, and roadmap needed for iterative implementation.
+The original M0-M10 roadmap is implemented. The project now provides a working schema, validator, graph loader, traversal engine, path resolver, Markdown generator, context-pack builder, overlay support, read-only MCP server, adapter interfaces, cross-repo registry support, migration tooling, diagnostics, CLI tests, and benchmarks.
 
 ## Core idea
 
@@ -23,28 +23,53 @@ Task or starting file
         -> load only what is needed
 ```
 
-The canonical source should be a small, typed graph. Hierarchical docs are generated views.
+The canonical source is a small, typed graph. Hierarchical files such as `docs/agents/*` are generated views.
 
 ```text
 .agent-atlas/              # canonical entity cards and overlays
 docs/agents/               # generated LLM-facing markdown views
 packages/schema/           # entity types, relation vocabulary, JSON Schema
-packages/core/             # loading, graph building, traversal, context packs
+packages/core/             # loading, graph building, traversal, migrations, benchmarks
 packages/cli/              # atlas command line interface
-packages/mcp-server/       # atlas:// resources and agent tools
+packages/mcp-server/       # atlas:// resources and read-only agent tools
 packages/markdown/         # generated markdown views
 packages/adapters/         # integration interfaces and reusable adapters
 ```
 
-## What this project should eventually provide
+## Implemented capabilities
 
-- A generic atlas schema for repositories, workflows, resources, and external context.
-- A CLI for `validate`, `show`, `resolve-path`, `neighbors`, `context-pack`, and `generate markdown`.
-- An MCP server exposing `atlas://...` resources and traversal tools.
-- Markdown generators for `docs/agents/*`.
-- Public/private overlay support.
-- Adapter interfaces for code indexes, developer portals, external documents, and MCP connectors.
-- Sanitized examples for diverse domains: personal ops, music/band ops, and company cross-repo architecture.
+- Validate atlas YAML files and schema versions.
+- Load `.agent-atlas/**/*.yaml` files and selected private/company overlays.
+- Normalize typed relations and generate inverse traversal edges.
+- Resolve source paths to owning components and related context.
+- Show entities, traverse neighbors, and generate task-specific context packs.
+- Generate compact `docs/agents/*` Markdown views.
+- Expose read-only MCP resources and tools.
+- Define adapters for code indexes, developer portals, local docs, and external references.
+- Merge central registries and per-repo atlases for cross-repo context packs.
+- Preview or write schema migrations with `atlas migrate`.
+- Run lightweight load benchmarks with `atlas benchmark`.
+
+## CLI snapshot
+
+Until package publishing is deliberately enabled, use a built local checkout:
+
+```sh
+pnpm -r build
+node packages/cli/dist/index.js validate .
+node packages/cli/dist/index.js resolve-path packages/core/src/index.ts --path .
+node packages/cli/dist/index.js context-pack "change CLI path handling" --path . --budget 4000
+node packages/cli/dist/index.js generate markdown --profile public
+node packages/cli/dist/index.js global validate examples/company-cross-repo-sanitized
+```
+
+See [`packages/cli/README.md`](./packages/cli/README.md) for the full command reference.
+
+## Roadmap status
+
+M0-M10 are complete. Current roadmap work is focused on consumer ergonomics, adoption evidence, boundary safety, incremental authoring, global registry hardening, and MCP operational hardening.
+
+See [`ROADMAP.md`](./ROADMAP.md).
 
 ## What this project should not become
 
@@ -55,48 +80,9 @@ packages/adapters/         # integration interfaces and reusable adapters
 
 The atlas should route agents to authoritative systems, not absorb those systems into one giant doomed Markdown blob.
 
-## Repository status
-
-Current status: **seed / framework**.
-
-This repo is ready for iterative build-out by coding agents. Start with:
-
-1. [`AGENTS.md`](./AGENTS.md)
-2. [`docs/vision.md`](./docs/vision.md)
-3. [`docs/concepts/typed-context-graph.md`](./docs/concepts/typed-context-graph.md)
-4. [`docs/spec/entities.md`](./docs/spec/entities.md)
-5. [`ROADMAP.md`](./ROADMAP.md)
-
-## Example atlas entity
-
-```yaml
-id: workflow:publish-single
-kind: workflow
-title: Publish Single
-summary: >
-  Coordinates song metadata, video assets, release tasks, marketing copy,
-  and publishing checklist for a single release.
-relations:
-  - type: part-of
-    target: domain:music-operations
-  - type: uses
-    target: component:song-library
-  - type: uses
-    target: component:video-generator
-  - type: writes-to
-    target: resource:release-checklist
-  - type: documented-in
-    target: document:release-process
-agent:
-  load_when:
-    - Planning or changing single-release workflows
-    - Updating release-related automation
-  token_budget_hint: 1200
-```
-
 ## Public/private boundary
 
-The open-source core should include:
+The open-source core includes:
 
 - schema
 - validators
@@ -117,6 +103,14 @@ Real deployments should keep private:
 - credentials and secret names where even names reveal sensitive information
 
 Use overlays for private context instead of contaminating public files.
+
+## Start points
+
+1. [`docs/guides/authoring-atlas-files.md`](./docs/guides/authoring-atlas-files.md)
+2. [`docs/guides/local-cli-consumption.md`](./docs/guides/local-cli-consumption.md)
+3. [`docs/concepts/typed-context-graph.md`](./docs/concepts/typed-context-graph.md)
+4. [`docs/spec/entities.md`](./docs/spec/entities.md)
+5. [`docs/agents/atlas.md`](./docs/agents/atlas.md)
 
 ## License
 

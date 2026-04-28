@@ -1,20 +1,21 @@
 # Per-Repo Setup Guide
 
-This guide describes how a project would adopt Agent Atlas once the CLI exists.
+This guide describes the current local-checkout adoption path for Agent Atlas.
 
-## Install
+Agent Atlas is not published as an npm package yet. Keep package publishing out of scope until a separate distribution decision is made.
 
-```sh
-pnpm add -D @agent-atlas/cli @agent-atlas/schema
-```
+## Prepare the Agent Atlas checkout
 
-## Initialize
+From the `agent-atlas` repository:
 
 ```sh
-pnpm atlas init
+pnpm install
+pnpm -r build
 ```
 
-Expected output:
+## Add atlas files to the target repo
+
+Create a small repo-local atlas:
 
 ```text
 .agent-atlas/
@@ -23,32 +24,31 @@ Expected output:
     workflows/
     components/
     resources/
+    documents/
     tests/
 docs/agents/
-AGENTS.md
 ```
-
-## Author first entities
 
 Start with:
 
 1. one or more `domain` entities
 2. important `workflow` entities
-3. major `component` entities
+3. major `component` entities with `code.paths`
 4. key external `resource` and `document` entities
-5. `test-scope` entities
+5. `test-scope` entities with verification commands
 
-## Validate
+## Run the CLI from a sibling checkout
 
-```sh
-pnpm atlas validate
-```
-
-## Generate docs
+From the target repo:
 
 ```sh
-pnpm atlas generate markdown
+node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts --path .
+node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000
+node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile private
 ```
+
+Prefer `--path <root>` when the command also has flags or free-form task text. M11 is reserved for tightening path ergonomics across commands.
 
 ## Add to AGENTS.md
 
@@ -58,16 +58,16 @@ Root `AGENTS.md` should tell agents:
 Before broad search, use the atlas:
 
 - Root view: `docs/agents/atlas.md`
-- Resolve a file: `pnpm atlas resolve-path <path>`
-- Generate task context: `pnpm atlas context-pack "<task>" --budget 4000`
+- Resolve a file: `node ../agent-atlas/packages/cli/dist/index.js resolve-path <path> --path .`
+- Generate task context: `node ../agent-atlas/packages/cli/dist/index.js context-pack "<task>" --path . --budget 4000`
 ```
 
 ## Add CI
 
-```sh
-pnpm atlas validate
-pnpm atlas generate markdown
- git diff --exit-code docs/agents
-```
+Use the template in `docs/ci/github-actions-agent-atlas.yml` as a starting point. For local-checkout consumers, adapt the checkout path or build Agent Atlas as a sibling repo before running:
 
-Yes, the extra space before `git` in the previous block would be a mistake in a real script. Keep generated checks boring and exact.
+```sh
+node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile public
+git diff --exit-code docs/agents
+```

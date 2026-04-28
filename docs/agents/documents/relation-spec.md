@@ -6,7 +6,7 @@ ID: `document:relation-spec`
 Kind: `document`
 Profile: `public`
 
-Draft vocabulary and design rules for typed directional relations between atlas entities.
+Vocabulary and design rules for typed directional relations between atlas entities.
 
 ## Metadata
 

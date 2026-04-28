@@ -6,7 +6,7 @@ ID: `document:readme`
 Kind: `document`
 Profile: `public`
 
-Public overview of Agent Atlas purpose, package layout, goals, and non-goals.
+Public overview of Agent Atlas purpose, implemented capabilities, package layout, roadmap status, and boundaries.
 
 ## Metadata
 
