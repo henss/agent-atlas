@@ -1,0 +1,21 @@
+id: workflow:expose-atlas-mcp
+kind: workflow
+title: Expose Atlas MCP
+summary: Provides read-only MCP resources and tools for listing entities, describing graph context, resolving paths, finding related entities, and creating context packs.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:mcp-server-package
+  - type: uses
+    target: component:core-package
+  - type: documented-in
+    target: document:mcp-spec
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Changing MCP resources, tools, or stdio server behavior
+    - Reviewing read-only MCP security boundaries
+  token_budget_hint: 1600

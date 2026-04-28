@@ -6,7 +6,7 @@ ID: `document:mcp-spec`
 Kind: `document`
 Profile: `public`
 
-Draft specification for future Atlas MCP resources and tools.
+Specification for read-only Atlas MCP resources and tools.
 
 ## Metadata
 
@@ -21,3 +21,4 @@ Draft specification for future Atlas MCP resources and tools.
 ### `documents`
 
 - `component:mcp-server-package`
+- `workflow:expose-atlas-mcp`

@@ -1,15 +1,15 @@
 # @agent-atlas/mcp-server
 
-Read-only MCP server skeleton for exposing atlas context to agents.
+Read-only MCP server for exposing atlas context to agents.
 
-Initial target resources:
+Resources:
 
 - `atlas://root`
 - `atlas://entity/{id}`
 - `atlas://path/{path}`
 - `atlas://context-pack?task=...&budget=...`
 
-Initial target tools:
+Tools:
 
 - `list_entities`
 - `describe_entity`
@@ -18,3 +18,11 @@ Initial target tools:
 - `context_pack`
 
 Do not add write tools until the security model is documented and tested. Humanity has enough footguns.
+
+## Stdio
+
+```sh
+atlas-mcp --path . --profile public
+```
+
+Profiles match the CLI: `public`, `private`, and `company`.

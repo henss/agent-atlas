@@ -11,10 +11,10 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 ## Counts
 
 - Domains: 1
-- Workflows: 6
+- Workflows: 7
 - Systems: 0
 - Components: 6
-- Relations: 148
+- Relations: 160
 
 ## Domains
 
@@ -24,6 +24,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 
 - `workflow:create-context-pack` - Create Context Pack: Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
 - `workflow:define-atlas-model` - Define Atlas Model: Evolves entity fields, relation types, validation behavior, and schema documentation together.
+- `workflow:expose-atlas-mcp` - Expose Atlas MCP: Provides read-only MCP resources and tools for listing entities, describing graph context, resolving paths, finding related entities, and creating context packs.
 - `workflow:generate-agent-docs` - Generate Agent Docs: Produces compact generated Markdown views under docs/agents from canonical atlas YAML.
 - `workflow:manage-overlays` - Manage Overlays: Applies profile-specific atlas overlays while keeping public-safe base metadata separate from private or company enrichments.
 - `workflow:navigate-atlas-graph` - Navigate Atlas Graph: Loads atlas files, normalizes graph edges, traverses related entities, and resolves source paths to context.
@@ -35,7 +36,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 - `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, graph inspection, path resolution, context packs, and generated Markdown.
 - `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, and creates context packs.
 - `component:markdown-package` - Markdown Package: Renders generated agent-facing Markdown views from loaded atlas graphs.
-- `component:mcp-server-package` - MCP Server Package: Skeleton package for future MCP resources and traversal tools over atlas data.
+- `component:mcp-server-package` - MCP Server Package: Read-only MCP server exposing atlas resources and traversal tools over stdio.
 - `component:schema-package` - Schema Package: Defines atlas entity types, relation vocabulary, and JSON Schema validation assets.
 
 ## Path Resolution

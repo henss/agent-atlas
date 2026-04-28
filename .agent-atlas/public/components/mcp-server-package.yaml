@@ -1,7 +1,7 @@
 id: component:mcp-server-package
 kind: component
 title: MCP Server Package
-summary: Skeleton package for future MCP resources and traversal tools over atlas data.
+summary: Read-only MCP server exposing atlas resources and traversal tools over stdio.
 visibility: public
 code:
   paths:
@@ -11,6 +11,8 @@ code:
 relations:
   - type: part-of
     target: domain:agent-atlas
+  - type: implements
+    target: workflow:expose-atlas-mcp
   - type: documented-in
     target: document:mcp-spec
   - type: tested-by

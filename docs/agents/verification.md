@@ -29,6 +29,7 @@ Verifies:
 - `component:schema-package`
 - `workflow:create-context-pack`
 - `workflow:define-atlas-model`
+- `workflow:expose-atlas-mcp`
 - `workflow:generate-agent-docs`
 - `workflow:manage-overlays`
 - `workflow:navigate-atlas-graph`

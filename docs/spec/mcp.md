@@ -1,24 +1,21 @@
-# MCP Specification Draft
+# MCP Specification
 
-Agent Atlas should eventually expose a read-only MCP server so coding agents can traverse atlas context without shelling out to the CLI.
+Agent Atlas exposes a read-only MCP server so coding agents can traverse atlas context without shelling out to the CLI.
 
 ## Resources
 
-Suggested resources:
+Implemented resources:
 
 ```text
 atlas://root
 atlas://entity/{entity-id}
-atlas://domain/{slug}
-atlas://workflow/{slug}
-atlas://component/{slug}
 atlas://path/{repo-relative-path}
 atlas://context-pack?task=...&budget=...
 ```
 
 ## Tools
 
-Suggested tools:
+Implemented tools:
 
 ### `list_entities`
 
@@ -73,7 +70,7 @@ Returns task-specific context pack.
 
 ## Initial safety stance
 
-The first MCP server should be read-only.
+The MCP server is read-only. It loads atlas YAML, applies selected profile overlays, traverses the graph, resolves paths, and generates context packs. It does not write atlas files, generated Markdown, source files, or external systems.
 
 Future write-capable tools must be explicitly designed, documented, and gated. The atlas may eventually update generated files or local metadata, but it should not write to external systems by default.
 
@@ -94,3 +91,11 @@ Avoid:
 - long unstructured blobs
 - full external docs
 - secret or private values in public profile
+
+## Running over stdio
+
+```sh
+atlas-mcp --path . --profile public
+```
+
+Use `--profile private` or `--profile company` only when the MCP client and model are allowed to see the matching overlay data.

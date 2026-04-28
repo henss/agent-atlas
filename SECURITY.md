@@ -47,6 +47,18 @@ The initial project should prefer read-only resources and traversal tools. Any f
 - human confirmation boundaries where appropriate
 - tests covering unsafe invocation cases
 
+## MCP server use
+
+The initial Agent Atlas MCP server is read-only. It can still expose sensitive metadata when started with `--profile private` or `--profile company`, because overlays may contain private document, calendar, repository, or MCP server references.
+
+Run MCP clients with the least profile needed:
+
+- Use `--profile public` for open-source contributors and untrusted model contexts.
+- Use `--profile private` only for local owner workflows.
+- Use `--profile company` only inside approved internal environments.
+
+Do not expose a private/company MCP server to remote clients unless the transport, host, and model context are approved for that data.
+
 ## Reporting issues
 
 For security issues, do not open a public issue with sensitive details. Use the project's chosen private disclosure channel once configured.

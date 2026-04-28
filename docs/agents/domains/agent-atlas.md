@@ -24,6 +24,7 @@ Typed context graph framework for helping coding agents navigate repositories an
 - `component:schema-package`
 - `workflow:create-context-pack` _(generated)_
 - `workflow:define-atlas-model` _(generated)_
+- `workflow:expose-atlas-mcp` _(generated)_
 - `workflow:generate-agent-docs` _(generated)_
 - `workflow:manage-overlays` _(generated)_
 - `workflow:navigate-atlas-graph` _(generated)_

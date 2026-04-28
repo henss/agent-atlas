@@ -83,12 +83,12 @@ Goal: support public core metadata plus private/company extensions.
 
 Goal: expose the atlas to agents through standard tools/resources.
 
-- [ ] Expose `atlas://root`.
-- [ ] Expose `atlas://entity/{id}`.
-- [ ] Expose `atlas://path/{path}`.
-- [ ] Add tools: `list_entities`, `describe_entity`, `resolve_path`, `find_related`, `context_pack`.
-- [ ] Keep the initial MCP server read-only.
-- [ ] Add security documentation for MCP use.
+- [x] Expose `atlas://root`.
+- [x] Expose `atlas://entity/{id}`.
+- [x] Expose `atlas://path/{path}`.
+- [x] Add tools: `list_entities`, `describe_entity`, `resolve_path`, `find_related`, `context_pack`.
+- [x] Keep the initial MCP server read-only.
+- [x] Add security documentation for MCP use.
 
 ## M8: Adapter ecosystem
 

@@ -43,6 +43,7 @@ Loads atlas YAML, applies selected overlays, validates graph structure, normaliz
 - `component:cli-package` _(generated)_
 - `component:markdown-package` _(generated)_
 - `workflow:create-context-pack` _(generated)_
+- `workflow:expose-atlas-mcp` _(generated)_
 - `workflow:manage-overlays` _(generated)_
 - `workflow:navigate-atlas-graph` _(generated)_
 - `workflow:operate-atlas-cli` _(generated)_

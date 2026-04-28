@@ -6,9 +6,14 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "bin": {
+    "atlas-mcp": "./dist/stdio.js"
+  },
   "dependencies": {
     "@agent-atlas/core": "workspace:*",
-    "@agent-atlas/schema": "workspace:*"
+    "@agent-atlas/schema": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

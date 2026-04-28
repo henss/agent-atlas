@@ -6,7 +6,7 @@ ID: `component:mcp-server-package`
 Kind: `component`
 Profile: `public`
 
-Skeleton package for future MCP resources and traversal tools over atlas data.
+Read-only MCP server exposing atlas resources and traversal tools over stdio.
 
 ## Metadata
 
@@ -23,6 +23,10 @@ Skeleton package for future MCP resources and traversal tools over atlas data.
 
 - `document:mcp-spec`
 
+### `implements`
+
+- `workflow:expose-atlas-mcp`
+
 ### `part-of`
 
 - `domain:agent-atlas`
@@ -30,6 +34,10 @@ Skeleton package for future MCP resources and traversal tools over atlas data.
 ### `tested-by`
 
 - `test-scope:workspace-build-and-test`
+
+### `used-by`
+
+- `workflow:expose-atlas-mcp` _(generated)_
 
 ## Verification
 
