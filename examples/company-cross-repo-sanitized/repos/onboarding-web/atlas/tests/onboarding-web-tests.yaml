@@ -1,0 +1,12 @@
+id: test-scope:onboarding-web-tests
+kind: test-scope
+title: Onboarding Web Tests
+summary: UI and client integration tests for onboarding web flows.
+visibility: internal
+commands:
+  - command: pnpm --filter onboarding-web test
+    cwd: repos/onboarding-web
+    purpose: Run onboarding web tests.
+relations:
+  - type: verifies
+    target: component:onboarding-web-app

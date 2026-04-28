@@ -1,0 +1,18 @@
+version: 1
+name: Company Cross-Repo Sanitized Registry
+imports:
+  - id: central
+    path: registry
+    role: registry
+  - id: onboarding-api
+    path: repos/onboarding-api
+    role: repository
+    repository: repository:onboarding-api
+  - id: onboarding-web
+    path: repos/onboarding-web
+    role: repository
+    repository: repository:onboarding-web
+  - id: notification-worker
+    path: repos/notification-worker
+    role: repository
+    repository: repository:notification-worker

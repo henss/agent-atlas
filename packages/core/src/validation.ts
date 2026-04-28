@@ -23,6 +23,7 @@ export interface AtlasValidationResult {
 
 export interface AtlasValidationOptions {
   profile?: AtlasProfile;
+  includeYamlRoot?: boolean;
 }
 
 interface ParsedAtlasDocument {
@@ -57,7 +58,9 @@ export async function validateAtlas(
   const absoluteRoot = path.resolve(rootPath);
   const profile = options.profile ?? 'public';
   const diagnostics: AtlasDiagnostic[] = [];
-  const documents = await loadAtlasDocuments(absoluteRoot);
+  const documents = await loadAtlasDocuments(absoluteRoot, {
+    includeYamlRoot: options.includeYamlRoot,
+  });
   const baseDocuments: ParsedAtlasDocument[] = [];
   const overlayDocuments: ParsedAtlasDocument[] = [];
 
@@ -86,7 +89,8 @@ export async function validateAtlas(
       diagnostics.push({
         level: 'error',
         code: 'OVERLAY_PROFILE_UNKNOWN',
-        message: 'Overlay path must use private, private.local, company, or generated.',
+        message:
+          'Overlay path must use private, private.local, company, or generated.',
         path: document.path,
       });
       continue;
@@ -129,12 +133,29 @@ export async function validateAtlas(
     }
   }
 
-  const entities = mergeOverlayDocuments(baseDocuments, overlayDocuments, diagnostics);
-  const entityPaths = collectPathsByEntityId([...baseDocuments, ...overlayDocuments]);
+  const entities = mergeOverlayDocuments(
+    baseDocuments,
+    overlayDocuments,
+    diagnostics,
+  );
+  const entityPaths = collectPathsByEntityId([
+    ...baseDocuments,
+    ...overlayDocuments,
+  ]);
   const entityIds = new Set(entities.map((entity) => entity.id));
   for (const entity of entities) {
-    validateRelations(entity, entityIds, entityPaths.get(entity.id)?.[0], diagnostics);
-    validatePublicProfileSafety(entity, entityPaths.get(entity.id)?.[0], profile, diagnostics);
+    validateRelations(
+      entity,
+      entityIds,
+      entityPaths.get(entity.id)?.[0],
+      diagnostics,
+    );
+    validatePublicProfileSafety(
+      entity,
+      entityPaths.get(entity.id)?.[0],
+      profile,
+      diagnostics,
+    );
   }
 
   return {
@@ -143,7 +164,10 @@ export async function validateAtlas(
     entities,
     diagnostics,
     entityCount: entities.length,
-    relationCount: entities.reduce((count, entity) => count + (entity.relations?.length ?? 0), 0),
+    relationCount: entities.reduce(
+      (count, entity) => count + (entity.relations?.length ?? 0),
+      0,
+    ),
     status: hasErrors(diagnostics) ? 'failed' : 'passed',
   };
 }
@@ -386,7 +410,8 @@ function validatePublicProfileSafety(
 
   const normalizedPath = filePath ? filePath.replaceAll('\\', '/') : '';
   const inPublicProfile = normalizedPath.includes('/.agent-atlas/public/');
-  const publicEntity = entity.visibility === undefined || entity.visibility === 'public';
+  const publicEntity =
+    entity.visibility === undefined || entity.visibility === 'public';
 
   if (inPublicProfile && entity.visibility && entity.visibility !== 'public') {
     diagnostics.push({
@@ -440,7 +465,10 @@ function mergeOverlayDocuments(
     }
 
     const baseKind = base.id.split(':', 1)[0];
-    if (overlayDocument.entity.kind && overlayDocument.entity.kind !== baseKind) {
+    if (
+      overlayDocument.entity.kind &&
+      overlayDocument.entity.kind !== baseKind
+    ) {
       diagnostics.push({
         level: 'error',
         code: 'OVERLAY_KIND_CONFLICT',
@@ -451,10 +479,17 @@ function mergeOverlayDocuments(
       continue;
     }
 
-    mergeEntityOverlay(base, overlayDocument.entity, overlayDocument.path, diagnostics);
+    mergeEntityOverlay(
+      base,
+      overlayDocument.entity,
+      overlayDocument.path,
+      diagnostics,
+    );
   }
 
-  return [...entitiesById.values()].sort((left, right) => left.id.localeCompare(right.id));
+  return [...entitiesById.values()].sort((left, right) =>
+    left.id.localeCompare(right.id),
+  );
 }
 
 function mergeEntityOverlay(
@@ -473,11 +508,20 @@ function mergeEntityOverlay(
   base.tags = mergeStringArrays(base.tags, overlay.tags);
   base.owners = mergeStringArrays(base.owners, overlay.owners);
   base.code = mergeCode(base.code, overlay.code);
-  base.access = overlay.access ? { ...base.access, ...overlay.access } : base.access;
+  base.access = overlay.access
+    ? { ...base.access, ...overlay.access }
+    : base.access;
   base.commands = mergeCommands(base.commands, overlay.commands);
-  base.relations = mergeRelations(base, overlay.relations, filePath, diagnostics);
+  base.relations = mergeRelations(
+    base,
+    overlay.relations,
+    filePath,
+    diagnostics,
+  );
   base.agent = mergeAgent(base.agent, overlay.agent);
-  base.metadata = overlay.metadata ? { ...base.metadata, ...overlay.metadata } : base.metadata;
+  base.metadata = overlay.metadata
+    ? { ...base.metadata, ...overlay.metadata }
+    : base.metadata;
 }
 
 function mergeRelations(
@@ -520,7 +564,10 @@ function mergeCode(
   return {
     paths: mergeStringArrays(base?.paths, overlay.paths),
     entrypoints: mergeStringArrays(base?.entrypoints, overlay.entrypoints),
-    public_symbols: mergeStringArrays(base?.public_symbols, overlay.public_symbols),
+    public_symbols: mergeStringArrays(
+      base?.public_symbols,
+      overlay.public_symbols,
+    ),
   };
 }
 
@@ -534,7 +581,10 @@ function mergeAgent(
 
   return {
     load_when: mergeStringArrays(base?.load_when, overlay.load_when),
-    avoid_loading_when: mergeStringArrays(base?.avoid_loading_when, overlay.avoid_loading_when),
+    avoid_loading_when: mergeStringArrays(
+      base?.avoid_loading_when,
+      overlay.avoid_loading_when,
+    ),
     token_budget_hint: overlay.token_budget_hint ?? base?.token_budget_hint,
     risk_notes: mergeStringArrays(base?.risk_notes, overlay.risk_notes),
   };
@@ -544,7 +594,10 @@ function mergeCommands(
   base: AtlasEntity['commands'],
   overlay: AtlasEntity['commands'],
 ): AtlasEntity['commands'] {
-  const commands = new Map<string, NonNullable<AtlasEntity['commands']>[number]>();
+  const commands = new Map<
+    string,
+    NonNullable<AtlasEntity['commands']>[number]
+  >();
   for (const command of [...(base ?? []), ...(overlay ?? [])]) {
     commands.set(`${command.cwd ?? ''}|${command.command}`, command);
   }
@@ -563,7 +616,9 @@ function relationKey(relation: AtlasRelation): string {
   return `${relation.type}|${relation.target}|${relation.visibility ?? ''}`;
 }
 
-function collectPathsByEntityId(documents: ParsedAtlasDocument[]): Map<string, string[]> {
+function collectPathsByEntityId(
+  documents: ParsedAtlasDocument[],
+): Map<string, string[]> {
   const pathsById = new Map<string, string[]>();
   for (const document of documents) {
     const paths = pathsById.get(document.entity.id) ?? [];
@@ -575,7 +630,9 @@ function collectPathsByEntityId(documents: ParsedAtlasDocument[]): Map<string, s
 
 function getDocumentSource(filePath: string): AtlasDocumentSource {
   const normalizedPath = filePath.replaceAll('\\', '/');
-  const overlayMatch = normalizedPath.match(/\/\.agent-atlas\/overlays\/([^/]+)\//);
+  const overlayMatch = normalizedPath.match(
+    /\/\.agent-atlas\/overlays\/([^/]+)\//,
+  );
   if (!overlayMatch) {
     return { kind: 'public' };
   }
@@ -593,7 +650,10 @@ function getDocumentSource(filePath: string): AtlasDocumentSource {
   return { kind: 'overlay', profile: 'unknown' };
 }
 
-function isOverlayIncluded(source: AtlasDocumentSource, profile: AtlasProfile): boolean {
+function isOverlayIncluded(
+  source: AtlasDocumentSource,
+  profile: AtlasProfile,
+): boolean {
   if (source.kind !== 'overlay') {
     return true;
   }
@@ -614,21 +674,33 @@ function cloneEntity(entity: AtlasEntity): AtlasEntity {
     code: entity.code
       ? {
           paths: entity.code.paths ? [...entity.code.paths] : undefined,
-          entrypoints: entity.code.entrypoints ? [...entity.code.entrypoints] : undefined,
-          public_symbols: entity.code.public_symbols ? [...entity.code.public_symbols] : undefined,
+          entrypoints: entity.code.entrypoints
+            ? [...entity.code.entrypoints]
+            : undefined,
+          public_symbols: entity.code.public_symbols
+            ? [...entity.code.public_symbols]
+            : undefined,
         }
       : undefined,
     access: entity.access ? { ...entity.access } : undefined,
-    commands: entity.commands ? entity.commands.map((command) => ({ ...command })) : undefined,
-    relations: entity.relations ? entity.relations.map((relation) => ({ ...relation })) : undefined,
+    commands: entity.commands
+      ? entity.commands.map((command) => ({ ...command }))
+      : undefined,
+    relations: entity.relations
+      ? entity.relations.map((relation) => ({ ...relation }))
+      : undefined,
     agent: entity.agent
       ? {
           ...entity.agent,
-          load_when: entity.agent.load_when ? [...entity.agent.load_when] : undefined,
+          load_when: entity.agent.load_when
+            ? [...entity.agent.load_when]
+            : undefined,
           avoid_loading_when: entity.agent.avoid_loading_when
             ? [...entity.agent.avoid_loading_when]
             : undefined,
-          risk_notes: entity.agent.risk_notes ? [...entity.agent.risk_notes] : undefined,
+          risk_notes: entity.agent.risk_notes
+            ? [...entity.agent.risk_notes]
+            : undefined,
         }
       : undefined,
     metadata: entity.metadata ? { ...entity.metadata } : undefined,
@@ -640,12 +712,16 @@ function hasPrivateUri(uri: string): boolean {
   return (
     PRIVATE_URI_SCHEMES.some((scheme) => lowerUri.startsWith(scheme)) ||
     lowerUri.includes('localhost') ||
-    /^https?:\/\/(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(lowerUri)
+    /^https?:\/\/(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(
+      lowerUri,
+    )
   );
 }
 
 function isKnownRelation(relation: AtlasRelation): boolean {
-  return (ATLAS_RELATION_TYPES as readonly string[]).includes(String(relation.type));
+  return (ATLAS_RELATION_TYPES as readonly string[]).includes(
+    String(relation.type),
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

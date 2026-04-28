@@ -1,0 +1,12 @@
+id: test-scope:notification-worker-tests
+kind: test-scope
+title: Notification Worker Tests
+summary: Worker tests for onboarding event handling and notification dispatch.
+visibility: internal
+commands:
+  - command: pnpm --filter notification-worker test
+    cwd: repos/notification-worker
+    purpose: Run notification worker tests.
+relations:
+  - type: verifies
+    target: component:notification-worker

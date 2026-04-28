@@ -1,0 +1,13 @@
+id: document:registry-spec
+kind: document
+title: Registry Specification
+summary: Specification for cross-repo registry files, imports, merge behavior, and global CLI commands.
+visibility: public
+uri: docs/spec/registry.md
+relations:
+  - type: documents
+    target: component:core-package
+  - type: documents
+    target: component:cli-package
+  - type: part-of
+    target: domain:agent-atlas

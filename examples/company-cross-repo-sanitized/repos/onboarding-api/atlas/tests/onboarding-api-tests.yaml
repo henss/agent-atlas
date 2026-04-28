@@ -1,0 +1,12 @@
+id: test-scope:onboarding-api-tests
+kind: test-scope
+title: Onboarding API Tests
+summary: Unit and contract tests for onboarding API behavior.
+visibility: internal
+commands:
+  - command: pnpm --filter onboarding-api test
+    cwd: repos/onboarding-api
+    purpose: Run onboarding API tests.
+relations:
+  - type: verifies
+    target: component:onboarding-api-service

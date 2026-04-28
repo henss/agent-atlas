@@ -1,0 +1,20 @@
+id: component:onboarding-web-app
+kind: component
+title: Onboarding Web App
+summary: Implements onboarding UI flows and calls the onboarding HTTP API.
+visibility: internal
+code:
+  paths:
+    - apps/onboarding-web/**
+  entrypoints:
+    - apps/onboarding-web/src/App.tsx
+relations:
+  - type: uses
+    target: interface:onboarding-http-api
+  - type: tested-by
+    target: test-scope:onboarding-web-tests
+agent:
+  load_when:
+    - Changing onboarding UI flows
+    - Updating client calls to onboarding API endpoints
+  token_budget_hint: 900

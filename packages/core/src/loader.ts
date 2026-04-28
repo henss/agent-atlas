@@ -8,12 +8,24 @@ export interface LoadedAtlasDocument {
   parseError?: string;
 }
 
-export async function loadAtlasDocuments(rootPath: string): Promise<LoadedAtlasDocument[]> {
+export interface LoadAtlasDocumentsOptions {
+  includeYamlRoot?: boolean;
+}
+
+export async function loadAtlasDocuments(
+  rootPath: string,
+  options: LoadAtlasDocumentsOptions = {},
+): Promise<LoadedAtlasDocument[]> {
   const absoluteRoot = path.resolve(rootPath);
   const documents: LoadedAtlasDocument[] = [];
+  const atlasRoots = await findAtlasRoots(absoluteRoot);
 
-  for (const atlasRoot of await findAtlasRoots(absoluteRoot)) {
+  for (const atlasRoot of atlasRoots) {
     await collectYamlDocuments(atlasRoot, documents);
+  }
+
+  if (documents.length === 0 && options.includeYamlRoot) {
+    await collectYamlDocuments(absoluteRoot, documents);
   }
 
   documents.sort((left, right) => left.path.localeCompare(right.path));
@@ -47,7 +59,11 @@ async function findAtlasRoots(rootPath: string): Promise<string[]> {
         continue;
       }
 
-      if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'dist') {
+      if (
+        entry.name === 'node_modules' ||
+        entry.name === '.git' ||
+        entry.name === 'dist'
+      ) {
         continue;
       }
 

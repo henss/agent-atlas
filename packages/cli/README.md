@@ -1,6 +1,6 @@
 # @agent-atlas/cli
 
-CLI skeleton for Agent Atlas.
+CLI for Agent Atlas.
 
 Planned commands:
 
@@ -13,6 +13,9 @@ atlas neighbors <entity-id> --depth 2
 atlas resolve-path <path>
 atlas context-pack "<task>" --budget 4000
 atlas generate markdown
+atlas global validate
+atlas global list
+atlas global context-pack "<task>" --budget 8000
 ```
 
 Output should be concise Markdown by default. Add `--json` for machine-readable output.
@@ -122,7 +125,7 @@ node ../agent-atlas/packages/cli/dist/index.js generate markdown . --output docs
 node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" . --budget 4000 --profile private
 ```
 
-Keep rollout adoption limited to implemented commands. As of M5, downstream repos may use `validate`, `show`, `neighbors`, `resolve-path`, `generate markdown`, and `context-pack`; leave overlays, MCP resources, and cross-repo global packs for later milestones.
+Keep rollout adoption limited to implemented commands. Downstream repos may use `validate`, `show`, `neighbors`, `resolve-path`, `generate markdown`, `context-pack`, and read-only MCP resources. Company registry repos may use `atlas global ...`.
 
 ## `atlas generate markdown [path]`
 
@@ -141,3 +144,31 @@ Profiles:
 - `company`: load base atlas files plus company overlays, then include all visible entities.
 
 The generator refreshes known generated files and directories while preserving non-generated files such as `docs/agents/README.md`.
+
+## `atlas global validate [registry-root]`
+
+Loads `agent-atlas.registry.yaml`, imports central and per-repo atlas roots, resolves cross-repo relation targets, and prints a concise registry summary.
+
+```sh
+atlas global validate examples/company-cross-repo-sanitized
+```
+
+Global commands default to `--profile company`.
+
+## `atlas global list [registry-root]`
+
+Lists merged global entities grouped by kind with import provenance.
+
+```sh
+atlas global list examples/company-cross-repo-sanitized
+```
+
+## `atlas global context-pack "<task>" [registry-root]`
+
+Generates a context pack across the merged cross-repo graph.
+
+```sh
+atlas global context-pack "change onboarding api http interface and web client" examples/company-cross-repo-sanitized --budget 8000
+```
+
+Use `--json` for machine-readable output.

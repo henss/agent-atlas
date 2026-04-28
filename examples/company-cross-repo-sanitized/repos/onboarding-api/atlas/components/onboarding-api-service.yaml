@@ -1,0 +1,22 @@
+id: component:onboarding-api-service
+kind: component
+title: Onboarding API Service
+summary: Implements onboarding account setup and task APIs.
+visibility: internal
+code:
+  paths:
+    - packages/onboarding-api/**
+  entrypoints:
+    - packages/onboarding-api/src/index.ts
+relations:
+  - type: exposes
+    target: interface:onboarding-http-api
+  - type: writes-to
+    target: resource:notion-onboarding-runbook
+  - type: tested-by
+    target: test-scope:onboarding-api-tests
+agent:
+  load_when:
+    - Changing onboarding API behavior
+    - Updating HTTP contracts consumed by onboarding web
+  token_budget_hint: 900

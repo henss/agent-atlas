@@ -106,12 +106,12 @@ Goal: reuse existing systems instead of rebuilding them badly.
 
 Goal: support organizations with many repositories.
 
-- [ ] Define central registry model.
-- [ ] Import per-repo atlases.
-- [ ] Resolve cross-repo entity references.
-- [ ] Generate global context packs.
-- [ ] Add `atlas global ...` commands.
-- [ ] Document company deployment patterns.
+- [x] Define central registry model.
+- [x] Import per-repo atlases.
+- [x] Resolve cross-repo entity references.
+- [x] Generate global context packs.
+- [x] Add `atlas global ...` commands.
+- [x] Document company deployment patterns.
 
 ## M10: Usability hardening
 

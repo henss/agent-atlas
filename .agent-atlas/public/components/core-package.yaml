@@ -1,7 +1,7 @@
 id: component:core-package
 kind: component
 title: Core Package
-summary: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, and creates context packs.
+summary: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, and merges cross-repo registries.
 visibility: public
 code:
   paths:
@@ -17,6 +17,8 @@ relations:
     target: workflow:create-context-pack
   - type: implements
     target: workflow:manage-overlays
+  - type: documented-in
+    target: document:registry-spec
   - type: uses
     target: component:schema-package
   - type: tested-by

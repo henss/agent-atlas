@@ -5,6 +5,7 @@ import path from 'node:path';
 import {
   createContextPack,
   findNeighbors,
+  loadGlobalAtlasGraph,
   loadAtlasGraph,
   parseAtlasProfile,
   renderContextPackMarkdown,
@@ -23,7 +24,11 @@ import type {
   PathResolutionResult,
   NeighborResult,
 } from '@agent-atlas/core';
-import type { AtlasEntity, AtlasEntityId, AtlasRelationType } from '@agent-atlas/schema';
+import type {
+  AtlasEntity,
+  AtlasEntityId,
+  AtlasRelationType,
+} from '@agent-atlas/schema';
 import { ATLAS_RELATION_TYPES } from '@agent-atlas/schema';
 
 const [, , command, ...args] = process.argv;
@@ -43,6 +48,9 @@ Planned commands:
 - atlas resolve-path <path>
 - atlas context-pack "<task>" --budget 4000
 - atlas generate markdown
+- atlas global validate [path]
+- atlas global list [path]
+- atlas global context-pack "<task>" --budget 8000
 
 Current command: ${command ?? '(none)'}
 Args: ${args.join(' ')}
@@ -112,6 +120,19 @@ interface ContextPackArgs {
   profile: AtlasProfile;
   deterministic: boolean;
   json: boolean;
+}
+
+interface GlobalArgs {
+  subcommand?: string;
+  rootPath: string;
+  profile: AtlasProfile;
+  json: boolean;
+}
+
+interface GlobalContextPackArgs extends GlobalArgs {
+  task?: string;
+  budget: number;
+  deterministic: boolean;
 }
 
 function parseShowArgs(args: string[]): ShowArgs {
@@ -347,9 +368,112 @@ function parseContextPackArgs(args: string[]): ContextPackArgs {
   return { task, rootPath, budget, profile, deterministic, json };
 }
 
+function parseGlobalArgs(args: string[]): GlobalArgs {
+  let subcommand: string | undefined;
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'company';
+  let json = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--path') {
+      rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(args[index + 1] ?? profile);
+      index += 1;
+      continue;
+    }
+
+    if (!subcommand) {
+      subcommand = arg;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return { subcommand, rootPath, profile, json };
+}
+
+function parseGlobalContextPackArgs(args: string[]): GlobalContextPackArgs {
+  let task: string | undefined;
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'company';
+  let budget = 8000;
+  let deterministic = false;
+  let json = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === 'context-pack') {
+      continue;
+    }
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--deterministic') {
+      deterministic = true;
+      continue;
+    }
+
+    if (arg === '--path') {
+      rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--budget') {
+      budget = parsePositiveInteger(args[index + 1], budget);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(args[index + 1] ?? profile);
+      index += 1;
+      continue;
+    }
+
+    if (!task) {
+      task = arg;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return {
+    subcommand: 'context-pack',
+    task,
+    rootPath,
+    profile,
+    budget,
+    deterministic,
+    json,
+  };
+}
+
 function printValidationMarkdown(result: AtlasValidationResult): void {
-  const errors = result.diagnostics.filter((diagnostic) => diagnostic.level === 'error');
-  const warnings = result.diagnostics.filter((diagnostic) => diagnostic.level === 'warning');
+  const errors = result.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'error',
+  );
+  const warnings = result.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'warning',
+  );
 
   console.log(`# Atlas validation
 
@@ -365,14 +489,19 @@ Errors: ${errors.length}`);
   printDiagnosticSection('Warnings', warnings);
 }
 
-function printDiagnosticSection(title: string, diagnostics: AtlasDiagnostic[]): void {
+function printDiagnosticSection(
+  title: string,
+  diagnostics: AtlasDiagnostic[],
+): void {
   if (diagnostics.length === 0) {
     return;
   }
 
   console.log(`\n## ${title}\n`);
   for (const diagnostic of diagnostics) {
-    const subject = diagnostic.entityId ? `\`${diagnostic.entityId}\`` : '`atlas`';
+    const subject = diagnostic.entityId
+      ? `\`${diagnostic.entityId}\``
+      : '`atlas`';
     console.log(`- ${subject}: ${diagnostic.message} \`${diagnostic.code}\``);
   }
 }
@@ -458,6 +587,99 @@ Files: ${result.files.length}`);
   }
 }
 
+function printGlobalRegistryMarkdown(
+  graph: AtlasGraph & {
+    registry: {
+      configPath: string;
+      name: string;
+      imports: Array<{
+        id: string;
+        path: string;
+        role: string;
+        repository?: AtlasEntityId;
+        rootPath: string;
+        entityCount: number;
+        relationCount: number;
+      }>;
+    };
+  },
+): void {
+  const errors = graph.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'error',
+  );
+  const warnings = graph.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'warning',
+  );
+
+  console.log(`# Atlas global registry
+
+Name: ${graph.registry.name}
+Config: \`${graph.registry.configPath}\`
+Status: ${errors.length > 0 ? 'failed' : 'passed'}
+
+Imports: ${graph.registry.imports.length}
+Entities: ${graph.entities.length}
+Relations: ${graph.edges.filter((edge) => edge.provenance === 'explicit').length}
+Warnings: ${warnings.length}
+Errors: ${errors.length}`);
+
+  if (graph.registry.imports.length > 0) {
+    console.log('\n## Imports\n');
+    for (const registryImport of graph.registry.imports) {
+      const repository = registryImport.repository
+        ? `, repository \`${registryImport.repository}\``
+        : '';
+      console.log(
+        `- \`${registryImport.id}\` (${registryImport.role}${repository}): ${registryImport.entityCount} entities, ${registryImport.relationCount} relations`,
+      );
+    }
+  }
+
+  printDiagnosticSection('Errors', errors);
+  printDiagnosticSection('Warnings', warnings);
+}
+
+function printGlobalListMarkdown(
+  graph: AtlasGraph & {
+    registry: {
+      name: string;
+      imports: Array<{
+        id: string;
+        role: string;
+        repository?: AtlasEntityId;
+        entityCount: number;
+      }>;
+    };
+  },
+): void {
+  console.log(`# Atlas global entities
+
+Registry: ${graph.registry.name}
+Entities: ${graph.entities.length}`);
+
+  const byKind = new Map<string, AtlasEntity[]>();
+  for (const entity of graph.entities) {
+    const entities = byKind.get(entity.kind) ?? [];
+    entities.push(entity);
+    byKind.set(entity.kind, entities);
+  }
+
+  for (const [kind, entities] of [...byKind.entries()].sort()) {
+    console.log(`\n## ${kind}\n`);
+    for (const entity of entities.sort((left, right) =>
+      left.id.localeCompare(right.id),
+    )) {
+      const registry = entity.metadata?.registry;
+      const importId =
+        isRecord(registry) && typeof registry.importId === 'string'
+          ? registry.importId
+          : undefined;
+      const importedFrom = importId ? ` _${importId}_` : '';
+      console.log(`- \`${entity.id}\` - ${entity.title}${importedFrom}`);
+    }
+  }
+}
+
 function printOwnerSection(owners: PathOwnerMatch[]): void {
   if (owners.length === 0) {
     return;
@@ -527,7 +749,16 @@ function contextPackUsage(): void {
   );
 }
 
-function parsePositiveInteger(value: string | undefined, fallback: number): number {
+function globalUsage(): void {
+  console.error(
+    'Usage: atlas global validate|list|context-pack [path] [--path <registry-root>] [--profile public|private|company] [--json]',
+  );
+}
+
+function parsePositiveInteger(
+  value: string | undefined,
+  fallback: number,
+): number {
   if (!value) {
     return fallback;
   }
@@ -551,6 +782,10 @@ function formatProvenance(edge: AtlasGraphEdge): string {
   return edge.provenance === 'generated' ? '(generated)' : '(explicit)';
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 async function cleanGeneratedMarkdownOutput(outputPath: string): Promise<void> {
   await mkdir(outputPath, { recursive: true });
   for (const generatedPath of [
@@ -562,7 +797,10 @@ async function cleanGeneratedMarkdownOutput(outputPath: string): Promise<void> {
     'resources',
     'workflows',
   ]) {
-    await rm(path.join(outputPath, generatedPath), { recursive: true, force: true });
+    await rm(path.join(outputPath, generatedPath), {
+      recursive: true,
+      force: true,
+    });
   }
 }
 
@@ -575,7 +813,9 @@ switch (command) {
     break;
   case 'validate': {
     const options = parseValidateArgs(args);
-    const result = await validateAtlas(options.rootPath, { profile: options.profile });
+    const result = await validateAtlas(options.rootPath, {
+      profile: options.profile,
+    });
     if (options.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {
@@ -592,7 +832,9 @@ switch (command) {
       break;
     }
 
-    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
+    const graph = await loadAtlasGraph(options.rootPath, {
+      profile: options.profile,
+    });
     const entity = graph.index.entitiesById.get(options.entityId);
     if (!entity) {
       console.error(`Atlas entity not found: ${options.entityId}`);
@@ -626,7 +868,9 @@ switch (command) {
       break;
     }
 
-    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
+    const graph = await loadAtlasGraph(options.rootPath, {
+      profile: options.profile,
+    });
     if (!graph.index.entitiesById.has(options.entityId)) {
       console.error(`Atlas entity not found: ${options.entityId}`);
       process.exitCode = 1;
@@ -653,7 +897,12 @@ switch (command) {
         ),
       );
     } else {
-      printNeighborsMarkdown(options.entityId, options.depth, options.relationTypes, neighbors);
+      printNeighborsMarkdown(
+        options.entityId,
+        options.depth,
+        options.relationTypes,
+        neighbors,
+      );
     }
     break;
   }
@@ -665,11 +914,17 @@ switch (command) {
       break;
     }
 
-    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
-    const result = resolvePathInGraph(graph, options.filePath, { depth: options.depth });
+    const graph = await loadAtlasGraph(options.rootPath, {
+      profile: options.profile,
+    });
+    const result = resolvePathInGraph(graph, options.filePath, {
+      depth: options.depth,
+    });
 
     if (options.json) {
-      console.log(JSON.stringify({ ...result, diagnostics: graph.diagnostics }, null, 2));
+      console.log(
+        JSON.stringify({ ...result, diagnostics: graph.diagnostics }, null, 2),
+      );
     } else {
       printPathResolutionMarkdown(result);
     }
@@ -685,9 +940,14 @@ switch (command) {
     }
 
     const options = parseGenerateMarkdownArgs(args);
-    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
+    const graph = await loadAtlasGraph(options.rootPath, {
+      profile: options.profile,
+    });
     const files = generateMarkdownViews(graph, { profile: options.profile });
-    const absoluteOutputPath = path.resolve(options.rootPath, options.outputPath);
+    const absoluteOutputPath = path.resolve(
+      options.rootPath,
+      options.outputPath,
+    );
 
     await cleanGeneratedMarkdownOutput(absoluteOutputPath);
     for (const file of files) {
@@ -717,7 +977,9 @@ switch (command) {
       break;
     }
 
-    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
+    const graph = await loadAtlasGraph(options.rootPath, {
+      profile: options.profile,
+    });
     const pack = createContextPack(graph, {
       task: options.task,
       budget: options.budget,
@@ -726,10 +988,93 @@ switch (command) {
     });
 
     if (options.json) {
-      console.log(JSON.stringify({ ...pack, diagnostics: graph.diagnostics }, null, 2));
+      console.log(
+        JSON.stringify({ ...pack, diagnostics: graph.diagnostics }, null, 2),
+      );
     } else {
       console.log(renderContextPackMarkdown(pack));
     }
+    break;
+  }
+  case 'global': {
+    const globalSubcommand = args[0];
+    if (globalSubcommand === 'context-pack') {
+      const options = parseGlobalContextPackArgs(args);
+      if (!options.task) {
+        contextPackUsage();
+        process.exitCode = 1;
+        break;
+      }
+
+      const graph = await loadGlobalAtlasGraph(options.rootPath, {
+        profile: options.profile,
+      });
+      const pack = createContextPack(graph, {
+        task: options.task,
+        budget: options.budget,
+        profile: options.profile,
+        deterministic: options.deterministic,
+      });
+
+      if (options.json) {
+        console.log(
+          JSON.stringify(
+            {
+              ...pack,
+              registry: graph.registry,
+              diagnostics: graph.diagnostics,
+            },
+            null,
+            2,
+          ),
+        );
+      } else {
+        console.log(renderContextPackMarkdown(pack));
+      }
+      break;
+    }
+
+    const options = parseGlobalArgs(args);
+    if (
+      !options.subcommand ||
+      !['validate', 'list'].includes(options.subcommand)
+    ) {
+      globalUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const graph = await loadGlobalAtlasGraph(options.rootPath, {
+      profile: options.profile,
+    });
+    const errors = graph.diagnostics.filter(
+      (diagnostic) => diagnostic.level === 'error',
+    );
+
+    if (options.json) {
+      console.log(
+        JSON.stringify(
+          {
+            registry: graph.registry,
+            entityCount: graph.entities.length,
+            relationCount: graph.edges.filter(
+              (edge) => edge.provenance === 'explicit',
+            ).length,
+            diagnostics: graph.diagnostics,
+            entities:
+              options.subcommand === 'list' ? graph.entities : undefined,
+          },
+          null,
+          2,
+        ),
+      );
+    } else if (options.subcommand === 'list') {
+      printGlobalListMarkdown(graph);
+    } else {
+      printGlobalRegistryMarkdown(graph);
+    }
+
+    process.exitCode = errors.length > 0 ? 1 : 0;
     break;
   }
   default:

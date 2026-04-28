@@ -33,6 +33,25 @@ The central registry owns cross-cutting metadata:
 - global verification workflows
 - links to developer portal entities
 
+## Registry file
+
+Create `agent-atlas.registry.yaml` at the registry root:
+
+```yaml
+version: 1
+name: Company Engineering Registry
+imports:
+  - id: central
+    path: registry
+    role: registry
+  - id: release-api
+    path: repos/release-api
+    role: repository
+    repository: repository:release-api
+```
+
+The `registry` import holds central metadata. Each `repository` import points at a per-repo atlas root and can name the repository entity it belongs to.
+
 ## Example central registry entity
 
 ```yaml
@@ -63,13 +82,11 @@ Examples:
 
 ## Cross-repo context pack
 
-A future command:
-
 ```sh
 atlas global context-pack "change release video generation workflow" --budget 8000
 ```
 
-Should return:
+Returns:
 
 - relevant systems/domains
 - repositories to inspect
@@ -77,3 +94,21 @@ Should return:
 - docs/resources
 - verification commands per repo
 - ownership or contact hints if available
+
+## Company deployment pattern
+
+Keep the public framework and sanitized examples separate from real company data:
+
+- Store central registry metadata in an internal repository.
+- Keep each repo's local atlas near that repo's code.
+- Import repo atlases through `agent-atlas.registry.yaml`.
+- Put real Notion, Confluence, Google, Jira, and repository URLs in private/company overlays.
+- Run global context packs with `--profile company`.
+
+Useful checks:
+
+```sh
+atlas global validate path/to/company-registry
+atlas global list path/to/company-registry
+atlas global context-pack "change onboarding workflow" path/to/company-registry --budget 8000
+```

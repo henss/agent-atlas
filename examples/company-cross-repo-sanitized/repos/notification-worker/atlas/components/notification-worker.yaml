@@ -1,0 +1,20 @@
+id: component:notification-worker
+kind: component
+title: Notification Worker
+summary: Sends onboarding notifications from lifecycle events.
+visibility: internal
+code:
+  paths:
+    - workers/notification/**
+  entrypoints:
+    - workers/notification/src/index.ts
+relations:
+  - type: uses
+    target: interface:onboarding-events
+  - type: tested-by
+    target: test-scope:notification-worker-tests
+agent:
+  load_when:
+    - Changing onboarding notification behavior
+    - Updating event consumer logic
+  token_budget_hint: 800
