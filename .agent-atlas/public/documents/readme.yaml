@@ -1,0 +1,9 @@
+id: document:readme
+kind: document
+title: Repository README
+summary: Public overview of Agent Atlas purpose, package layout, goals, and non-goals.
+visibility: public
+uri: README.md
+relations:
+  - type: documents
+    target: domain:agent-atlas

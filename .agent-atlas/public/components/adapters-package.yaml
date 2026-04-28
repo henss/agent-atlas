@@ -1,0 +1,17 @@
+id: component:adapters-package
+kind: component
+title: Adapters Package
+summary: Defines adapter interfaces for external systems and future integration packages.
+visibility: public
+code:
+  paths:
+    - packages/adapters/**
+  entrypoints:
+    - packages/adapters/src/index.ts
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: documented-in
+    target: document:readme
+  - type: tested-by
+    target: test-scope:workspace-build-and-test

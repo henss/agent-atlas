@@ -1,0 +1,21 @@
+id: component:markdown-package
+kind: component
+title: Markdown Package
+summary: Renders generated agent-facing Markdown views from loaded atlas graphs.
+visibility: public
+code:
+  paths:
+    - packages/markdown/**
+  entrypoints:
+    - packages/markdown/src/index.ts
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: implements
+    target: workflow:generate-agent-docs
+  - type: uses
+    target: component:core-package
+  - type: documented-in
+    target: document:generated-markdown-spec
+  - type: tested-by
+    target: test-scope:workspace-build-and-test

@@ -1,0 +1,11 @@
+id: document:generated-agent-docs
+kind: document
+title: Generated Agent Docs
+summary: Generated Markdown views for agents reading this Agent Atlas repository.
+visibility: public
+uri: docs/agents/atlas.md
+relations:
+  - type: documented-in
+    target: document:generated-markdown-spec
+  - type: documents
+    target: domain:agent-atlas

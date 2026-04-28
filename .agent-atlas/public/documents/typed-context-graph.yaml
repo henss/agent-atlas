@@ -1,0 +1,9 @@
+id: document:typed-context-graph
+kind: document
+title: Typed Context Graph Concept
+summary: Conceptual guide explaining the graph abstraction and top-down and bottom-up traversal.
+visibility: public
+uri: docs/concepts/typed-context-graph.md
+relations:
+  - type: documents
+    target: workflow:navigate-atlas-graph

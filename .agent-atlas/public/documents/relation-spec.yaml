@@ -1,0 +1,11 @@
+id: document:relation-spec
+kind: document
+title: Relation Specification
+summary: Draft vocabulary and design rules for typed directional relations between atlas entities.
+visibility: public
+uri: docs/spec/relations.md
+relations:
+  - type: documents
+    target: workflow:define-atlas-model
+  - type: documents
+    target: component:schema-package

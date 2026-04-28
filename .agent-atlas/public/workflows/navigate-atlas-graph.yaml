@@ -1,0 +1,20 @@
+id: workflow:navigate-atlas-graph
+kind: workflow
+title: Navigate Atlas Graph
+summary: Loads atlas files, normalizes graph edges, traverses related entities, and resolves source paths to context.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:core-package
+  - type: uses
+    target: component:schema-package
+  - type: documented-in
+    target: document:typed-context-graph
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Changing graph loading, traversal, diagnostics, or path resolution
+  token_budget_hint: 1400

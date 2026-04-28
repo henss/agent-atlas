@@ -1,0 +1,11 @@
+id: document:cli-readme
+kind: document
+title: CLI README
+summary: Package README documenting Atlas CLI commands and output conventions.
+visibility: public
+uri: packages/cli/README.md
+relations:
+  - type: documents
+    target: component:cli-package
+  - type: documents
+    target: workflow:operate-atlas-cli

@@ -1,0 +1,9 @@
+id: document:roadmap
+kind: document
+title: Roadmap
+summary: Staged implementation plan for Agent Atlas milestones.
+visibility: public
+uri: ROADMAP.md
+relations:
+  - type: documents
+    target: domain:agent-atlas

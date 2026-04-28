@@ -1,0 +1,21 @@
+id: component:schema-package
+kind: component
+title: Schema Package
+summary: Defines atlas entity types, relation vocabulary, and JSON Schema validation assets.
+visibility: public
+code:
+  paths:
+    - packages/schema/**
+  entrypoints:
+    - packages/schema/src/index.ts
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: implements
+    target: workflow:define-atlas-model
+  - type: documented-in
+    target: document:entity-spec
+  - type: documented-in
+    target: document:relation-spec
+  - type: tested-by
+    target: test-scope:workspace-build-and-test

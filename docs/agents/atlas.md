@@ -10,36 +10,31 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 
 ## Counts
 
-- Domains: 4
+- Domains: 1
 - Workflows: 4
 - Systems: 0
-- Components: 8
-- Relations: 63
+- Components: 6
+- Relations: 102
 
 ## Domains
 
-- `domain:calendar` - Calendar: Calendar tooling for reading constraints and writing planned time blocks.
-- `domain:food` - Food Planning: Meal planning, grocery planning, pantry resources, and integrations with food tools.
-- `domain:marketing` - Marketing: Campaign copy, social posts, release announcements, and audience-facing materials.
-- `domain:music-operations` - Music Operations: Song library, release planning, creative assets, and automation around band operations.
+- `domain:agent-atlas` - Agent Atlas: Typed context graph framework for helping coding agents navigate repositories and related context.
 
 ## Major Workflows
 
-- `workflow:generate-music-video` - Generate Music Video: Produces video drafts from song metadata, templates, lyric timing, and media assets.
-- `workflow:grocery-loop` - Grocery Loop: Converts meal plans and pantry state into grocery tasks and shopping support.
-- `workflow:plan-week` - Plan Week: Produces a weekly plan from goals, calendar constraints, meal planning, and task inputs.
-- `workflow:publish-single` - Publish Single: Coordinates song metadata, video assets, release checklist, and marketing materials for a single release.
+- `workflow:define-atlas-model` - Define Atlas Model: Evolves entity fields, relation types, validation behavior, and schema documentation together.
+- `workflow:generate-agent-docs` - Generate Agent Docs: Produces compact generated Markdown views under docs/agents from canonical atlas YAML.
+- `workflow:navigate-atlas-graph` - Navigate Atlas Graph: Loads atlas files, normalizes graph edges, traverses related entities, and resolves source paths to context.
+- `workflow:operate-atlas-cli` - Operate Atlas CLI: Exposes validation, graph navigation, path resolution, and Markdown generation through concise CLI commands.
 
 ## Systems And Components
 
-- `component:google-calendar-adapter` - Google Calendar Adapter: Reads calendar events and writes planned time blocks for personal planning workflows.
-- `component:grocy-adapter` - Grocy Adapter: Reads pantry state and helps derive grocery needs.
-- `component:marketing-copy-tools` - Marketing Copy Tools: Generates release copy, social captions, and campaign variants from song and release metadata.
-- `component:mealie-adapter` - Mealie Adapter: Reads meal plans and recipe metadata for planning and grocery workflows.
-- `component:planning-output-helpers` - Planning Output Helpers: Shared formatting and serialization helpers used by weekly planning output code.
-- `component:song-library` - Song Library: Stores song metadata, lyrics references, release state, and asset links used by downstream workflows.
-- `component:video-generator` - Video Generator: Generates video drafts and final assets from templates, timing data, images, and song metadata.
-- `component:weekly-planner` - Weekly Planner: Combines goals, calendar constraints, meals, and task signals into a weekly plan.
+- `component:adapters-package` - Adapters Package: Defines adapter interfaces for external systems and future integration packages.
+- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, graph inspection, path resolution, and generated Markdown.
+- `component:core-package` - Core Package: Loads atlas YAML, validates graph structure, normalizes relations, resolves paths, and supports traversal.
+- `component:markdown-package` - Markdown Package: Renders generated agent-facing Markdown views from loaded atlas graphs.
+- `component:mcp-server-package` - MCP Server Package: Skeleton package for future MCP resources and traversal tools over atlas data.
+- `component:schema-package` - Schema Package: Defines atlas entity types, relation vocabulary, and JSON Schema validation assets.
 
 ## Path Resolution
 

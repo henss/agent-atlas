@@ -1,0 +1,17 @@
+id: component:mcp-server-package
+kind: component
+title: MCP Server Package
+summary: Skeleton package for future MCP resources and traversal tools over atlas data.
+visibility: public
+code:
+  paths:
+    - packages/mcp-server/**
+  entrypoints:
+    - packages/mcp-server/src/index.ts
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: documented-in
+    target: document:mcp-spec
+  - type: tested-by
+    target: test-scope:workspace-build-and-test

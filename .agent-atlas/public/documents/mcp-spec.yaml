@@ -1,0 +1,9 @@
+id: document:mcp-spec
+kind: document
+title: MCP Specification
+summary: Draft specification for future Atlas MCP resources and tools.
+visibility: public
+uri: docs/spec/mcp.md
+relations:
+  - type: documents
+    target: component:mcp-server-package

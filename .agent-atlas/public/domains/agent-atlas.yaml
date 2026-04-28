@@ -1,0 +1,22 @@
+id: domain:agent-atlas
+kind: domain
+title: Agent Atlas
+summary: Typed context graph framework for helping coding agents navigate repositories and related context.
+visibility: public
+relations:
+  - type: contains
+    target: component:schema-package
+  - type: contains
+    target: component:core-package
+  - type: contains
+    target: component:cli-package
+  - type: contains
+    target: component:markdown-package
+  - type: contains
+    target: component:mcp-server-package
+  - type: contains
+    target: component:adapters-package
+  - type: documented-in
+    target: document:readme
+  - type: documented-in
+    target: document:roadmap

@@ -21,6 +21,11 @@ export async function loadAtlasDocuments(rootPath: string): Promise<LoadedAtlasD
 }
 
 async function findAtlasRoots(rootPath: string): Promise<string[]> {
+  const directAtlasRoot = path.join(rootPath, '.agent-atlas');
+  if (await directoryExists(directAtlasRoot)) {
+    return [directAtlasRoot];
+  }
+
   const atlasRoots: string[] = [];
 
   async function walk(directory: string): Promise<void> {
@@ -52,6 +57,15 @@ async function findAtlasRoots(rootPath: string): Promise<string[]> {
 
   await walk(rootPath);
   return atlasRoots;
+}
+
+async function directoryExists(directory: string): Promise<boolean> {
+  try {
+    const entries = await readdir(directory, { withFileTypes: true });
+    return entries.length >= 0;
+  } catch {
+    return false;
+  }
 }
 
 async function collectYamlDocuments(

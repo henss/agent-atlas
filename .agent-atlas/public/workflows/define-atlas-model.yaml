@@ -1,0 +1,20 @@
+id: workflow:define-atlas-model
+kind: workflow
+title: Define Atlas Model
+summary: Evolves entity fields, relation types, validation behavior, and schema documentation together.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:schema-package
+  - type: documented-in
+    target: document:entity-spec
+  - type: documented-in
+    target: document:relation-spec
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Changing entity fields, relation types, or schema validation behavior
+  token_budget_hint: 1200

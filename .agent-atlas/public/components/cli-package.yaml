@@ -1,0 +1,23 @@
+id: component:cli-package
+kind: component
+title: CLI Package
+summary: Provides the atlas command-line interface for validation, graph inspection, path resolution, and generated Markdown.
+visibility: public
+code:
+  paths:
+    - packages/cli/**
+  entrypoints:
+    - packages/cli/src/index.ts
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: implements
+    target: workflow:operate-atlas-cli
+  - type: uses
+    target: component:core-package
+  - type: uses
+    target: component:markdown-package
+  - type: documented-in
+    target: document:cli-readme
+  - type: tested-by
+    target: test-scope:workspace-build-and-test

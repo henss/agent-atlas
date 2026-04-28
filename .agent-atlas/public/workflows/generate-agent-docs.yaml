@@ -1,0 +1,22 @@
+id: workflow:generate-agent-docs
+kind: workflow
+title: Generate Agent Docs
+summary: Produces compact generated Markdown views under docs/agents from canonical atlas YAML.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:markdown-package
+  - type: uses
+    target: component:cli-package
+  - type: documented-in
+    target: document:generated-markdown-spec
+  - type: writes-to
+    target: document:generated-agent-docs
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Changing generated docs, Markdown rendering, or docs/agents output
+  token_budget_hint: 1200

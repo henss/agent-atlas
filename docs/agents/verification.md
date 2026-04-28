@@ -6,70 +6,28 @@ Profile: `public`
 
 ## Test Scopes
 
-- `test-scope:calendar-tests` - Calendar Tests: Tests for calendar event reading, constraint extraction, and planned block writing.
-- `test-scope:planning-tests` - Planning Tests: Tests for weekly planning logic and plan output structure.
-- `test-scope:release-workflow-tests` - Release Workflow Tests: Tests release workflow orchestration and required asset/copy generation behavior.
-- `test-scope:song-library-tests` - Song Library Tests: Tests song metadata parsing, validation, and lookup behavior.
-- `test-scope:video-generation-tests` - Video Generation Tests: Tests video rendering pipeline configuration and template resolution.
+- `test-scope:workspace-build-and-test` - Workspace Build And Test: Whole-workspace TypeScript build and test commands for validating Agent Atlas changes.
 
-## Calendar Tests
+## Workspace Build And Test
 
-ID: `test-scope:calendar-tests`
+ID: `test-scope:workspace-build-and-test`
 
-Tests for calendar event reading, constraint extraction, and planned block writing.
+Whole-workspace TypeScript build and test commands for validating Agent Atlas changes.
 
-- command: `pnpm --filter @personal-ops/calendar test`
-  purpose: Verify calendar adapter behavior.
+- command: `pnpm -r build`
+  purpose: Compile all workspace packages.
 
-Verifies:
-- `component:google-calendar-adapter`
-
-## Planning Tests
-
-ID: `test-scope:planning-tests`
-
-Tests for weekly planning logic and plan output structure.
-
-- command: `pnpm --filter @personal-ops/planning test`
-  purpose: Verify weekly planning behavior.
+- command: `pnpm -r test`
+  purpose: Run package test suites.
 
 Verifies:
-- `component:planning-output-helpers`
-- `component:weekly-planner`
-- `workflow:plan-week`
-
-## Release Workflow Tests
-
-ID: `test-scope:release-workflow-tests`
-
-Tests release workflow orchestration and required asset/copy generation behavior.
-
-- command: `pnpm --filter @band-ops/release test`
-  purpose: Verify release orchestration.
-
-Verifies:
-- `workflow:publish-single`
-
-## Song Library Tests
-
-ID: `test-scope:song-library-tests`
-
-Tests song metadata parsing, validation, and lookup behavior.
-
-- command: `pnpm --filter @band-ops/song-library test`
-  purpose: Verify song library behavior.
-
-Verifies:
-- `component:song-library`
-
-## Video Generation Tests
-
-ID: `test-scope:video-generation-tests`
-
-Tests video rendering pipeline configuration and template resolution.
-
-- command: `pnpm --filter @band-ops/video-generator test`
-  purpose: Verify video generation behavior.
-
-Verifies:
-- `component:video-generator`
+- `component:adapters-package`
+- `component:cli-package`
+- `component:core-package`
+- `component:markdown-package`
+- `component:mcp-server-package`
+- `component:schema-package`
+- `workflow:define-atlas-model`
+- `workflow:generate-agent-docs`
+- `workflow:navigate-atlas-graph`
+- `workflow:operate-atlas-cli`

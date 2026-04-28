@@ -1,0 +1,25 @@
+id: test-scope:workspace-build-and-test
+kind: test-scope
+title: Workspace Build And Test
+summary: Whole-workspace TypeScript build and test commands for validating Agent Atlas changes.
+visibility: public
+commands:
+  - command: pnpm -r build
+    cwd: .
+    purpose: Compile all workspace packages.
+  - command: pnpm -r test
+    cwd: .
+    purpose: Run package test suites.
+relations:
+  - type: verifies
+    target: component:schema-package
+  - type: verifies
+    target: component:core-package
+  - type: verifies
+    target: component:cli-package
+  - type: verifies
+    target: component:markdown-package
+  - type: verifies
+    target: component:mcp-server-package
+  - type: verifies
+    target: component:adapters-package
