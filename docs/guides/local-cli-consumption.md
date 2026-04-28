@@ -22,6 +22,8 @@ node ../agent-atlas/packages/cli/dist/index.js show component:example --path .
 node ../agent-atlas/packages/cli/dist/index.js neighbors component:example --path . --depth 2
 node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile private
 node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000 --profile private
+node ../agent-atlas/packages/cli/dist/index.js usage-note "change packages/core/src/example.ts" --path . --command context-pack --entity component:example --file packages/core/src/example.ts
+node ../agent-atlas/packages/cli/dist/index.js evaluate --path .
 node ../agent-atlas/packages/cli/dist/index.js migrate --path . --to 1
 node ../agent-atlas/packages/cli/dist/index.js benchmark --path . --iterations 3
 node ../agent-atlas/packages/cli/dist/index.js global validate --path .
@@ -37,8 +39,9 @@ All atlas-loading commands accept one positional root path or `--path <root>`. D
 
 Use one built Agent Atlas sibling checkout as the unit of compatibility:
 
-- Workspace package version: `0.11.0`.
+- Workspace package version: `0.12.0`.
 - Entity schema version: `schema_version: 1`.
+- Usage receipt version: `version: 1`.
 - Registry config version: `version: 1`.
 - CLI, generated Markdown, registry commands, schema validation, and MCP server should come from the same checkout.
 - Run `node ../agent-atlas/packages/cli/dist/index.js doctor --path .` when wiring a repo into scripts or CI.
@@ -50,6 +53,8 @@ Use one built Agent Atlas sibling checkout as the unit of compatibility:
 - Run `doctor --path .` when a downstream script, MCP config, or CI job fails unexpectedly.
 - Run `generate markdown` when a repo publishes `docs/agents/*`.
 - Use `context-pack` for broad or multi-seam tasks.
+- Use `usage-note` after representative tasks during adoption pilots.
+- Use `evaluate` to compare receipts against deterministic context-pack output.
 - Use the read-only MCP server when the agent host can consume MCP.
 - Run `migrate . --to 1` before schema-version cleanup; add `--write` only in an explicit migration task.
 - Use `global validate` and `global context-pack` from a central registry when a task spans repositories.

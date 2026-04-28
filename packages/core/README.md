@@ -17,8 +17,9 @@ Implemented responsibilities:
 - plan and write schema-version migrations
 - run lightweight load benchmarks
 - diagnose sibling-checkout setup with doctor checks
+- write local usage receipts and evaluate context-pack recall
 - emit validation, orphan, and cycle diagnostics
 
 Keep this package UI-free and vendor-neutral.
 
-Roadmap work after M11 should keep shared behavior here when it is not UI-specific, especially diagnostics, boundary checks, registry checks, generated-doc checks, and authoring analysis.
+Roadmap work after M12 should keep shared behavior here when it is not UI-specific, especially diagnostics, boundary checks, registry checks, generated-doc checks, and authoring analysis.

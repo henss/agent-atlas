@@ -6,6 +6,7 @@ import {
   benchmarkAtlas,
   createContextPack,
   doctorAtlas,
+  evaluateUsageEvidence,
   findNeighbors,
   loadGlobalAtlasGraph,
   loadAtlasGraph,
@@ -14,6 +15,7 @@ import {
   renderContextPackMarkdown,
   resolvePathInGraph,
   validateAtlas,
+  writeUsageNote,
 } from '@agent-atlas/core';
 import { generateMarkdownViews } from '@agent-atlas/markdown';
 import type {
@@ -27,6 +29,8 @@ import type {
   PathResolutionResult,
   NeighborResult,
   AtlasDoctorResult,
+  UsageEvidenceEvaluation,
+  WriteUsageNoteResult,
 } from '@agent-atlas/core';
 import type {
   AtlasEntity,
@@ -60,6 +64,8 @@ Implemented commands:
 - atlas migrate [path] --to 1 [--write]
 - atlas benchmark [path]
 - atlas doctor [path]
+- atlas usage-note "<task>" --command <command>
+- atlas evaluate [path]
 - atlas global validate [path]
 - atlas global list [path]
 - atlas global context-pack "<task>" --budget 8000
@@ -204,6 +210,30 @@ interface BenchmarkArgs {
 interface DoctorArgs {
   rootPath: string;
   profile: AtlasProfile;
+  json: boolean;
+}
+
+interface UsageNoteArgs {
+  task?: string;
+  rootPath: string;
+  profile: AtlasProfile;
+  command: string;
+  selectedEntities: AtlasEntityId[];
+  selectedFiles: string[];
+  selectedTests: string[];
+  broadSearchFallback: boolean;
+  missingCards: string[];
+  misleadingCards: string[];
+  outcome?: string;
+  outputPath?: string;
+  json: boolean;
+}
+
+interface EvaluateArgs {
+  rootPath: string;
+  profile: AtlasProfile;
+  receiptsPath?: string;
+  budget: number;
   json: boolean;
 }
 
@@ -698,6 +728,174 @@ function parseDoctorArgs(args: string[]): DoctorArgs {
   return { rootPath, profile, json };
 }
 
+function parseUsageNoteArgs(args: string[]): UsageNoteArgs {
+  let task: string | undefined;
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
+  let commandName = 'context-pack';
+  let json = false;
+  let outputPath: string | undefined;
+  let outcome: string | undefined;
+  let broadSearchFallback = false;
+  let rootPathWasSet = false;
+  const selectedEntities: AtlasEntityId[] = [];
+  const selectedFiles: string[] = [];
+  const selectedTests: string[] = [];
+  const missingCards: string[] = [];
+  const misleadingCards: string[] = [];
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--broad-search-fallback') {
+      broadSearchFallback = true;
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--command') {
+      commandName = readOptionValue(args, index, '--command');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--entity') {
+      selectedEntities.push(readOptionValue(args, index, '--entity') as AtlasEntityId);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--file') {
+      selectedFiles.push(readOptionValue(args, index, '--file'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--test') {
+      selectedTests.push(readOptionValue(args, index, '--test'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--missing-card') {
+      missingCards.push(readOptionValue(args, index, '--missing-card'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--misleading-card') {
+      misleadingCards.push(readOptionValue(args, index, '--misleading-card'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--out') {
+      outputPath = readOptionValue(args, index, '--out');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--outcome') {
+      outcome = readOptionValue(args, index, '--outcome');
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    if (!task) {
+      task = arg;
+      continue;
+    }
+
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return {
+    task,
+    rootPath,
+    profile,
+    command: commandName,
+    selectedEntities,
+    selectedFiles,
+    selectedTests,
+    broadSearchFallback,
+    missingCards,
+    misleadingCards,
+    outcome,
+    outputPath,
+    json,
+  };
+}
+
+function parseEvaluateArgs(args: string[]): EvaluateArgs {
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
+  let json = false;
+  let receiptsPath: string | undefined;
+  let budget = 4000;
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--receipts') {
+      receiptsPath = readOptionValue(args, index, '--receipts');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--budget') {
+      budget = parsePositiveInteger(readOptionValue(args, index, '--budget'), budget);
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return { rootPath, profile, receiptsPath, budget, json };
+}
+
 function printValidationMarkdown(result: AtlasValidationResult): void {
   const errors = result.diagnostics.filter(
     (diagnostic) => diagnostic.level === 'error',
@@ -907,6 +1105,59 @@ Commands: ${result.commands.map((commandName) => `\`${commandName}\``).join(', '
   }
 }
 
+function printUsageNoteMarkdown(result: WriteUsageNoteResult): void {
+  console.log(`# Atlas usage note
+
+Status: written
+Path: \`${result.path}\`
+Task: ${result.note.task}
+Command: \`${result.note.command}\`
+Profile: \`${result.note.profile}\`
+
+Entities: ${result.note.selected_entities.length}
+Files: ${result.note.selected_files.length}
+Tests: ${result.note.selected_tests.length}
+Broad search fallback: ${result.note.broad_search_fallback ? 'yes' : 'no'}
+Missing cards: ${result.note.missing_cards.length}
+Misleading cards: ${result.note.misleading_cards.length}`);
+}
+
+function printUsageEvidenceMarkdown(result: UsageEvidenceEvaluation): void {
+  console.log(`# Atlas usage evidence
+
+Status: ${result.receiptCount > 0 ? 'evaluated' : 'no receipts'}
+Root: \`${result.rootPath}\`
+Receipts: \`${result.receiptsPath}\`
+Profile: \`${result.profile}\`
+
+Receipt count: ${result.receiptCount}
+Broad-search fallbacks: ${result.broadSearchFallbacks}
+Missing-card mentions: ${result.missingCardMentions}
+Misleading-card mentions: ${result.misleadingCardMentions}
+
+## Recall
+
+| Category | Average |
+|---|---:|
+| entities | ${formatOptionalScore(result.averages.entityRecall)} |
+| files | ${formatOptionalScore(result.averages.fileRecall)} |
+| tests | ${formatOptionalScore(result.averages.testRecall)} |`);
+
+  if (result.receipts.length > 0) {
+    console.log('\n## Receipts\n');
+    for (const receipt of result.receipts) {
+      console.log(
+        `- \`${receipt.task}\`: entities ${formatOptionalScore(receipt.entityRecall)}, files ${formatOptionalScore(receipt.fileRecall)}, tests ${formatOptionalScore(receipt.testRecall)}`,
+      );
+    }
+  }
+
+  console.log('\n## Notes\n');
+  for (const note of result.notes) {
+    console.log(`- ${note}`);
+  }
+}
+
 function printGlobalRegistryMarkdown(
   graph: AtlasGraph & {
     registry: {
@@ -1087,6 +1338,18 @@ function doctorUsage(): void {
   );
 }
 
+function usageNoteUsage(): void {
+  console.error(
+    'Usage: atlas usage-note "<task>" [--path <root>] [--command name] [--entity id] [--file path] [--test command] [--broad-search-fallback] [--missing-card text] [--misleading-card text] [--out file] [--json]',
+  );
+}
+
+function evaluateUsage(): void {
+  console.error(
+    'Usage: atlas evaluate [path] [--path <root>] [--receipts .agent-atlas/usage] [--budget tokens] [--profile public|private|company] [--json]',
+  );
+}
+
 function globalUsage(): void {
   console.error(
     'Usage: atlas global validate|list|context-pack [path] [--path <registry-root>] [--profile public|private|company] [--json]',
@@ -1118,6 +1381,10 @@ function isAtlasRelationType(value: string): value is AtlasRelationType {
 
 function formatProvenance(edge: AtlasGraphEdge): string {
   return edge.provenance === 'generated' ? '(generated)' : '(explicit)';
+}
+
+function formatOptionalScore(value: number | null): string {
+  return value === null ? 'n/a' : value.toFixed(3);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -1388,6 +1655,51 @@ switch (command) {
     }
 
     process.exitCode = result.status === 'failed' ? 1 : 0;
+    break;
+  }
+  case 'usage-note': {
+    const options = parseUsageNoteArgs(args);
+    if (!options.task) {
+      usageNoteUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const result = await writeUsageNote({
+      rootPath: options.rootPath,
+      task: options.task,
+      command: options.command,
+      profile: options.profile,
+      selectedEntities: options.selectedEntities,
+      selectedFiles: options.selectedFiles,
+      selectedTests: options.selectedTests,
+      broadSearchFallback: options.broadSearchFallback,
+      missingCards: options.missingCards,
+      misleadingCards: options.misleadingCards,
+      outcome: options.outcome,
+      outputPath: options.outputPath,
+    });
+
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printUsageNoteMarkdown(result);
+    }
+    break;
+  }
+  case 'evaluate': {
+    const options = parseEvaluateArgs(args);
+    const result = await evaluateUsageEvidence(options.rootPath, {
+      profile: options.profile,
+      receiptsPath: options.receiptsPath,
+      budget: options.budget,
+    });
+
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printUsageEvidenceMarkdown(result);
+    }
     break;
   }
   case 'global': {

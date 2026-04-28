@@ -6,7 +6,7 @@ ID: `component:core-package`
 Kind: `component`
 Profile: `public`
 
-Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, merges cross-repo registries, runs migrations, and benchmarks load performance.
+Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, merges cross-repo registries, runs migrations, benchmarks load performance, and evaluates local usage evidence.
 
 ## Metadata
 
@@ -24,6 +24,7 @@ Loads atlas YAML, applies selected overlays, validates graph structure, normaliz
 - `document:context-pack-spec` _(generated)_
 - `document:overlay-spec` _(generated)_
 - `document:registry-spec`
+- `document:usage-evidence-spec`
 - `document:validation-spec`
 - `document:versioning-spec`
 

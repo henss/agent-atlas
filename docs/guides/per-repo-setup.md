@@ -46,6 +46,8 @@ node ../agent-atlas/packages/cli/dist/index.js validate .
 node ../agent-atlas/packages/cli/dist/index.js doctor --path .
 node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts --path .
 node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000
+node ../agent-atlas/packages/cli/dist/index.js usage-note "change packages/core/src/example.ts" --path . --command context-pack --entity component:example --file packages/core/src/example.ts
+node ../agent-atlas/packages/cli/dist/index.js evaluate --path .
 node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile private
 ```
 
@@ -62,6 +64,7 @@ Before broad search, use the atlas:
 - Check setup: `node ../agent-atlas/packages/cli/dist/index.js doctor --path .`
 - Resolve a file: `node ../agent-atlas/packages/cli/dist/index.js resolve-path <path> --path .`
 - Generate task context: `node ../agent-atlas/packages/cli/dist/index.js context-pack "<task>" --path . --budget 4000`
+- Record adoption evidence: `node ../agent-atlas/packages/cli/dist/index.js usage-note "<task>" --path . --command context-pack`
 ```
 
 ## Add CI
@@ -85,3 +88,5 @@ Copy-paste script starters live under `templates/scripts/`:
 - `central-registry-repo.sh`: global registry validation, listing, and context-pack smoke test
 
 Each template uses `ATLAS_CHECKOUT=../agent-atlas` by default and can be adapted to the downstream repo layout.
+
+Use `docs/guides/rollout-evidence.md` when deciding whether a repo should move from guidance-only to pilot or active Atlas adoption.

@@ -1,0 +1,13 @@
+id: document:rollout-evidence-guide
+kind: document
+title: Rollout Evidence Guide
+summary: Guide for moving repos from guidance-only to pilot to active Atlas adoption using local usage receipts and evaluation metrics.
+visibility: public
+uri: docs/guides/rollout-evidence.md
+relations:
+  - type: documents
+    target: component:cli-package
+  - type: documents
+    target: document:usage-evidence-spec
+  - type: part-of
+    target: domain:agent-atlas

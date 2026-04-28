@@ -1,7 +1,7 @@
 id: component:core-package
 kind: component
 title: Core Package
-summary: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, merges cross-repo registries, runs migrations, and benchmarks load performance.
+summary: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, merges cross-repo registries, runs migrations, benchmarks load performance, and evaluates local usage evidence.
 visibility: public
 code:
   paths:
@@ -21,6 +21,8 @@ relations:
     target: document:registry-spec
   - type: documented-in
     target: document:versioning-spec
+  - type: documented-in
+    target: document:usage-evidence-spec
   - type: documented-in
     target: document:validation-spec
   - type: uses

@@ -9,3 +9,4 @@ node "$ATLAS_CLI" doctor --path . --profile company
 node "$ATLAS_CLI" global validate --path . --profile company
 node "$ATLAS_CLI" global list --path . --profile company
 node "$ATLAS_CLI" global context-pack "${1:-change across registered repos}" --path . --budget "${ATLAS_BUDGET:-8000}" --profile company
+node "$ATLAS_CLI" evaluate --path . --profile company

@@ -27,6 +27,8 @@ Typed context graph framework for helping coding agents navigate repositories an
 - `document:ci-template` _(generated)_
 - `document:contributor-examples` _(generated)_
 - `document:registry-spec` _(generated)_
+- `document:rollout-evidence-guide` _(generated)_
+- `document:usage-evidence-spec` _(generated)_
 - `document:validation-spec` _(generated)_
 - `document:versioning-spec` _(generated)_
 - `workflow:create-context-pack` _(generated)_

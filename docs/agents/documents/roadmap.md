@@ -6,7 +6,7 @@ ID: `document:roadmap`
 Kind: `document`
 Profile: `public`
 
-Roadmap showing completed M0-M11 implementation milestones and active M12-M16 adoption, boundary, authoring, registry, and MCP hardening work.
+Roadmap showing completed M0-M12 implementation milestones and active M13-M16 boundary, authoring, registry, and MCP hardening work.
 
 ## Metadata
 

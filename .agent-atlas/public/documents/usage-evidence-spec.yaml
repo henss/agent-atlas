@@ -1,0 +1,13 @@
+id: document:usage-evidence-spec
+kind: document
+title: Usage Evidence Specification
+summary: Specification for local usage receipts, context-pack recall evaluation, rollout metrics, and privacy boundaries.
+visibility: public
+uri: docs/spec/usage-evidence.md
+relations:
+  - type: documents
+    target: component:core-package
+  - type: documents
+    target: component:cli-package
+  - type: part-of
+    target: domain:agent-atlas

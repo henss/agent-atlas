@@ -2,7 +2,7 @@
 
 This roadmap is intentionally staged. Building everything at once is how frameworks become haunted furniture.
 
-Status: M0-M11 are complete. M12-M16 are the next adoption evidence, boundary safety, authoring, registry, and MCP hardening milestones.
+Status: M0-M12 are complete. M13-M16 are the next boundary safety, authoring, registry, and MCP hardening milestones.
 
 ## M0: Foundations
 
@@ -142,11 +142,11 @@ Goal: make Atlas boring to invoke from downstream repos and agent runtimes.
 
 Goal: prove Atlas reduces agent search cost before broadening metadata.
 
-- [ ] Add a local `atlas usage-note` or session receipt format for task label, command used, selected entities, selected files/tests, broad-search fallback, and missing or misleading cards.
-- [ ] Add an evaluator that compares context packs against known task packets or completed sessions from downstream control-plane usage.
-- [ ] Document success metrics for fewer broad searches, fewer irrelevant reads, better first-pass test selection, and less repeated orientation.
-- [ ] Add a rollout evidence guide for moving repos from `guidance-only` to `pilot` to `active`.
-- [ ] Keep usage evidence local and downstream-owned; do not add hosted telemetry or phone-home behavior.
+- [x] Add a local `atlas usage-note` or session receipt format for task label, command used, selected entities, selected files/tests, broad-search fallback, and missing or misleading cards.
+- [x] Add an evaluator that compares context packs against known task packets or completed sessions from downstream control-plane usage.
+- [x] Document success metrics for fewer broad searches, fewer irrelevant reads, better first-pass test selection, and less repeated orientation.
+- [x] Add a rollout evidence guide for moving repos from `guidance-only` to `pilot` to `active`.
+- [x] Keep usage evidence local and downstream-owned; do not add hosted telemetry or phone-home behavior.
 
 ## M13: Boundary safety and policy integration
 

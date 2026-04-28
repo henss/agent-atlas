@@ -88,6 +88,42 @@ Status: passed
       ),
     });
   });
+
+  it('writes usage notes and evaluates local evidence', async () => {
+    const root = await makeAtlasFixture();
+
+    const usageNote = await execFileAsync('node', [
+      CLI_PATH,
+      'usage-note',
+      'Change component:example',
+      '--path',
+      root,
+      '--command',
+      'context-pack',
+      '--entity',
+      'component:example',
+      '--file',
+      'packages/example.ts',
+      '--test',
+      'pnpm test',
+      '--missing-card',
+      'add component details',
+    ]);
+
+    expect(usageNote.stdout).toContain('# Atlas usage note');
+    expect(usageNote.stdout).toContain('Status: written');
+
+    const evaluation = await execFileAsync('node', [
+      CLI_PATH,
+      'evaluate',
+      '--path',
+      root,
+    ]);
+
+    expect(evaluation.stdout).toContain('# Atlas usage evidence');
+    expect(evaluation.stdout).toContain('Receipt count: 1');
+    expect(evaluation.stdout).toContain('Missing-card mentions: 1');
+  });
 });
 
 async function makeAtlasFixture(
