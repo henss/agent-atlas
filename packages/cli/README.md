@@ -88,6 +88,22 @@ atlas resolve-path packages/planning/src/shared/format.ts examples/personal-ops-
 
 Use `--depth N` to control related-context traversal depth, or `--json` for machine-readable output.
 
+## `atlas context-pack "<task>" [path]`
+
+Generates a deterministic, token-budgeted context bundle for a coding task.
+
+```sh
+atlas context-pack "change CLI path resolution in packages/cli/src/index.ts" --budget 1200
+```
+
+The pack selects entities from task text, entity IDs, mentioned paths, and graph neighborhood. Markdown output includes relevant entities with provenance, recommended local reads, external references, verification commands, and risk notes.
+
+Use profile and JSON flags when needed:
+
+```sh
+atlas context-pack "generate agent docs" --profile public --json
+```
+
 ## Local checkout use before publishing
 
 Until packages are published, portfolio repos should build the CLI in a sibling `agent-atlas` checkout and call the built entrypoint directly:
@@ -96,9 +112,10 @@ Until packages are published, portfolio repos should build the CLI in a sibling 
 pnpm --dir ../agent-atlas --filter @agent-atlas/cli build
 node ../agent-atlas/packages/cli/dist/index.js validate .
 node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts .
+node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" .
 ```
 
-Keep first-rollout adoption to M1-M3 commands: `validate`, `show`, `neighbors`, and `resolve-path`.
+Keep first-rollout adoption to implemented local graph commands: `validate`, `show`, `neighbors`, `resolve-path`, `context-pack`, and `generate markdown`.
 
 ## `atlas generate markdown [path]`
 

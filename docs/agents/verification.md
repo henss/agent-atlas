@@ -27,6 +27,7 @@ Verifies:
 - `component:markdown-package`
 - `component:mcp-server-package`
 - `component:schema-package`
+- `workflow:create-context-pack`
 - `workflow:define-atlas-model`
 - `workflow:generate-agent-docs`
 - `workflow:navigate-atlas-graph`

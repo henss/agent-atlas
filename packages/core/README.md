@@ -11,11 +11,11 @@ Implemented responsibilities:
 - build incoming/outgoing graph indexes
 - traverse graph neighbors with depth and relation filters
 - resolve source paths to owning components and related context
+- create deterministic task-specific context packs
 - emit validation, orphan, and cycle diagnostics
 
 Planned responsibilities:
 
 - apply overlays
-- create context packs
 
 Keep this package UI-free and vendor-neutral.

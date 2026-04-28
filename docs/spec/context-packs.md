@@ -16,6 +16,14 @@ It should answer:
 atlas context-pack "change weekly planning to avoid evening blocks" --budget 4000
 ```
 
+Supported flags:
+
+- `--path <root>`: load atlas files from a repository root.
+- `--budget <tokens>`: set the approximate output budget.
+- `--profile public|private|company`: choose visibility filtering.
+- `--deterministic`: request deterministic selection. Current output is deterministic by default.
+- `--json`: emit machine-readable output.
+
 ## Output shape
 
 Markdown by default:
@@ -63,18 +71,20 @@ pnpm --filter @example/calendar test
 Initial implementation can be simple:
 
 1. Extract terms from task.
-2. Match terms against entity IDs, titles, aliases, summaries, and tags.
-3. Add direct neighbors of matched entities.
-4. Add owning domains/workflows/components.
-5. Add tests and verification scopes.
-6. Rank items by direct match, relation type, and agent hints.
-7. Fit within budget using summaries first and source references second.
+2. Match terms against entity IDs, kinds, titles, aliases, summaries, tags, and code paths.
+3. Resolve any paths mentioned in the task through `code.paths` and `code.entrypoints`.
+4. Add graph neighborhood for matched entities.
+5. Add related docs, tests, and verification scopes.
+6. Rank items by direct match, path ownership, relation type, and deterministic tie-breakers.
+7. Fit within budget using one-line entity summaries and references instead of copied content.
 
 Future versions may use embeddings or external retrieval, but deterministic graph traversal should remain the primary path.
 
 ## Budget behavior
 
 The budget is an approximate token budget, not a promise of exact tokenizer behavior.
+
+The current implementation estimates tokens from character counts so output remains dependency-free and deterministic.
 
 Use priorities:
 

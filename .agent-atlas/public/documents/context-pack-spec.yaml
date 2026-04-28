@@ -1,0 +1,13 @@
+id: document:context-pack-spec
+kind: document
+title: Context Pack Spec
+summary: Specification for task-specific, token-budgeted context bundles.
+visibility: public
+uri: docs/spec/context-packs.md
+relations:
+  - type: documents
+    target: workflow:create-context-pack
+  - type: documents
+    target: component:core-package
+  - type: documents
+    target: component:cli-package

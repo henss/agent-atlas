@@ -2,7 +2,14 @@
 
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { findNeighbors, loadAtlasGraph, resolvePathInGraph, validateAtlas } from '@agent-atlas/core';
+import {
+  createContextPack,
+  findNeighbors,
+  loadAtlasGraph,
+  renderContextPackMarkdown,
+  resolvePathInGraph,
+  validateAtlas,
+} from '@agent-atlas/core';
 import { generateMarkdownViews } from '@agent-atlas/markdown';
 import type { MarkdownProfile } from '@agent-atlas/markdown';
 import type {
@@ -10,6 +17,7 @@ import type {
   AtlasGraph,
   AtlasGraphEdge,
   AtlasValidationResult,
+  ContextPackRequest,
   PathContextMatch,
   PathOwnerMatch,
   PathResolutionResult,
@@ -79,6 +87,15 @@ interface GenerateMarkdownArgs {
   rootPath: string;
   outputPath: string;
   profile: MarkdownProfile;
+  json: boolean;
+}
+
+interface ContextPackArgs {
+  task?: string;
+  rootPath: string;
+  budget: number;
+  profile: ContextPackRequest['profile'];
+  deterministic: boolean;
   json: boolean;
 }
 
@@ -241,6 +258,56 @@ function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
   }
 
   return { rootPath, outputPath, profile, json };
+}
+
+function parseContextPackArgs(args: string[]): ContextPackArgs {
+  let task: string | undefined;
+  let rootPath = process.cwd();
+  let budget = 4000;
+  let profile: ContextPackRequest['profile'] = 'public';
+  let deterministic = false;
+  let json = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--deterministic') {
+      deterministic = true;
+      continue;
+    }
+
+    if (arg === '--path') {
+      rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--budget') {
+      budget = parsePositiveInteger(args[index + 1], budget);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseContextPackProfile(args[index + 1] ?? profile);
+      index += 1;
+      continue;
+    }
+
+    if (!task) {
+      task = arg;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return { task, rootPath, budget, profile, deterministic, json };
 }
 
 function printValidationMarkdown(result: AtlasValidationResult): void {
@@ -412,6 +479,12 @@ function generateMarkdownUsage(): void {
   );
 }
 
+function contextPackUsage(): void {
+  console.error(
+    'Usage: atlas context-pack "<task>" [path] [--path <root>] [--budget tokens] [--profile public|private|company] [--deterministic] [--json]',
+  );
+}
+
 function parsePositiveInteger(value: string | undefined, fallback: number): number {
   if (!value) {
     return fallback;
@@ -433,6 +506,10 @@ function isAtlasRelationType(value: string): value is AtlasRelationType {
 }
 
 function parseMarkdownProfile(value: string): MarkdownProfile {
+  return value === 'private' || value === 'company' ? value : 'public';
+}
+
+function parseContextPackProfile(value: string): ContextPackRequest['profile'] {
   return value === 'private' || value === 'company' ? value : 'public';
 }
 
@@ -595,6 +672,29 @@ switch (command) {
       console.log(JSON.stringify(result, null, 2));
     } else {
       printGenerateMarkdownResult(result);
+    }
+    break;
+  }
+  case 'context-pack': {
+    const options = parseContextPackArgs(args);
+    if (!options.task) {
+      contextPackUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const graph = await loadAtlasGraph(options.rootPath);
+    const pack = createContextPack(graph, {
+      task: options.task,
+      budget: options.budget,
+      profile: options.profile,
+      deterministic: options.deterministic,
+    });
+
+    if (options.json) {
+      console.log(JSON.stringify({ ...pack, diagnostics: graph.diagnostics }, null, 2));
+    } else {
+      console.log(renderContextPackMarkdown(pack));
     }
     break;
   }

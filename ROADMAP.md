@@ -62,12 +62,12 @@ Goal: create lightweight docs that agents and contributors can read.
 
 Goal: generate token-budgeted context bundles for coding agents.
 
-- [ ] Implement `atlas context-pack "<task>" --budget <tokens>`.
-- [ ] Select entities by ID, text match, path, and graph neighborhood.
-- [ ] Include recommended reads and verification commands.
-- [ ] Include external resources as references, not copied content.
-- [ ] Add provenance for each included item.
-- [ ] Add deterministic output mode.
+- [x] Implement `atlas context-pack "<task>" --budget <tokens>`.
+- [x] Select entities by ID, text match, path, and graph neighborhood.
+- [x] Include recommended reads and verification commands.
+- [x] Include external resources as references, not copied content.
+- [x] Add provenance for each included item.
+- [x] Add deterministic output mode.
 
 ## M6: Overlays
 

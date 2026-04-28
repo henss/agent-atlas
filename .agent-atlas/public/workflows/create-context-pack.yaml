@@ -1,0 +1,23 @@
+id: workflow:create-context-pack
+kind: workflow
+title: Create Context Pack
+summary: Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:core-package
+  - type: uses
+    target: component:cli-package
+  - type: documented-in
+    target: document:context-pack-spec
+  - type: documented-in
+    target: document:cli-readme
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Generating or changing context pack behavior
+    - Adding task-specific context selection logic
+  token_budget_hint: 1600

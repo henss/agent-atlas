@@ -1,7 +1,7 @@
 id: component:core-package
 kind: component
 title: Core Package
-summary: Loads atlas YAML, validates graph structure, normalizes relations, resolves paths, and supports traversal.
+summary: Loads atlas YAML, validates graph structure, normalizes relations, resolves paths, supports traversal, and creates context packs.
 visibility: public
 code:
   paths:
@@ -13,6 +13,8 @@ relations:
     target: domain:agent-atlas
   - type: implements
     target: workflow:navigate-atlas-graph
+  - type: implements
+    target: workflow:create-context-pack
   - type: uses
     target: component:schema-package
   - type: tested-by

@@ -6,7 +6,7 @@ ID: `component:cli-package`
 Kind: `component`
 Profile: `public`
 
-Provides the atlas command-line interface for validation, graph inspection, path resolution, and generated Markdown.
+Provides the atlas command-line interface for validation, graph inspection, path resolution, context packs, and generated Markdown.
 
 ## Metadata
 
@@ -22,9 +22,11 @@ Provides the atlas command-line interface for validation, graph inspection, path
 ### `documented-in`
 
 - `document:cli-readme`
+- `document:context-pack-spec` _(generated)_
 
 ### `implements`
 
+- `workflow:create-context-pack`
 - `workflow:operate-atlas-cli`
 
 ### `part-of`
@@ -37,6 +39,7 @@ Provides the atlas command-line interface for validation, graph inspection, path
 
 ### `used-by`
 
+- `workflow:create-context-pack` _(generated)_
 - `workflow:generate-agent-docs` _(generated)_
 - `workflow:operate-atlas-cli` _(generated)_
 
