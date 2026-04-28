@@ -6,7 +6,7 @@ ID: `component:mcp-server-package`
 Kind: `component`
 Profile: `public`
 
-Read-only MCP server exposing atlas resources and traversal tools over stdio.
+Read-only MCP server exposing atlas resources and traversal tools over stdio, with smoke tests, clearer input errors, and read-only assertions.
 
 ## Metadata
 
@@ -21,6 +21,7 @@ Read-only MCP server exposing atlas resources and traversal tools over stdio.
 
 ### `documented-in`
 
+- `document:mcp-deployment-guide`
 - `document:mcp-spec`
 
 ### `implements`

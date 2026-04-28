@@ -2,7 +2,11 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { createAtlasMcpHandlers, createAtlasMcpServer } from './index.js';
+import {
+  createAtlasMcpHandlers,
+  createAtlasMcpServer,
+  runAtlasMcpSmokeTest,
+} from './index.js';
 
 describe('Agent Atlas MCP handlers', () => {
   it('lists and describes entities from the selected profile', async () => {
@@ -37,6 +41,23 @@ describe('Agent Atlas MCP handlers', () => {
     });
     expect(pack).toContain('# Context pack');
     expect(pack).toContain('packages/cli/src/index.ts');
+  });
+
+  it('returns concise errors for invalid MCP inputs', async () => {
+    const handlers = createAtlasMcpHandlers({
+      atlasRoot: path.resolve('../..'),
+      profile: 'public',
+    });
+
+    await expect(
+      handlers.listEntities({ profile: 'bad-profile' as never }),
+    ).rejects.toThrow('Invalid MCP profile');
+
+    const pathResult = await handlers.resolvePath({ path: '' });
+    expect(pathResult).toContain('# MCP error: Invalid path');
+
+    const pack = await handlers.contextPack({ task: '' });
+    expect(pack).toContain('# MCP error: Invalid task');
   });
 
   it('reads atlas resource URIs', async () => {
@@ -92,5 +113,21 @@ describe('Agent Atlas MCP handlers', () => {
     }
 
     expect(server.isConnected()).toBe(false);
+  });
+
+  it('smoke-tests resolve_path, context_pack, and read-only behavior', async () => {
+    const result = await runAtlasMcpSmokeTest({
+      atlasRoot: path.resolve('../..'),
+      profile: 'public',
+      pathToResolve: 'packages/cli/src/index.ts',
+      task: 'change packages/cli/src/index.ts',
+      budget: 1200,
+    });
+
+    expect(result.status).toBe('passed');
+    expect(result.resolvePathOk).toBe(true);
+    expect(result.contextPackOk).toBe(true);
+    expect(result.readOnlyOk).toBe(true);
+    expect(result.changedFiles).toEqual([]);
   });
 });

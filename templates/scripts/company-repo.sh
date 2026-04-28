@@ -12,4 +12,5 @@ node "$ATLAS_CLI" boundary-check --path . --profile company
 node "$ATLAS_CLI" diff --path . --profile company
 node "$ATLAS_CLI" evaluate --path . --profile company
 node "$ATLAS_CLI" benchmark --path . --profile company --iterations "${ATLAS_ITERATIONS:-3}"
+node "$ATLAS_CLI" mcp smoke-test --path . --profile company --resolve-path "${ATLAS_SMOKE_PATH:-.agent-atlas}"
 printf 'MCP stdio entrypoint: node %s --path . --profile company\n' "$ATLAS_MCP"

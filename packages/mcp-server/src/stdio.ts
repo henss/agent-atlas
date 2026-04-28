@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 import path from 'node:path';
-import { startAtlasMcpStdioServer } from './index.js';
-import { parseAtlasProfile } from '@agent-atlas/core';
+import { parseMcpProfile, startAtlasMcpStdioServer } from './index.js';
+import type { AtlasProfile } from '@agent-atlas/core';
 
 const args = process.argv.slice(2);
 let atlasRoot = process.cwd();
-let profile = parseAtlasProfile(undefined);
+let profile: AtlasProfile = 'public';
 let atlasRootWasSet = false;
 
 function readOptionValue(index: number, optionName: string): string {
@@ -34,7 +34,7 @@ for (let index = 0; index < args.length; index += 1) {
   }
 
   if (arg === '--profile') {
-    profile = parseAtlasProfile(readOptionValue(index, '--profile'));
+    profile = parseMcpProfile(readOptionValue(index, '--profile'), profile);
     index += 1;
     continue;
   }

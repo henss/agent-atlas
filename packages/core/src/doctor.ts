@@ -69,6 +69,7 @@ export async function doctorAtlas(
       'boundary-check',
       'usage-note',
       'evaluate',
+      'mcp smoke-test',
       'global validate',
       'global list',
       'global context-pack',

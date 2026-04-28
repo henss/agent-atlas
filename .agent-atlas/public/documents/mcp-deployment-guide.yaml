@@ -1,0 +1,13 @@
+id: document:mcp-deployment-guide
+kind: document
+title: MCP Deployment Guide
+summary: Guide for read-only MCP smoke tests, host config snippets, profile selection, and private/company deployment boundaries.
+visibility: public
+uri: docs/guides/mcp-deployment.md
+relations:
+  - type: documents
+    target: component:mcp-server-package
+  - type: documents
+    target: workflow:expose-atlas-mcp
+  - type: part-of
+    target: domain:agent-atlas

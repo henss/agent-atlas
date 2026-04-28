@@ -245,6 +245,29 @@ Status: passed
     expect(check.stdout).toContain('# Atlas Markdown check');
     expect(check.stdout).toContain('Status: passed');
   });
+
+  it('runs MCP smoke tests through the CLI', async () => {
+    const root = await makeAtlasFixture();
+    const sourceDir = path.join(root, 'packages', 'example');
+    await mkdir(sourceDir, { recursive: true });
+    await writeFile(path.join(sourceDir, 'index.ts'), 'export {};\n');
+
+    const smoke = await execFileAsync('node', [
+      CLI_PATH,
+      'mcp',
+      'smoke-test',
+      '--path',
+      root,
+      '--resolve-path',
+      'packages/example/index.ts',
+      '--task',
+      'change packages/example/index.ts',
+    ]);
+
+    expect(smoke.stdout).toContain('# Atlas MCP smoke test');
+    expect(smoke.stdout).toContain('Status: passed');
+    expect(smoke.stdout).toContain('read-only: passed');
+  });
 });
 
 async function makeAtlasFixture(

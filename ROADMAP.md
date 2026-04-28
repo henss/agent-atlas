@@ -2,7 +2,7 @@
 
 This roadmap is intentionally staged. Building everything at once is how frameworks become haunted furniture.
 
-Status: M0-M15 are complete. M16 is the next MCP hardening milestone.
+Status: M0-M16 are complete. The original roadmap and hardening extension are implemented.
 
 ## M0: Foundations
 
@@ -183,8 +183,8 @@ Goal: make central registries reliable for portfolio and company control planes.
 
 Goal: make read-only Atlas MCP practical for everyday agent use.
 
-- [ ] Add an MCP smoke-test CLI that starts the server, calls `resolve_path`, calls `context_pack`, and exits cleanly.
-- [ ] Add MCP config snippets for common agent hosts with profile-specific examples.
-- [ ] Improve MCP resource and tool errors for bad profiles, missing graphs, stale builds, and invalid path inputs.
-- [ ] Add read-only security assertions so MCP tests prove no file mutation or downstream command execution occurs.
-- [ ] Add portfolio and company deployment notes that keep private topology out of public examples.
+- [x] Add an MCP smoke-test CLI that starts the server, calls `resolve_path`, calls `context_pack`, and exits cleanly.
+- [x] Add MCP config snippets for common agent hosts with profile-specific examples.
+- [x] Improve MCP resource and tool errors for bad profiles, missing graphs, stale builds, and invalid path inputs.
+- [x] Add read-only security assertions so MCP tests prove no file mutation or downstream command execution occurs.
+- [x] Add portfolio and company deployment notes that keep private topology out of public examples.

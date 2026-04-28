@@ -1,11 +1,14 @@
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { readdir, stat } from 'node:fs/promises';
+import path from 'node:path';
 import * as z from 'zod/v4';
 import {
   createContextPack,
   findNeighbors,
   loadAtlasGraph,
-  parseAtlasProfile,
   renderContextPackMarkdown,
   resolvePathInGraph,
 } from '@agent-atlas/core';
@@ -20,6 +23,25 @@ import type { AtlasEntity, AtlasEntityId, AtlasEntityKind, AtlasRelationType } f
 export interface AtlasMcpServerOptions {
   atlasRoot: string;
   profile?: AtlasProfile;
+}
+
+export interface AtlasMcpSmokeTestOptions extends AtlasMcpServerOptions {
+  pathToResolve?: string;
+  task?: string;
+  budget?: number;
+}
+
+export interface AtlasMcpSmokeTestResult {
+  status: 'passed' | 'failed';
+  atlasRoot: string;
+  profile: AtlasProfile;
+  path: string;
+  task: string;
+  resolvePathOk: boolean;
+  contextPackOk: boolean;
+  readOnlyOk: boolean;
+  changedFiles: string[];
+  diagnostics: string[];
 }
 
 export interface ListEntitiesArgs {
@@ -68,26 +90,39 @@ export function createAtlasMcpHandlers(options: AtlasMcpServerOptions): AtlasMcp
   const defaultProfile = options.profile ?? 'public';
 
   async function graphFor(profile?: AtlasProfile): Promise<AtlasGraph> {
-    return loadAtlasGraph(atlasRoot, { profile: profile ?? defaultProfile });
+    const selectedProfile = parseMcpProfile(profile, defaultProfile);
+    const graph = await loadAtlasGraph(atlasRoot, { profile: selectedProfile });
+    if (graph.entities.length === 0) {
+      throw new Error(
+        `No atlas entities were loaded from ${atlasRoot}. Check --path and ensure .agent-atlas YAML files exist.`,
+      );
+    }
+    return graph;
   }
 
   return {
     async listEntities(args = {}) {
-      const graph = await graphFor(args.profile);
+      const profile = parseMcpProfile(args.profile, defaultProfile);
+      const graph = await graphFor(profile);
       const query = args.query?.toLowerCase();
       const entities = graph.entities
         .filter((entity) => (args.kind ? entity.kind === args.kind : true))
         .filter((entity) => (query ? entitySearchText(entity).includes(query) : true))
         .sort(compareEntities);
 
-      return renderEntityListMarkdown(entities, args.profile ?? defaultProfile);
+      return renderEntityListMarkdown(entities, profile);
     },
 
     async describeEntity(args) {
-      const graph = await graphFor(args.profile);
+      const profile = parseMcpProfile(args.profile, defaultProfile);
+      const graph = await graphFor(profile);
       const entity = graph.index.entitiesById.get(args.id);
       if (!entity) {
-        return `# Entity not found\n\n\`${args.id}\` is not present in profile \`${args.profile ?? defaultProfile}\`.\n`;
+        return renderMcpErrorMarkdown(
+          'Entity not found',
+          `\`${args.id}\` is not present in profile \`${profile}\`.`,
+          'Check the entity ID, selected profile, and overlay visibility.',
+        );
       }
 
       const neighbors = findNeighbors(graph.index, args.id, { depth: args.depth ?? 1 });
@@ -95,21 +130,34 @@ export function createAtlasMcpHandlers(options: AtlasMcpServerOptions): AtlasMcp
         graph,
         entity,
         neighbors,
-        args.profile ?? defaultProfile,
+        profile,
         args.budget,
       );
     },
 
     async resolvePath(args) {
-      const graph = await graphFor(args.profile);
+      const profile = parseMcpProfile(args.profile, defaultProfile);
+      if (!args.path?.trim()) {
+        return renderMcpErrorMarkdown(
+          'Invalid path',
+          '`resolve_path` requires a non-empty repo-relative path.',
+          'Pass a path such as `packages/cli/src/index.ts`.',
+        );
+      }
+      const graph = await graphFor(profile);
       const result = resolvePathInGraph(graph, args.path, { depth: args.depth ?? 3 });
       return renderPathResolutionMarkdown(args.path, result.normalizedPath, result);
     },
 
     async findRelated(args) {
-      const graph = await graphFor(args.profile);
+      const profile = parseMcpProfile(args.profile, defaultProfile);
+      const graph = await graphFor(profile);
       if (!graph.index.entitiesById.has(args.id)) {
-        return `# Entity not found\n\n\`${args.id}\` is not present in profile \`${args.profile ?? defaultProfile}\`.\n`;
+        return renderMcpErrorMarkdown(
+          'Entity not found',
+          `\`${args.id}\` is not present in profile \`${profile}\`.`,
+          'Check the entity ID, selected profile, and overlay visibility.',
+        );
       }
 
       const neighbors = findNeighbors(graph.index, args.id, {
@@ -120,11 +168,19 @@ export function createAtlasMcpHandlers(options: AtlasMcpServerOptions): AtlasMcp
     },
 
     async contextPack(args) {
-      const graph = await graphFor(args.profile);
+      const profile = parseMcpProfile(args.profile, defaultProfile);
+      if (!args.task?.trim()) {
+        return renderMcpErrorMarkdown(
+          'Invalid task',
+          '`context_pack` requires a non-empty task string.',
+          'Pass the coding task the agent is preparing for.',
+        );
+      }
+      const graph = await graphFor(profile);
       const pack = createContextPack(graph, {
         task: args.task,
         budget: args.budget,
-        profile: args.profile ?? defaultProfile,
+        profile,
         deterministic: true,
       });
       return renderContextPackMarkdown(pack);
@@ -144,10 +200,11 @@ export function createAtlasMcpHandlers(options: AtlasMcpServerOptions): AtlasMcp
 
 export function createAtlasMcpServer(options: AtlasMcpServerOptions): McpServer {
   const handlers = createAtlasMcpHandlers(options);
+  const defaultProfile = options.profile ?? 'public';
   const server = new McpServer(
     {
       name: 'agent-atlas',
-      version: '0.15.0',
+      version: '0.16.0',
     },
     {
       capabilities: {},
@@ -200,7 +257,10 @@ export function createAtlasMcpServer(options: AtlasMcpServerOptions): McpServer 
     async (uri) => {
       const task = uri.searchParams.get('task') ?? '';
       const budget = parseOptionalInteger(uri.searchParams.get('budget') ?? undefined);
-      const profile = parseAtlasProfile(uri.searchParams.get('profile') ?? undefined);
+      const profile = parseMcpProfile(
+        uri.searchParams.get('profile') ?? undefined,
+        defaultProfile,
+      );
       return resourceText(uri.href, await handlers.contextPack({ task, budget, profile }));
     },
   );
@@ -290,6 +350,77 @@ export async function startAtlasMcpStdioServer(options: AtlasMcpServerOptions): 
   await server.connect(new StdioServerTransport());
 }
 
+export async function runAtlasMcpSmokeTest(
+  options: AtlasMcpSmokeTestOptions,
+): Promise<AtlasMcpSmokeTestResult> {
+  const atlasRoot = path.resolve(options.atlasRoot);
+  const profile = parseMcpProfile(options.profile, 'public');
+  const pathToResolve = options.pathToResolve ?? 'packages/cli/src/index.ts';
+  const task = options.task ?? `change ${pathToResolve}`;
+  const before = await snapshotFiles(atlasRoot);
+  const diagnostics: string[] = [];
+  let resolvePathOk = false;
+  let contextPackOk = false;
+
+  const server = createAtlasMcpServer({ atlasRoot, profile });
+  const client = new Client({ name: 'agent-atlas-smoke-test', version: '1.0.0' });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+
+  try {
+    await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
+
+    const pathResult = await client.callTool({
+      name: 'resolve_path',
+      arguments: { path: pathToResolve, profile },
+    });
+    const pathText = toolResultText(pathResult);
+    resolvePathOk =
+      pathText.includes('# Atlas path resolution') && !pathText.includes('# MCP error');
+    if (!resolvePathOk) {
+      diagnostics.push('resolve_path did not return a successful path resolution response.');
+    }
+
+    const packResult = await client.callTool({
+      name: 'context_pack',
+      arguments: { task, budget: options.budget ?? 1200, profile },
+    });
+    const packText = toolResultText(packResult);
+    contextPackOk =
+      packText.includes('# Context pack') && !packText.includes('# MCP error');
+    if (!contextPackOk) {
+      diagnostics.push('context_pack did not return a successful context pack response.');
+    }
+  } catch (error) {
+    diagnostics.push(error instanceof Error ? error.message : String(error));
+  } finally {
+    await client.close().catch(() => undefined);
+    await server.close().catch(() => undefined);
+  }
+
+  const after = await snapshotFiles(atlasRoot);
+  const changedFiles = diffSnapshots(before, after);
+  if (changedFiles.length > 0) {
+    diagnostics.push('MCP smoke test changed files under the atlas root.');
+  }
+
+  const readOnlyOk = changedFiles.length === 0;
+  const status =
+    resolvePathOk && contextPackOk && readOnlyOk ? 'passed' : 'failed';
+
+  return {
+    status,
+    atlasRoot,
+    profile,
+    path: pathToResolve,
+    task,
+    resolvePathOk,
+    contextPackOk,
+    readOnlyOk,
+    changedFiles,
+    diagnostics,
+  };
+}
+
 interface ReadResourceHandlers {
   defaultProfile: AtlasProfile;
   listEntities(args?: ListEntitiesArgs): Promise<string>;
@@ -322,7 +453,10 @@ async function readAtlasResource(uri: string, handlers: ReadResourceHandlers): P
     return handlers.contextPack({
       task: parsed.searchParams.get('task') ?? '',
       budget: parseOptionalInteger(parsed.searchParams.get('budget') ?? undefined),
-      profile: parseAtlasProfile(parsed.searchParams.get('profile') ?? handlers.defaultProfile),
+      profile: parseMcpProfile(
+        parsed.searchParams.get('profile') ?? undefined,
+        handlers.defaultProfile,
+      ),
     });
   }
 
@@ -528,6 +662,110 @@ function parseOptionalInteger(value: string | undefined): number | undefined {
   }
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+export function parseMcpProfile(
+  value: unknown,
+  fallback: AtlasProfile,
+): AtlasProfile {
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+  if (value === 'public' || value === 'private' || value === 'company') {
+    return value;
+  }
+  throw new Error(
+    `Invalid MCP profile ${String(value)}. Expected public, private, or company.`,
+  );
+}
+
+function renderMcpErrorMarkdown(
+  title: string,
+  message: string,
+  hint: string,
+): string {
+  return `# MCP error: ${title}\n\n${message}\n\nFix: ${hint}\n`;
+}
+
+function toolResultText(result: unknown): string {
+  if (!isRecord(result) || !Array.isArray(result.content)) {
+    return '';
+  }
+  return result.content
+    .map((item) =>
+      isRecord(item) && item.type === 'text' && typeof item.text === 'string'
+        ? item.text
+        : '',
+    )
+    .join('\n');
+}
+
+async function snapshotFiles(rootPath: string): Promise<Map<string, string>> {
+  const snapshot = new Map<string, string>();
+
+  async function walk(directory: string): Promise<void> {
+    let entries;
+    try {
+      entries = await readdir(directory, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      if (
+        entry.name === '.git' ||
+        entry.name === 'node_modules' ||
+        entry.name === 'dist' ||
+        entry.name === '.runtime'
+      ) {
+        continue;
+      }
+
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        await walk(entryPath);
+        continue;
+      }
+      if (!entry.isFile()) {
+        continue;
+      }
+
+      const entryStat = await stat(entryPath);
+      snapshot.set(
+        normalizeFilePath(path.relative(rootPath, entryPath)),
+        `${entryStat.size}:${Math.trunc(entryStat.mtimeMs)}`,
+      );
+    }
+  }
+
+  await walk(rootPath);
+  return snapshot;
+}
+
+function diffSnapshots(
+  before: Map<string, string>,
+  after: Map<string, string>,
+): string[] {
+  const changed = new Set<string>();
+  for (const [filePath, value] of before.entries()) {
+    if (after.get(filePath) !== value) {
+      changed.add(filePath);
+    }
+  }
+  for (const filePath of after.keys()) {
+    if (!before.has(filePath)) {
+      changed.add(filePath);
+    }
+  }
+  return [...changed].sort();
+}
+
+function normalizeFilePath(value: string): string {
+  return value.replaceAll('\\', '/');
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function fitMarkdownBudget(markdown: string, budget: number | undefined): string {

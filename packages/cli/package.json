@@ -1,6 +1,6 @@
 {
   "name": "@agent-atlas/cli",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "Command-line interface for Agent Atlas.",
   "type": "module",
   "bin": {
@@ -12,6 +12,7 @@
   "dependencies": {
     "@agent-atlas/core": "workspace:*",
     "@agent-atlas/markdown": "workspace:*",
+    "@agent-atlas/mcp-server": "workspace:*",
     "@agent-atlas/schema": "workspace:*"
   },
   "scripts": {

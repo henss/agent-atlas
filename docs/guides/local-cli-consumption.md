@@ -28,6 +28,7 @@ node ../agent-atlas/packages/cli/dist/index.js diff --path .
 node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000 --profile private
 node ../agent-atlas/packages/cli/dist/index.js usage-note "change packages/core/src/example.ts" --path . --command context-pack --entity component:example --file packages/core/src/example.ts
 node ../agent-atlas/packages/cli/dist/index.js evaluate --path .
+node ../agent-atlas/packages/cli/dist/index.js mcp smoke-test --path . --profile private --resolve-path packages/core/src/example.ts
 node ../agent-atlas/packages/cli/dist/index.js migrate --path . --to 1
 node ../agent-atlas/packages/cli/dist/index.js benchmark --path . --iterations 3
 node ../agent-atlas/packages/cli/dist/index.js global validate --path .
@@ -45,7 +46,7 @@ All atlas-loading commands accept one positional root path or `--path <root>`. D
 
 Use one built Agent Atlas sibling checkout as the unit of compatibility:
 
-- Workspace package version: `0.15.0`.
+- Workspace package version: `0.16.0`.
 - Entity schema version: `schema_version: 1`.
 - Usage receipt version: `version: 1`.
 - Registry config version: `version: 1`.
@@ -66,6 +67,7 @@ Use one built Agent Atlas sibling checkout as the unit of compatibility:
 - Use `usage-note` after representative tasks during adoption pilots.
 - Use `evaluate` to compare receipts against deterministic context-pack output.
 - Use the read-only MCP server when the agent host can consume MCP.
+- Run `mcp smoke-test` before wiring MCP host config.
 - Run `migrate . --to 1` before schema-version cleanup; add `--write` only in an explicit migration task.
 - Use `global validate` and `global context-pack` from a central registry when a task spans repositories.
 - Use `global manifest` and `global generate markdown --check` in central registry repos to keep control-plane summaries current.

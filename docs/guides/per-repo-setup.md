@@ -70,6 +70,7 @@ Before broad search, use the atlas:
 - Check stale atlas references: `node ../agent-atlas/packages/cli/dist/index.js diff --path .`
 - Generate task context: `node ../agent-atlas/packages/cli/dist/index.js context-pack "<task>" --path . --budget 4000`
 - Record adoption evidence: `node ../agent-atlas/packages/cli/dist/index.js usage-note "<task>" --path . --command context-pack`
+- Smoke-test MCP: `node ../agent-atlas/packages/cli/dist/index.js mcp smoke-test --path . --profile public --resolve-path <path>`
 ```
 
 ## Add CI
@@ -90,7 +91,7 @@ Copy-paste script starters live under `templates/scripts/`:
 
 - `public-repo.sh`: public validation and generated docs check
 - `private-repo.sh`: private profile validation, generated docs, and context-pack smoke test
-- `company-repo.sh`: company profile validation, benchmark, and MCP stdio pointer
+- `company-repo.sh`: company profile validation, benchmark, MCP smoke test, and MCP stdio pointer
 - `central-registry-repo.sh`: global registry validation, manifest output, generated Markdown checks, listing, and context-pack smoke test
 
 Each template uses `ATLAS_CHECKOUT=../agent-atlas` by default and can be adapted to the downstream repo layout.

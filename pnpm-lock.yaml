@@ -35,6 +35,9 @@ importers:
       '@agent-atlas/markdown':
         specifier: workspace:*
         version: link:../markdown
+      '@agent-atlas/mcp-server':
+        specifier: workspace:*
+        version: link:../mcp-server
       '@agent-atlas/schema':
         specifier: workspace:*
         version: link:../schema

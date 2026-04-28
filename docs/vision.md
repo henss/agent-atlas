@@ -15,7 +15,7 @@ Agent Atlas gives agents a compact map:
 - tests and verification scopes
 - typed relationships between all of them
 
-The M0-M15 implementation now includes the core schema, validation, graph traversal, path resolution, generated Markdown, context packs, overlays, read-only MCP resources and tools, adapter interfaces, hardened cross-repo registries, registry manifests, global generated Markdown, migrations, diagnostics, benchmarks, consumer-friendly CLI path handling, version discipline, setup doctor checks, downstream script templates, local usage receipts, context-pack evaluation, profile boundary checks, and incremental authoring tools.
+The M0-M16 implementation now includes the core schema, validation, graph traversal, path resolution, generated Markdown, context packs, overlays, hardened read-only MCP resources and tools, MCP smoke tests, adapter interfaces, hardened cross-repo registries, registry manifests, global generated Markdown, migrations, diagnostics, benchmarks, consumer-friendly CLI path handling, version discipline, setup doctor checks, downstream script templates, local usage receipts, context-pack evaluation, profile boundary checks, and incremental authoring tools.
 
 The atlas should support both traversal directions:
 
@@ -67,4 +67,4 @@ And receive a compact answer:
 
 The open-source project defines the standards and tooling. Real personal/company atlas contents stay private unless intentionally published.
 
-Current roadmap work is about making MCP operations more reliable.
+The original roadmap and hardening extension are implemented.

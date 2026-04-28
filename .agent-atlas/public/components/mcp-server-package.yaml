@@ -1,7 +1,7 @@
 id: component:mcp-server-package
 kind: component
 title: MCP Server Package
-summary: Read-only MCP server exposing atlas resources and traversal tools over stdio.
+summary: Read-only MCP server exposing atlas resources and traversal tools over stdio, with smoke tests, clearer input errors, and read-only assertions.
 visibility: public
 code:
   paths:
@@ -15,5 +15,7 @@ relations:
     target: workflow:expose-atlas-mcp
   - type: documented-in
     target: document:mcp-spec
+  - type: documented-in
+    target: document:mcp-deployment-guide
   - type: tested-by
     target: test-scope:workspace-build-and-test

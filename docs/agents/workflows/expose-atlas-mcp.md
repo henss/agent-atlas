@@ -6,7 +6,7 @@ ID: `workflow:expose-atlas-mcp`
 Kind: `workflow`
 Profile: `public`
 
-Provides read-only MCP resources and tools for listing entities, describing graph context, resolving paths, finding related entities, and creating context packs.
+Provides read-only MCP resources, tools, smoke tests, deployment notes, and safety assertions for listing entities, describing graph context, resolving paths, finding related entities, and creating context packs.
 
 ## Metadata
 
@@ -16,6 +16,7 @@ Provides read-only MCP resources and tools for listing entities, describing grap
 
 ### `documented-in`
 
+- `document:mcp-deployment-guide`
 - `document:mcp-spec`
 
 ### `implemented-by`

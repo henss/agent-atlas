@@ -21,6 +21,8 @@ import {
   writeUsageNote,
 } from '@agent-atlas/core';
 import { generateMarkdownViews } from '@agent-atlas/markdown';
+import { parseMcpProfile, runAtlasMcpSmokeTest } from '@agent-atlas/mcp-server';
+import type { AtlasMcpSmokeTestResult } from '@agent-atlas/mcp-server';
 import type {
   AtlasDiagnostic,
   AtlasGraph,
@@ -77,6 +79,7 @@ Implemented commands:
 - atlas boundary-check [path]
 - atlas usage-note "<task>" --command <command>
 - atlas evaluate [path]
+- atlas mcp smoke-test [path]
 - atlas global validate [path]
 - atlas global list [path]
 - atlas global context-pack "<task>" --budget 8000
@@ -279,6 +282,15 @@ interface EvaluateArgs {
   rootPath: string;
   profile: AtlasProfile;
   receiptsPath?: string;
+  budget: number;
+  json: boolean;
+}
+
+interface McpSmokeTestArgs {
+  rootPath: string;
+  profile: AtlasProfile;
+  pathToResolve: string;
+  task?: string;
   budget: number;
   json: boolean;
 }
@@ -1131,6 +1143,67 @@ function parseEvaluateArgs(args: string[]): EvaluateArgs {
   return { rootPath, profile, receiptsPath, budget, json };
 }
 
+function parseMcpSmokeTestArgs(args: string[]): McpSmokeTestArgs {
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
+  let pathToResolve = 'packages/cli/src/index.ts';
+  let task: string | undefined;
+  let budget = 1200;
+  let json = false;
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === 'smoke-test') {
+      continue;
+    }
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseMcpProfile(readOptionValue(args, index, '--profile'), profile);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--resolve-path') {
+      pathToResolve = readOptionValue(args, index, '--resolve-path');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--task') {
+      task = readOptionValue(args, index, '--task');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--budget') {
+      budget = parsePositiveInteger(readOptionValue(args, index, '--budget'), budget);
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return { rootPath, profile, pathToResolve, task, budget, json };
+}
+
 function printValidationMarkdown(result: AtlasValidationResult): void {
   const errors = result.diagnostics.filter(
     (diagnostic) => diagnostic.level === 'error',
@@ -1501,6 +1574,30 @@ Misleading-card mentions: ${result.misleadingCardMentions}
   }
 }
 
+function printMcpSmokeTestMarkdown(result: AtlasMcpSmokeTestResult): void {
+  console.log(`# Atlas MCP smoke test
+
+Status: ${result.status}
+Root: \`${result.atlasRoot}\`
+Profile: \`${result.profile}\`
+Path: \`${result.path}\`
+Task: ${result.task}
+
+resolve_path: ${result.resolvePathOk ? 'passed' : 'failed'}
+context_pack: ${result.contextPackOk ? 'passed' : 'failed'}
+read-only: ${result.readOnlyOk ? 'passed' : 'failed'}
+Changed files: ${result.changedFiles.length}`);
+
+  printFileList('Changed Files', result.changedFiles);
+
+  if (result.diagnostics.length > 0) {
+    console.log('\n## Diagnostics\n');
+    for (const diagnostic of result.diagnostics) {
+      console.log(`- ${diagnostic}`);
+    }
+  }
+}
+
 function printGlobalRegistryMarkdown(graph: GlobalAtlasGraph): void {
   const errors = graph.diagnostics.filter(
     (diagnostic) => diagnostic.level === 'error',
@@ -1781,6 +1878,12 @@ function usageNoteUsage(): void {
 function evaluateUsage(): void {
   console.error(
     'Usage: atlas evaluate [path] [--path <root>] [--receipts .agent-atlas/usage] [--budget tokens] [--profile public|private|company] [--json]',
+  );
+}
+
+function mcpUsage(): void {
+  console.error(
+    'Usage: atlas mcp smoke-test [path] [--path <root>] [--profile public|private|company] [--resolve-path <file>] [--task text] [--budget tokens] [--json]',
   );
 }
 
@@ -2305,6 +2408,30 @@ switch (command) {
     } else {
       printUsageEvidenceMarkdown(result);
     }
+    break;
+  }
+  case 'mcp': {
+    if (args[0] !== 'smoke-test') {
+      mcpUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const options = parseMcpSmokeTestArgs(args);
+    const result = await runAtlasMcpSmokeTest({
+      atlasRoot: options.rootPath,
+      profile: options.profile,
+      pathToResolve: options.pathToResolve,
+      task: options.task,
+      budget: options.budget,
+    });
+
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printMcpSmokeTestMarkdown(result);
+    }
+    process.exitCode = result.status === 'passed' ? 0 : 1;
     break;
   }
   case 'global': {

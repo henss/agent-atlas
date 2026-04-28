@@ -1,7 +1,7 @@
 {
   "name": "agent-atlas-root",
   "private": true,
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "Typed context graph and traversal toolkit for AI coding agents.",
   "type": "module",
   "packageManager": "pnpm@9.0.0",

@@ -1,7 +1,7 @@
 id: document:mcp-spec
 kind: document
 title: MCP Specification
-summary: Specification for read-only Atlas MCP resources and tools.
+summary: Specification for read-only Atlas MCP resources, tools, smoke tests, host config snippets, error behavior, and safety boundaries.
 visibility: public
 uri: docs/spec/mcp.md
 relations:

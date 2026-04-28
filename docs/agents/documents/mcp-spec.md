@@ -6,7 +6,7 @@ ID: `document:mcp-spec`
 Kind: `document`
 Profile: `public`
 
-Specification for read-only Atlas MCP resources and tools.
+Specification for read-only Atlas MCP resources, tools, smoke tests, host config snippets, error behavior, and safety boundaries.
 
 ## Metadata
 
