@@ -1,7 +1,7 @@
 id: workflow:operate-atlas-cli
 kind: workflow
 title: Operate Atlas CLI
-summary: Exposes validation, graph navigation, path resolution, context packs, and Markdown generation through concise CLI commands.
+summary: Exposes validation, graph navigation, path resolution, context packs, Markdown generation, migrations, benchmarks, and global registry workflows through concise CLI commands.
 visibility: public
 relations:
   - type: part-of

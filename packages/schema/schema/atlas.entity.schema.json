@@ -10,6 +10,12 @@
     "summary"
   ],
   "properties": {
+    "schema_version": {
+      "type": "integer",
+      "enum": [
+        1
+      ]
+    },
     "id": {
       "type": "string",
       "pattern": "^(domain|system|workflow|repository|component|interface|tool|resource|document|dataset|secret-scope|test-scope):[a-z0-9][a-z0-9._/-]*$"

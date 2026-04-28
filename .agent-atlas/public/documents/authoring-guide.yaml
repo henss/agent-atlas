@@ -1,0 +1,11 @@
+id: document:authoring-guide
+kind: document
+title: Authoring Guide
+summary: Guide for writing atlas entity cards, links, verification scopes, and private overlays.
+visibility: public
+uri: docs/guides/authoring-atlas-files.md
+relations:
+  - type: documents
+    target: workflow:define-atlas-model
+  - type: part-of
+    target: domain:agent-atlas

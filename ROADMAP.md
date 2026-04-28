@@ -117,10 +117,10 @@ Goal: support organizations with many repositories.
 
 Goal: make the project boringly useful.
 
-- [ ] Better diagnostics.
-- [ ] Golden output tests.
-- [ ] Migration tooling for schema versions.
-- [ ] Authoring guide improvements.
-- [ ] Contributor examples.
-- [ ] CI templates.
-- [ ] Performance benchmarks for large repos.
+- [x] Better diagnostics.
+- [x] Golden output tests.
+- [x] Migration tooling for schema versions.
+- [x] Authoring guide improvements.
+- [x] Contributor examples.
+- [x] CI templates.
+- [x] Performance benchmarks for large repos.

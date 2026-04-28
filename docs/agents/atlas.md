@@ -14,7 +14,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 - Workflows: 7
 - Systems: 0
 - Components: 6
-- Relations: 170
+- Relations: 196
 
 ## Domains
 
@@ -28,13 +28,13 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 - `workflow:generate-agent-docs` - Generate Agent Docs: Produces compact generated Markdown views under docs/agents from canonical atlas YAML.
 - `workflow:manage-overlays` - Manage Overlays: Applies profile-specific atlas overlays while keeping public-safe base metadata separate from private or company enrichments.
 - `workflow:navigate-atlas-graph` - Navigate Atlas Graph: Loads atlas files, normalizes graph edges, traverses related entities, and resolves source paths to context.
-- `workflow:operate-atlas-cli` - Operate Atlas CLI: Exposes validation, graph navigation, path resolution, context packs, and Markdown generation through concise CLI commands.
+- `workflow:operate-atlas-cli` - Operate Atlas CLI: Exposes validation, graph navigation, path resolution, context packs, Markdown generation, migrations, benchmarks, and global registry workflows through concise CLI commands.
 
 ## Systems And Components
 
 - `component:adapters-package` - Adapters Package: Defines adapter interfaces and generic adapters for Backstage, Sourcegraph, local docs, and external resource references.
-- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, graph inspection, path resolution, context packs, generated Markdown, and cross-repo registry commands.
-- `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, and merges cross-repo registries.
+- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, graph inspection, path resolution, context packs, generated Markdown, cross-repo registry commands, migrations, and benchmarks.
+- `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, merges cross-repo registries, runs migrations, and benchmarks load performance.
 - `component:markdown-package` - Markdown Package: Renders generated agent-facing Markdown views from loaded atlas graphs.
 - `component:mcp-server-package` - MCP Server Package: Read-only MCP server exposing atlas resources and traversal tools over stdio.
 - `component:schema-package` - Schema Package: Defines atlas entity types, relation vocabulary, and JSON Schema validation assets.

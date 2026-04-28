@@ -1,18 +1,35 @@
 # Versioning and Migrations
 
-The atlas schema should be versioned once implementation begins.
-
-Suggested top-level field for future entity files:
+Atlas entity files may declare a schema version:
 
 ```yaml
 schema_version: 1
+id: component:example
+kind: component
+title: Example
+summary: Example component.
 ```
 
-Initial seed examples omit `schema_version` to keep the draft light. Add it when validation and migration tooling exist.
+The current supported version is `1`. Legacy files without `schema_version` remain valid.
 
 ## Migration principles
 
 - Additive changes should be preferred.
 - Breaking changes should include migration diagnostics.
-- The CLI should eventually support `atlas migrate`.
 - Generated files should record generator version.
+
+## CLI
+
+Preview migrations:
+
+```sh
+atlas migrate . --to 1
+```
+
+Write migrations:
+
+```sh
+atlas migrate . --to 1 --write
+```
+
+The M10 migration adds or updates top-level `schema_version: 1`. It does not rewrite the rest of the YAML file.

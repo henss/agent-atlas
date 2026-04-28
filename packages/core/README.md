@@ -14,6 +14,8 @@ Implemented responsibilities:
 - resolve source paths to owning components and related context
 - create deterministic task-specific context packs
 - load cross-repo registry configs and merge imported atlases
+- plan and write schema-version migrations
+- run lightweight load benchmarks
 - emit validation, orphan, and cycle diagnostics
 
 Planned responsibilities:

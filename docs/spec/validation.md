@@ -19,6 +19,7 @@ Validation should catch structural problems early and produce diagnostics that a
 - Inverse relations are generated consistently.
 - Code paths are repo-relative and do not escape the repo.
 - Public profile does not contain private-only URI schemes.
+- Unsupported `schema_version` values are errors.
 - Unknown overlay profiles and overlay kind conflicts are reported.
 - Overlay does not change protected fields.
 - Generated files are not hand-edited when generation checks are enabled.
@@ -30,6 +31,7 @@ Validation should catch structural problems early and produce diagnostics that a
   "level": "warning",
   "code": "RELATION_TARGET_MISSING",
   "message": "Relation target document:release-process does not exist in profile public.",
+  "hint": "Create the target entity, fix the target ID, or move cross-repo references into a global registry.",
   "entityId": "workflow:publish-single",
   "path": "examples/band-ops-sanitized/.agent-atlas/workflows/publish-single.yaml"
 }
@@ -51,6 +53,7 @@ Status: failed
 ## Warnings
 
 - `component:video-generator`: code path `packages/video/**` matched no files.
+  Fix: Add the missing files or narrow the component path.
 ```
 
 Use `--json` for machine-readable output.

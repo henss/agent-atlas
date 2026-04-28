@@ -1,0 +1,11 @@
+id: document:contributor-examples
+kind: document
+title: Contributor Examples
+summary: Practical examples for adding components, tests, and private document references.
+visibility: public
+uri: docs/guides/contributor-examples.md
+relations:
+  - type: documents
+    target: workflow:define-atlas-model
+  - type: part-of
+    target: domain:agent-atlas

@@ -16,6 +16,8 @@ Evolves entity fields, relation types, validation behavior, and schema documenta
 
 ### `documented-in`
 
+- `document:authoring-guide` _(generated)_
+- `document:contributor-examples` _(generated)_
 - `document:entity-spec`
 - `document:relation-spec`
 

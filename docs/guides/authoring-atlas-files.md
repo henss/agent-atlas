@@ -12,6 +12,23 @@ domains -> workflows -> components/resources/docs/tests
 
 Do not start by documenting every file. That way lies sadness and abandoned docs.
 
+## Minimal entity
+
+```yaml
+schema_version: 1
+id: component:weekly-planner
+kind: component
+title: Weekly Planner
+summary: Combines calendar constraints and task signals into a weekly plan.
+relations: []
+```
+
+Required fields are `id`, `kind`, `title`, and `summary`. `schema_version: 1` is recommended for new files; legacy files can be updated with:
+
+```sh
+atlas migrate . --to 1 --write
+```
+
 ## Good summaries
 
 A good summary helps an agent decide whether to load more.
@@ -46,6 +63,8 @@ component:newThing2
 workflow:johnsWorkflow
 ```
 
+ID prefixes must match `kind`. For example, `component:weekly-planner` must use `kind: component`.
+
 ## Link outward instead of copying
 
 For documents and resources, link to authoritative systems or aliases:
@@ -61,6 +80,28 @@ access:
 
 Then put actual private URIs in private overlays.
 
+Public-safe placeholder:
+
+```yaml
+id: document:release-process
+kind: document
+title: Release Process
+summary: Internal release process document.
+access:
+  private_overlay_required: true
+```
+
+Private overlay:
+
+```yaml
+id: document:release-process
+uri: notion://page/private-page-id
+access:
+  method: mcp
+  server: notion
+  permission: read
+```
+
 ## Model verification
 
 Add `test-scope` entities for targeted checks:
@@ -71,7 +112,8 @@ kind: test-scope
 title: Calendar Tests
 summary: Tests for calendar adapters and planning integration.
 commands:
-  - pnpm --filter @example/calendar test
+  - command: pnpm --filter @example/calendar test
+    purpose: Run calendar package tests.
 ```
 
 Then link components and workflows:
@@ -111,6 +153,16 @@ code:
 ```
 
 `atlas resolve-path` ranks the narrower owner above broader package ownership.
+
+## Validate early
+
+Run validation before relying on generated docs or context packs:
+
+```sh
+atlas validate .
+```
+
+Diagnostics include a short `Fix:` hint for common authoring mistakes.
 
 ## Use agent hints sparingly
 

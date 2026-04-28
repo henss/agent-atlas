@@ -69,6 +69,7 @@ export async function validateAtlas(
       level: 'warning',
       code: 'ATLAS_FILES_NOT_FOUND',
       message: 'No .agent-atlas/**/*.yaml files found.',
+      hint: 'Create .agent-atlas/public/<kind>/<id>.yaml files or pass the intended atlas root path.',
       path: absoluteRoot,
     });
   }
@@ -79,6 +80,7 @@ export async function validateAtlas(
         level: 'error',
         code: 'YAML_PARSE_ERROR',
         message: `Could not parse YAML: ${document.parseError}`,
+        hint: 'Fix YAML indentation, quoting, or list syntax in this file.',
         path: document.path,
       });
       continue;
@@ -91,6 +93,7 @@ export async function validateAtlas(
         code: 'OVERLAY_PROFILE_UNKNOWN',
         message:
           'Overlay path must use private, private.local, company, or generated.',
+        hint: 'Move this file under .agent-atlas/overlays/private, .agent-atlas/overlays/private.local, .agent-atlas/overlays/company, or .agent-atlas/overlays/generated.',
         path: document.path,
       });
       continue;
@@ -127,6 +130,7 @@ export async function validateAtlas(
         level: 'error',
         code: 'DUPLICATE_ENTITY_ID',
         message: `Duplicate entity ID ${entityId}.`,
+        hint: 'Keep one canonical entity file per ID, or convert extra files into overlays.',
         entityId,
         path: duplicatePath,
       });
@@ -182,6 +186,7 @@ function validateOverlayShape(
       level: 'error',
       code: 'ENTITY_NOT_OBJECT',
       message: 'Overlay file must contain a YAML object.',
+      hint: 'Use a top-level mapping with at least an id field.',
       path: filePath,
     });
     return undefined;
@@ -192,17 +197,34 @@ function validateOverlayShape(
       level: 'error',
       code: 'REQUIRED_FIELD_MISSING',
       message: 'Required field id is missing or empty.',
+      hint: 'Add an id using <kind>:<slug>, for example component:example.',
       path: filePath,
     });
     return undefined;
   }
 
   const id = data.id;
+  if (
+    'schema_version' in data &&
+    data.schema_version !== undefined &&
+    data.schema_version !== 1
+  ) {
+    diagnostics.push({
+      level: 'error',
+      code: 'SCHEMA_VERSION_UNSUPPORTED',
+      message: `Schema version ${String(data.schema_version)} is not supported.`,
+      hint: 'Use schema_version: 1 or run atlas migrate --to 1.',
+      entityId: id,
+      path: filePath,
+    });
+  }
+
   if (!ENTITY_ID_PATTERN.test(id)) {
     diagnostics.push({
       level: 'error',
       code: 'ENTITY_ID_INVALID',
       message: `Entity ID ${id} must use <kind>:<slug> with a known kind and lowercase slug.`,
+      hint: 'Use lowercase URL-safe IDs such as workflow:plan-week or component:calendar-adapter.',
       entityId: id,
       path: filePath,
     });
@@ -215,6 +237,7 @@ function validateOverlayShape(
         level: 'error',
         code: 'ENTITY_KIND_UNKNOWN',
         message: `Entity kind ${String(data.kind)} is not one of ${ATLAS_ENTITY_KINDS.join(', ')}.`,
+        hint: 'Choose one of the documented entity kinds or change the ID prefix to match.',
         entityId: id,
         path: filePath,
       });
@@ -223,6 +246,7 @@ function validateOverlayShape(
         level: 'error',
         code: 'ENTITY_KIND_MISMATCH',
         message: `Entity kind ${kind} does not match ID prefix ${id.split(':', 1)[0]}.`,
+        hint: 'Make kind match the ID prefix, for example id component:x with kind component.',
         entityId: id,
         path: filePath,
       });
@@ -238,6 +262,7 @@ function validateOverlayShape(
       level: 'error',
       code: 'RELATIONS_INVALID',
       message: 'Relations must be an array.',
+      hint: 'Use relations: [] or a YAML list of relation objects.',
       entityId: id,
       path: filePath,
     });
@@ -256,10 +281,14 @@ function validateEntityShape(
       level: 'error',
       code: 'ENTITY_NOT_OBJECT',
       message: 'Entity file must contain a YAML object.',
+      hint: 'Use a top-level mapping with id, kind, title, and summary fields.',
       path: filePath,
     });
     return undefined;
   }
+
+  const id = isString(data.id) ? data.id : undefined;
+  const kind = isString(data.kind) ? data.kind : undefined;
 
   for (const field of REQUIRED_ENTITY_FIELDS) {
     if (!isNonEmptyString(data[field])) {
@@ -267,20 +296,34 @@ function validateEntityShape(
         level: 'error',
         code: 'REQUIRED_FIELD_MISSING',
         message: `Required field ${field} is missing or empty.`,
-        entityId: isString(data.id) ? data.id : undefined,
+        hint: 'Every entity requires id, kind, title, and summary.',
+        entityId: id,
         path: filePath,
       });
     }
   }
 
-  const id = isString(data.id) ? data.id : undefined;
-  const kind = isString(data.kind) ? data.kind : undefined;
+  if (
+    'schema_version' in data &&
+    data.schema_version !== undefined &&
+    data.schema_version !== 1
+  ) {
+    diagnostics.push({
+      level: 'error',
+      code: 'SCHEMA_VERSION_UNSUPPORTED',
+      message: `Schema version ${String(data.schema_version)} is not supported.`,
+      hint: 'Use schema_version: 1 or run atlas migrate --to 1.',
+      entityId: id,
+      path: filePath,
+    });
+  }
 
   if (id && !ENTITY_ID_PATTERN.test(id)) {
     diagnostics.push({
       level: 'error',
       code: 'ENTITY_ID_INVALID',
       message: `Entity ID ${id} must use <kind>:<slug> with a known kind and lowercase slug.`,
+      hint: 'Use lowercase URL-safe IDs such as workflow:plan-week or component:calendar-adapter.',
       entityId: id,
       path: filePath,
     });
@@ -291,6 +334,7 @@ function validateEntityShape(
       level: 'error',
       code: 'ENTITY_KIND_UNKNOWN',
       message: `Entity kind ${kind} is not one of ${ATLAS_ENTITY_KINDS.join(', ')}.`,
+      hint: 'Choose one of the documented entity kinds or change the ID prefix to match.',
       entityId: id,
       path: filePath,
     });
@@ -303,6 +347,7 @@ function validateEntityShape(
         level: 'error',
         code: 'ENTITY_KIND_MISMATCH',
         message: `Entity kind ${kind} does not match ID prefix ${idKind}.`,
+        hint: 'Make kind match the ID prefix, for example id component:x with kind component.',
         entityId: id,
         path: filePath,
       });
@@ -318,6 +363,7 @@ function validateEntityShape(
       level: 'error',
       code: 'RELATIONS_INVALID',
       message: 'Relations must be an array.',
+      hint: 'Use relations: [] or a YAML list of relation objects.',
       entityId: id,
       path: filePath,
     });
@@ -342,6 +388,7 @@ function validateRelationShape(
       level: 'error',
       code: 'RELATION_INVALID',
       message: `Relation ${index + 1} must be an object.`,
+      hint: 'Use relation entries like { type: uses, target: component:example }.',
       entityId,
       path: filePath,
     });
@@ -353,6 +400,7 @@ function validateRelationShape(
       level: 'error',
       code: 'RELATION_TYPE_MISSING',
       message: `Relation ${index + 1} is missing type.`,
+      hint: 'Add a known relation type such as uses, implements, documented-in, or tested-by.',
       entityId,
       path: filePath,
     });
@@ -363,6 +411,7 @@ function validateRelationShape(
       level: 'error',
       code: 'RELATION_TARGET_MISSING',
       message: `Relation ${index + 1} is missing target.`,
+      hint: 'Add a target entity ID such as component:example.',
       entityId,
       path: filePath,
     });
@@ -381,6 +430,7 @@ function validateRelations(
         level: 'error',
         code: 'RELATION_TYPE_UNKNOWN',
         message: `Relation type ${String(relation.type)} is not known.`,
+        hint: 'Use a relation from docs/spec/relations.md, or add the relation type to the schema first.',
         entityId: entity.id,
         path: filePath,
       });
@@ -391,6 +441,7 @@ function validateRelations(
         level: 'error',
         code: 'RELATION_TARGET_MISSING',
         message: `Relation target ${relation.target} does not exist.`,
+        hint: 'Create the target entity, fix the target ID, or move cross-repo references into a global registry.',
         entityId: entity.id,
         path: filePath,
       });
@@ -418,6 +469,7 @@ function validatePublicProfileSafety(
       level: 'warning',
       code: 'PUBLIC_PROFILE_NON_PUBLIC_VISIBILITY',
       message: `Public profile entity has visibility ${entity.visibility}.`,
+      hint: 'Move this entity to an overlay or make the public file a safe placeholder.',
       entityId: entity.id,
       path: filePath,
     });
@@ -432,6 +484,7 @@ function validatePublicProfileSafety(
       level: 'warning',
       code: 'PUBLIC_PROFILE_PRIVATE_URI',
       message: `Public entity URI ${entity.uri} should be moved to a private overlay or replaced with an alias.`,
+      hint: 'Use access.private_overlay_required in public files and put the concrete URI in a private/company overlay.',
       entityId: entity.id,
       path: filePath,
     });
@@ -458,6 +511,7 @@ function mergeOverlayDocuments(
         level: 'error',
         code: 'OVERLAY_BASE_MISSING',
         message: `Overlay entity ${overlayDocument.entity.id} has no base entity.`,
+        hint: 'Create a public base entity with the same id before adding overlay fields.',
         entityId: overlayDocument.entity.id,
         path: overlayDocument.path,
       });
@@ -473,6 +527,7 @@ function mergeOverlayDocuments(
         level: 'error',
         code: 'OVERLAY_KIND_CONFLICT',
         message: `Overlay kind ${overlayDocument.entity.kind} conflicts with base kind ${baseKind}.`,
+        hint: 'Remove kind from the overlay or make it match the base entity kind.',
         entityId: overlayDocument.entity.id,
         path: overlayDocument.path,
       });
@@ -540,6 +595,7 @@ function mergeRelations(
         level: 'warning',
         code: 'OVERLAY_DUPLICATE_RELATION',
         message: `Overlay relation ${relation.type} -> ${relation.target} already exists.`,
+        hint: 'Remove the duplicate overlay relation unless it intentionally differs by visibility.',
         entityId: base.id,
         path: filePath,
       });

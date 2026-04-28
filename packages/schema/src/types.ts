@@ -43,6 +43,7 @@ export interface AtlasCommandReference {
 }
 
 export interface AtlasEntity {
+  schema_version?: 1;
   id: AtlasEntityId;
   kind: AtlasEntityKind;
   title: string;

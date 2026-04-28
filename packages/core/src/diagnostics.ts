@@ -4,6 +4,7 @@ export interface AtlasDiagnostic {
   level: DiagnosticLevel;
   code: string;
   message: string;
+  hint?: string;
   entityId?: string;
   path?: string;
 }

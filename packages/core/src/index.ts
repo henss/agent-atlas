@@ -7,3 +7,5 @@ export * from './path-resolution.js';
 export * from './context-pack.js';
 export * from './profile.js';
 export * from './registry.js';
+export * from './migrations.js';
+export * from './benchmark.js';

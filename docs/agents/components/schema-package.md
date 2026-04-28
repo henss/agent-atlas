@@ -23,6 +23,8 @@ Defines atlas entity types, relation vocabulary, and JSON Schema validation asse
 
 - `document:entity-spec`
 - `document:relation-spec`
+- `document:validation-spec`
+- `document:versioning-spec`
 
 ### `implements`
 

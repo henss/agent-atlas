@@ -1,0 +1,13 @@
+id: document:validation-spec
+kind: document
+title: Validation Specification
+summary: Specification for validation diagnostics, severity levels, and actionable fix hints.
+visibility: public
+uri: docs/spec/validation.md
+relations:
+  - type: documents
+    target: component:schema-package
+  - type: documents
+    target: component:core-package
+  - type: part-of
+    target: domain:agent-atlas

@@ -1,0 +1,15 @@
+id: document:versioning-spec
+kind: document
+title: Versioning Specification
+summary: Specification for schema_version and atlas migration behavior.
+visibility: public
+uri: docs/spec/versioning.md
+relations:
+  - type: documents
+    target: component:schema-package
+  - type: documents
+    target: component:core-package
+  - type: documents
+    target: component:cli-package
+  - type: part-of
+    target: domain:agent-atlas

@@ -1,0 +1,11 @@
+id: document:ci-template
+kind: document
+title: CI Template
+summary: GitHub Actions template for validating, testing, linting, and generating Agent Atlas outputs.
+visibility: public
+uri: docs/ci/github-actions-agent-atlas.yml
+relations:
+  - type: documents
+    target: test-scope:workspace-build-and-test
+  - type: part-of
+    target: domain:agent-atlas

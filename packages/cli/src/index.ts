@@ -3,10 +3,12 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
+  benchmarkAtlas,
   createContextPack,
   findNeighbors,
   loadGlobalAtlasGraph,
   loadAtlasGraph,
+  migrateAtlas,
   parseAtlasProfile,
   renderContextPackMarkdown,
   resolvePathInGraph,
@@ -48,6 +50,8 @@ Planned commands:
 - atlas resolve-path <path>
 - atlas context-pack "<task>" --budget 4000
 - atlas generate markdown
+- atlas migrate [path] --to 1 [--write]
+- atlas benchmark [path]
 - atlas global validate [path]
 - atlas global list [path]
 - atlas global context-pack "<task>" --budget 8000
@@ -133,6 +137,20 @@ interface GlobalContextPackArgs extends GlobalArgs {
   task?: string;
   budget: number;
   deterministic: boolean;
+}
+
+interface MigrateArgs {
+  rootPath: string;
+  toVersion: number;
+  write: boolean;
+  json: boolean;
+}
+
+interface BenchmarkArgs {
+  rootPath: string;
+  profile: AtlasProfile;
+  iterations: number;
+  json: boolean;
 }
 
 function parseShowArgs(args: string[]): ShowArgs {
@@ -467,6 +485,81 @@ function parseGlobalContextPackArgs(args: string[]): GlobalContextPackArgs {
   };
 }
 
+function parseMigrateArgs(args: string[]): MigrateArgs {
+  let rootPath = process.cwd();
+  let toVersion = 1;
+  let write = false;
+  let json = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--write') {
+      write = true;
+      continue;
+    }
+
+    if (arg === '--to') {
+      toVersion = parsePositiveInteger(args[index + 1], toVersion);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return { rootPath, toVersion, write, json };
+}
+
+function parseBenchmarkArgs(args: string[]): BenchmarkArgs {
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
+  let iterations = 3;
+  let json = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(args[index + 1] ?? profile);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--iterations') {
+      iterations = parsePositiveInteger(args[index + 1], iterations);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return { rootPath, profile, iterations, json };
+}
+
 function printValidationMarkdown(result: AtlasValidationResult): void {
   const errors = result.diagnostics.filter(
     (diagnostic) => diagnostic.level === 'error',
@@ -503,6 +596,9 @@ function printDiagnosticSection(
       ? `\`${diagnostic.entityId}\``
       : '`atlas`';
     console.log(`- ${subject}: ${diagnostic.message} \`${diagnostic.code}\``);
+    if (diagnostic.hint) {
+      console.log(`  Fix: ${diagnostic.hint}`);
+    }
   }
 }
 
@@ -585,6 +681,65 @@ Files: ${result.files.length}`);
   for (const file of result.files) {
     console.log(`- \`${file}\``);
   }
+}
+
+function printMigrateMarkdown(result: {
+  rootPath: string;
+  toVersion: number;
+  write: boolean;
+  scanned: number;
+  changed: number;
+  changes: Array<{ path: string; action: string; written: boolean }>;
+}): void {
+  console.log(`# Atlas migration
+
+Status: ${result.write ? 'written' : 'planned'}
+Root: \`${result.rootPath}\`
+Target schema_version: ${result.toVersion}
+Scanned: ${result.scanned}
+Changes: ${result.changed}`);
+
+  if (result.changes.length === 0) {
+    return;
+  }
+
+  console.log('\n## Changes\n');
+  for (const change of result.changes) {
+    const state = change.written ? 'written' : 'planned';
+    console.log(`- ${state} \`${change.action}\`: \`${change.path}\``);
+  }
+
+  if (!result.write) {
+    console.log('\nRun again with `--write` to update files.');
+  }
+}
+
+function printBenchmarkMarkdown(result: {
+  rootPath: string;
+  profile: AtlasProfile;
+  iterations: number;
+  entityCount: number;
+  relationCount: number;
+  diagnosticsCount: number;
+  loadMs: { min: number; avg: number; max: number };
+  normalizeMs: { min: number; avg: number; max: number };
+}): void {
+  console.log(`# Atlas benchmark
+
+Root: \`${result.rootPath}\`
+Profile: \`${result.profile}\`
+Iterations: ${result.iterations}
+
+Entities: ${result.entityCount}
+Relations: ${result.relationCount}
+Diagnostics: ${result.diagnosticsCount}
+
+## Timings
+
+| Phase | Min ms | Avg ms | Max ms |
+|---|---:|---:|---:|
+| load graph | ${result.loadMs.min} | ${result.loadMs.avg} | ${result.loadMs.max} |
+| index access | ${result.normalizeMs.min} | ${result.normalizeMs.avg} | ${result.normalizeMs.max} |`);
 }
 
 function printGlobalRegistryMarkdown(
@@ -746,6 +901,18 @@ function generateMarkdownUsage(): void {
 function contextPackUsage(): void {
   console.error(
     'Usage: atlas context-pack "<task>" [path] [--path <root>] [--budget tokens] [--profile public|private|company] [--deterministic] [--json]',
+  );
+}
+
+function migrateUsage(): void {
+  console.error(
+    'Usage: atlas migrate [path] [--path <root>] [--to 1] [--write] [--json]',
+  );
+}
+
+function benchmarkUsage(): void {
+  console.error(
+    'Usage: atlas benchmark [path] [--path <root>] [--profile public|private|company] [--iterations N] [--json]',
   );
 }
 
@@ -993,6 +1160,46 @@ switch (command) {
       );
     } else {
       console.log(renderContextPackMarkdown(pack));
+    }
+    break;
+  }
+  case 'migrate': {
+    const options = parseMigrateArgs(args);
+    if (options.toVersion !== 1) {
+      migrateUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const result = await migrateAtlas(options.rootPath, {
+      toVersion: options.toVersion,
+      write: options.write,
+    });
+
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printMigrateMarkdown(result);
+    }
+    break;
+  }
+  case 'benchmark': {
+    const options = parseBenchmarkArgs(args);
+    if (options.iterations < 1) {
+      benchmarkUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const result = await benchmarkAtlas(options.rootPath, {
+      profile: options.profile,
+      iterations: options.iterations,
+    });
+
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printBenchmarkMarkdown(result);
     }
     break;
   }

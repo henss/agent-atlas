@@ -13,6 +13,8 @@ atlas neighbors <entity-id> --depth 2
 atlas resolve-path <path>
 atlas context-pack "<task>" --budget 4000
 atlas generate markdown
+atlas migrate
+atlas benchmark
 atlas global validate
 atlas global list
 atlas global context-pack "<task>" --budget 8000
@@ -144,6 +146,26 @@ Profiles:
 - `company`: load base atlas files plus company overlays, then include all visible entities.
 
 The generator refreshes known generated files and directories while preserving non-generated files such as `docs/agents/README.md`.
+
+## `atlas migrate [path]`
+
+Previews or writes schema migrations. M10 supports `schema_version: 1`.
+
+```sh
+atlas migrate . --to 1
+atlas migrate . --to 1 --write
+```
+
+Dry-run output is Markdown by default and lists planned file changes.
+
+## `atlas benchmark [path]`
+
+Runs a lightweight load benchmark for larger atlases.
+
+```sh
+atlas benchmark . --iterations 5
+atlas benchmark examples/company-cross-repo-sanitized --profile company --json
+```
 
 ## `atlas global validate [registry-root]`
 

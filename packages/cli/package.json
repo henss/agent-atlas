@@ -16,7 +16,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run --passWithNoTests",
+    "test": "pnpm run build && vitest run --passWithNoTests",
     "lint": "tsc -p tsconfig.json --noEmit",
     "atlas": "node dist/index.js"
   }

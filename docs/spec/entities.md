@@ -26,6 +26,7 @@ IDs should be stable, lowercase, URL-friendly, and portable across generated out
 ## Common fields
 
 ```yaml
+schema_version: 1
 id: component:example
 kind: component
 title: Example Component
@@ -55,6 +56,7 @@ M1 does not define additional required fields for specific entity kinds. Kind-sp
 ## Optional common fields
 
 - `status`: `active`, `planned`, `deprecated`, `archived`, `experimental`
+- `schema_version`: currently `1`; omitted legacy files can be updated with `atlas migrate --to 1 --write`
 - `visibility`: `public`, `private`, `internal`, `restricted`
 - `tags`: short classification labels
 - `aliases`: alternate names agents may see in tasks
