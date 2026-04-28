@@ -25,21 +25,26 @@ export interface AtlasDoctorResult {
   checks: AtlasDoctorCheck[];
 }
 
+interface AtlasInstallationLayout {
+  rootPath: string;
+  kind: 'workspace' | 'package';
+}
+
 export async function doctorAtlas(
   rootPath: string,
   options: { profile?: AtlasProfile } = {},
 ): Promise<AtlasDoctorResult> {
   const absoluteRoot = path.resolve(rootPath);
   const profile = options.profile ?? 'public';
-  const repositoryRoot = resolveRepositoryRoot();
-  const packageVersions = await readPackageVersions(repositoryRoot);
+  const installation = await resolveInstallationLayout();
+  const packageVersions = await readPackageVersions(installation);
   const checks: AtlasDoctorCheck[] = [];
 
   checks.push(await checkDirectory('target root', absoluteRoot));
   checks.push(await checkAtlasInput(absoluteRoot));
-  checks.push(...(await checkBuildOutputs(repositoryRoot)));
-  checks.push(await checkMcpAvailability(repositoryRoot));
-  checks.push(await checkPackageWorkspace(repositoryRoot));
+  checks.push(...(await checkBuildOutputs(installation)));
+  checks.push(await checkMcpAvailability(installation));
+  checks.push(await checkPackageWorkspace(installation));
 
   const status = checks.some((check) => check.status === 'failed')
     ? 'failed'
@@ -81,10 +86,16 @@ export async function doctorAtlas(
   };
 }
 
-function resolveRepositoryRoot(): string {
+async function resolveInstallationLayout(): Promise<AtlasInstallationLayout> {
   const modulePath = fileURLToPath(import.meta.url);
   const packageRoot = path.resolve(path.dirname(modulePath), '..');
-  return path.resolve(packageRoot, '..', '..');
+  const workspaceRoot = path.resolve(packageRoot, '..', '..');
+
+  if (await fileExists(path.join(workspaceRoot, 'pnpm-workspace.yaml'))) {
+    return { rootPath: workspaceRoot, kind: 'workspace' };
+  }
+
+  return { rootPath: packageRoot, kind: 'package' };
 }
 
 async function checkDirectory(
@@ -135,15 +146,42 @@ async function checkAtlasInput(rootPath: string): Promise<AtlasDoctorCheck> {
 }
 
 async function checkBuildOutputs(
-  repositoryRoot: string,
+  installation: AtlasInstallationLayout,
 ): Promise<AtlasDoctorCheck[]> {
-  const outputs = [
-    ['CLI build', path.join(repositoryRoot, 'packages', 'cli', 'dist', 'index.js')],
-    [
-      'MCP build',
-      path.join(repositoryRoot, 'packages', 'mcp-server', 'dist', 'stdio.js'),
-    ],
-  ] as const;
+  const outputs =
+    installation.kind === 'workspace'
+      ? ([
+          [
+            'CLI build',
+            path.join(
+              installation.rootPath,
+              'packages',
+              'cli',
+              'dist',
+              'index.js',
+            ),
+          ],
+          [
+            'MCP build',
+            path.join(
+              installation.rootPath,
+              'packages',
+              'mcp-server',
+              'dist',
+              'stdio.js',
+            ),
+          ],
+        ] as const)
+      : ([
+          [
+            'CLI build',
+            path.join(installation.rootPath, 'dist', 'index.js'),
+          ],
+          [
+            'MCP bundled runtime',
+            path.join(installation.rootPath, 'dist', 'index.js'),
+          ],
+        ] as const);
 
   return Promise.all(
     outputs.map(async ([name, filePath]) => {
@@ -166,14 +204,17 @@ async function checkBuildOutputs(
 }
 
 async function checkMcpAvailability(
-  repositoryRoot: string,
+  installation: AtlasInstallationLayout,
 ): Promise<AtlasDoctorCheck> {
-  const packageJsonPath = path.join(
-    repositoryRoot,
-    'packages',
-    'mcp-server',
-    'package.json',
-  );
+  const packageJsonPath =
+    installation.kind === 'workspace'
+      ? path.join(
+          installation.rootPath,
+          'packages',
+          'mcp-server',
+          'package.json',
+        )
+      : path.join(installation.rootPath, 'package.json');
   const packageJson = await readJsonFile(packageJsonPath);
   const dependencies = isRecord(packageJson.dependencies)
     ? packageJson.dependencies
@@ -196,9 +237,17 @@ async function checkMcpAvailability(
 }
 
 async function checkPackageWorkspace(
-  repositoryRoot: string,
+  installation: AtlasInstallationLayout,
 ): Promise<AtlasDoctorCheck> {
-  if (await fileExists(path.join(repositoryRoot, 'pnpm-workspace.yaml'))) {
+  if (installation.kind === 'package') {
+    return {
+      name: 'package layout',
+      status: 'passed',
+      message: 'Running from packaged @agent-atlas/cli.',
+    };
+  }
+
+  if (await fileExists(path.join(installation.rootPath, 'pnpm-workspace.yaml'))) {
     return {
       name: 'workspace packages',
       status: 'passed',
@@ -215,21 +264,26 @@ async function checkPackageWorkspace(
 }
 
 async function readPackageVersions(
-  repositoryRoot: string,
+  installation: AtlasInstallationLayout,
 ): Promise<Record<string, string>> {
-  const packagePaths = [
-    'package.json',
-    'packages/schema/package.json',
-    'packages/core/package.json',
-    'packages/cli/package.json',
-    'packages/markdown/package.json',
-    'packages/mcp-server/package.json',
-    'packages/adapters/package.json',
-  ];
+  const packagePaths =
+    installation.kind === 'workspace'
+      ? [
+          'package.json',
+          'packages/schema/package.json',
+          'packages/core/package.json',
+          'packages/cli/package.json',
+          'packages/markdown/package.json',
+          'packages/mcp-server/package.json',
+          'packages/adapters/package.json',
+        ]
+      : ['package.json'];
   const versions: Record<string, string> = {};
 
   for (const packagePath of packagePaths) {
-    const packageJson = await readJsonFile(path.join(repositoryRoot, packagePath));
+    const packageJson = await readJsonFile(
+      path.join(installation.rootPath, packagePath),
+    );
     if (
       typeof packageJson.name === 'string' &&
       typeof packageJson.version === 'string'

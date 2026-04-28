@@ -9,16 +9,20 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "README.md",
+    "dist/index.js"
+  ],
   "dependencies": {
-    "@agent-atlas/core": "workspace:*",
-    "@agent-atlas/markdown": "workspace:*",
-    "@agent-atlas/mcp-server": "workspace:*",
-    "@agent-atlas/schema": "workspace:*"
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "yaml": "^2.6.0",
+    "zod": "^3.25.0"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node build.mjs",
     "test": "pnpm run build && vitest run --passWithNoTests",
     "lint": "tsc -p tsconfig.json --noEmit",
+    "prepack": "pnpm run build",
     "atlas": "node dist/index.js"
   }
 }

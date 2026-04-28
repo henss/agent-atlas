@@ -2,7 +2,14 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "../..",
+    "baseUrl": "../..",
+    "paths": {
+      "@agent-atlas/core": ["packages/core/src/index.ts"],
+      "@agent-atlas/markdown": ["packages/markdown/src/index.ts"],
+      "@agent-atlas/mcp-server": ["packages/mcp-server/src/index.ts"],
+      "@agent-atlas/schema": ["packages/schema/src/index.ts"]
+    }
   },
   "include": [
     "src/**/*.ts"

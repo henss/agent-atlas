@@ -36,8 +36,9 @@ Use this checklist before publishing any Agent Atlas npm artifact.
 - `packages/cli/package.json` has a working `bin.atlas` entry.
 - The package version matches the intended preview release version.
 - Workspace dependency packaging is deliberate:
-  - either dependent workspace packages are also publish-ready, or
-  - the CLI package is bundled so `pnpm dlx @agent-atlas/cli@<version>` works from a clean public repo.
+  - OPS-2298 chooses the bundled CLI approach for the first preview.
+  - `@agent-atlas/core`, `@agent-atlas/schema`, `@agent-atlas/markdown`, and `@agent-atlas/mcp-server` are bundled into `@agent-atlas/cli` and are not stable public APIs.
+  - Third-party runtime dependencies remain external and must be declared directly by `@agent-atlas/cli`.
 - `npm pack --dry-run` or `pnpm pack --dry-run` output is reviewed.
 - Published files include only required runtime code, README, license, and package metadata.
 - Published files exclude:
@@ -46,6 +47,46 @@ Use this checklist before publishing any Agent Atlas npm artifact.
   - `examples/**` unless explicitly reviewed as public-safe
   - local generated docs not needed by CLI runtime
   - test fixtures that are not needed by consumers
+- `package.json` in the packed CLI must not contain `workspace:*` dependencies.
+- The packed preview CLI tarball should contain `dist/index.js`, `README.md`, and `package.json` only unless a new runtime need is explicit.
+
+## Local Tarball Verification
+
+Before publishing, prove the packed CLI works outside the workspace:
+
+```sh
+cd packages/cli
+npm pack
+mkdir %TEMP%\agent-atlas-pack-smoke
+cd %TEMP%\agent-atlas-pack-smoke
+npm init -y
+npm install D:\workspace\agent-atlas\packages\cli\agent-atlas-cli-0.16.0.tgz
+npx atlas --help
+mkdir .agent-atlas\public\repositories
+```
+
+Create `.agent-atlas/public/repositories/example.yaml`:
+
+```yaml
+id: repository:example
+kind: repository
+title: Example
+summary: Minimal public package smoke test repository.
+status: active
+visibility: public
+uri: repo://example
+relations: []
+```
+
+Then run:
+
+```sh
+npx atlas validate . --profile public
+npx atlas generate markdown . --output docs/agents --profile public
+npx atlas generate markdown . --output docs/agents --profile public --check
+```
+
+Delete the generated tarball after the smoke test unless it is the artifact being reviewed for release.
 
 ## Public Repo Script Template
 
@@ -107,4 +148,3 @@ Every preview release should state:
 - Keep sibling-checkout consumption documented and working.
 - Downstream public repos should be able to pin or roll back the CLI version without changing atlas metadata.
 - If the published CLI breaks public repo validation, create a Linear issue and revert downstream script adoption before changing public atlas metadata.
-
