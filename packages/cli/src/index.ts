@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { findNeighbors, loadAtlasGraph, resolvePathInGraph, validateAtlas } from '@agent-atlas/core';
+import { generateMarkdownViews } from '@agent-atlas/markdown';
+import type { MarkdownProfile } from '@agent-atlas/markdown';
 import type {
   AtlasDiagnostic,
   AtlasGraph,
@@ -69,6 +73,13 @@ interface ResolvePathArgs {
   rootPath: string;
   json: boolean;
   depth: number;
+}
+
+interface GenerateMarkdownArgs {
+  rootPath: string;
+  outputPath: string;
+  profile: MarkdownProfile;
+  json: boolean;
 }
 
 function parseShowArgs(args: string[]): ShowArgs {
@@ -190,6 +201,48 @@ function parseResolvePathArgs(args: string[]): ResolvePathArgs {
   return { filePath, rootPath, json, depth };
 }
 
+function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
+  let rootPath = process.cwd();
+  let outputPath = 'docs/agents';
+  let profile: MarkdownProfile = 'public';
+  let json = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === 'markdown') {
+      continue;
+    }
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--path') {
+      rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--output') {
+      outputPath = args[index + 1] ?? outputPath;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseMarkdownProfile(args[index + 1] ?? profile);
+      index += 1;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return { rootPath, outputPath, profile, json };
+}
+
 function printValidationMarkdown(result: AtlasValidationResult): void {
   const errors = result.diagnostics.filter((diagnostic) => diagnostic.level === 'error');
   const warnings = result.diagnostics.filter((diagnostic) => diagnostic.level === 'warning');
@@ -278,6 +331,28 @@ Owners: ${result.owners.length}`);
   printContextSection('Tests', result.tests);
 }
 
+function printGenerateMarkdownResult(result: {
+  outputPath: string;
+  profile: MarkdownProfile;
+  files: string[];
+}): void {
+  console.log(`# Atlas Markdown generation
+
+Status: generated
+Profile: \`${result.profile}\`
+Output: \`${result.outputPath}\`
+Files: ${result.files.length}`);
+
+  if (result.files.length === 0) {
+    return;
+  }
+
+  console.log('\n## Files\n');
+  for (const file of result.files) {
+    console.log(`- \`${file}\``);
+  }
+}
+
 function printOwnerSection(owners: PathOwnerMatch[]): void {
   if (owners.length === 0) {
     return;
@@ -331,6 +406,12 @@ function resolvePathUsage(): void {
   console.error('Usage: atlas resolve-path <file-path> [atlas-root] [--path <root>] [--json]');
 }
 
+function generateMarkdownUsage(): void {
+  console.error(
+    'Usage: atlas generate markdown [path] [--path <root>] [--output docs/agents] [--profile public|private|company] [--json]',
+  );
+}
+
 function parsePositiveInteger(value: string | undefined, fallback: number): number {
   if (!value) {
     return fallback;
@@ -351,8 +432,27 @@ function isAtlasRelationType(value: string): value is AtlasRelationType {
   return (ATLAS_RELATION_TYPES as readonly string[]).includes(value);
 }
 
+function parseMarkdownProfile(value: string): MarkdownProfile {
+  return value === 'private' || value === 'company' ? value : 'public';
+}
+
 function formatProvenance(edge: AtlasGraphEdge): string {
   return edge.provenance === 'generated' ? '(generated)' : '(explicit)';
+}
+
+async function cleanGeneratedMarkdownOutput(outputPath: string): Promise<void> {
+  await mkdir(outputPath, { recursive: true });
+  for (const generatedPath of [
+    'atlas.md',
+    'verification.md',
+    'components',
+    'documents',
+    'domains',
+    'resources',
+    'workflows',
+  ]) {
+    await rm(path.join(outputPath, generatedPath), { recursive: true, force: true });
+  }
 }
 
 switch (command) {
@@ -464,6 +564,38 @@ switch (command) {
     }
 
     process.exitCode = result.owners.length === 0 ? 1 : 0;
+    break;
+  }
+  case 'generate': {
+    if (args[0] !== 'markdown') {
+      generateMarkdownUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const options = parseGenerateMarkdownArgs(args);
+    const graph = await loadAtlasGraph(options.rootPath);
+    const files = generateMarkdownViews(graph, { profile: options.profile });
+    const absoluteOutputPath = path.resolve(options.rootPath, options.outputPath);
+
+    await cleanGeneratedMarkdownOutput(absoluteOutputPath);
+    for (const file of files) {
+      const absoluteFilePath = path.join(absoluteOutputPath, file.path);
+      await mkdir(path.dirname(absoluteFilePath), { recursive: true });
+      await writeFile(absoluteFilePath, file.content, 'utf8');
+    }
+
+    const result = {
+      outputPath: absoluteOutputPath,
+      profile: options.profile,
+      files: files.map((file) => file.path),
+    };
+
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printGenerateMarkdownResult(result);
+    }
     break;
   }
   default:

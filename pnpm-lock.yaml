@@ -32,6 +32,9 @@ importers:
       '@agent-atlas/core':
         specifier: workspace:*
         version: link:../core
+      '@agent-atlas/markdown':
+        specifier: workspace:*
+        version: link:../markdown
       '@agent-atlas/schema':
         specifier: workspace:*
         version: link:../schema
@@ -47,6 +50,9 @@ importers:
 
   packages/markdown:
     dependencies:
+      '@agent-atlas/core':
+        specifier: workspace:*
+        version: link:../core
       '@agent-atlas/schema':
         specifier: workspace:*
         version: link:../schema

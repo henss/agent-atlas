@@ -51,12 +51,12 @@ Goal: let agents start from a file and find broader context.
 
 Goal: create lightweight docs that agents and contributors can read.
 
-- [ ] Generate `docs/agents/atlas.md`.
-- [ ] Generate domain cards.
-- [ ] Generate workflow cards.
-- [ ] Generate component cards.
-- [ ] Mark generated files clearly.
-- [ ] Add public/private profile support for generated docs.
+- [x] Generate `docs/agents/atlas.md`.
+- [x] Generate domain cards.
+- [x] Generate workflow cards.
+- [x] Generate component cards.
+- [x] Mark generated files clearly.
+- [x] Add public/private profile support for generated docs.
 
 ## M5: Context packs
 
