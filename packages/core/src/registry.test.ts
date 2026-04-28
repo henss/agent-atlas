@@ -79,6 +79,12 @@ async function makeRegistryFixture(): Promise<string> {
     },
   );
   await mkdir(
+    path.join(root, 'repos', 'onboarding-api', '.agent-atlas', 'usage'),
+    {
+      recursive: true,
+    },
+  );
+  await mkdir(
     path.join(
       root,
       'repos',
@@ -186,6 +192,30 @@ relations:
 code:
   paths:
     - packages/api/**
+`,
+  );
+  await writeFile(
+    path.join(
+      root,
+      'repos',
+      'onboarding-api',
+      '.agent-atlas',
+      'usage',
+      'receipt.yaml',
+    ),
+    `version: 1
+recorded_at: "2026-04-28T12:00:00.000Z"
+task: validate global registry imports
+command: usage-note
+profile: company
+selected_entities:
+  - component:onboarding-api-service
+selected_files: []
+selected_tests: []
+broad_search_fallback: false
+missing_cards: []
+misleading_cards: []
+outcome: completed
 `,
   );
 

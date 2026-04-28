@@ -78,6 +78,50 @@ describe('validateAtlas', () => {
     );
   });
 
+  it('ignores local usage evidence receipts', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'agent-atlas-usage-receipts-'));
+    const atlasPath = path.join(root, '.agent-atlas', 'public', 'components');
+    const usagePath = path.join(root, '.agent-atlas', 'usage');
+    await mkdir(atlasPath, { recursive: true });
+    await mkdir(usagePath, { recursive: true });
+
+    await writeFile(
+      path.join(atlasPath, 'cli.yaml'),
+      [
+        'id: component:cli',
+        'kind: component',
+        'title: CLI',
+        'summary: Command-line interface.',
+        '',
+      ].join('\n'),
+    );
+    await writeFile(
+      path.join(usagePath, 'receipt.yaml'),
+      [
+        'version: 1',
+        'recorded_at: "2026-04-28T12:00:00.000Z"',
+        'task: validate ignores receipts',
+        'command: usage-note',
+        'profile: public',
+        'selected_entities:',
+        '  - component:cli',
+        'selected_files: []',
+        'selected_tests: []',
+        'broad_search_fallback: false',
+        'missing_cards: []',
+        'misleading_cards: []',
+        'outcome: completed',
+        '',
+      ].join('\n'),
+    );
+
+    const result = await validateAtlas(root);
+
+    expect(result.status).toBe('passed');
+    expect(result.entityCount).toBe(1);
+    expect(result.diagnostics.filter((diagnostic) => diagnostic.level === 'error')).toEqual([]);
+  });
+
   it('merges selected private overlays by profile', async () => {
     const root = await mkdtemp(path.join(tmpdir(), 'agent-atlas-overlay-'));
     try {

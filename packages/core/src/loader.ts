@@ -21,11 +21,15 @@ export async function loadAtlasDocuments(
   const atlasRoots = await findAtlasRoots(absoluteRoot);
 
   for (const atlasRoot of atlasRoots) {
-    await collectYamlDocuments(atlasRoot, documents);
+    await collectYamlDocuments(atlasRoot, documents, {
+      skipUsageReceipts: true,
+    });
   }
 
   if (documents.length === 0 && options.includeYamlRoot) {
-    await collectYamlDocuments(absoluteRoot, documents);
+    await collectYamlDocuments(absoluteRoot, documents, {
+      skipUsageReceipts: false,
+    });
   }
 
   documents.sort((left, right) => left.path.localeCompare(right.path));
@@ -87,6 +91,7 @@ async function directoryExists(directory: string): Promise<boolean> {
 async function collectYamlDocuments(
   directory: string,
   documents: LoadedAtlasDocument[],
+  options: { skipUsageReceipts: boolean },
 ): Promise<void> {
   let entries;
   try {
@@ -99,7 +104,10 @@ async function collectYamlDocuments(
     const entryPath = path.join(directory, entry.name);
 
     if (entry.isDirectory()) {
-      await collectYamlDocuments(entryPath, documents);
+      if (options.skipUsageReceipts && entry.name === 'usage') {
+        continue;
+      }
+      await collectYamlDocuments(entryPath, documents, options);
       continue;
     }
 

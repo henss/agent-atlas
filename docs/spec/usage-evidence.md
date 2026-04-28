@@ -28,6 +28,7 @@ outcome: completed
 ```
 
 Receipts should capture what was actually useful in a session, not everything the agent looked at.
+The `.agent-atlas/usage/` directory is local evidence storage, not entity metadata; atlas validation and graph loading ignore receipt YAML files there.
 
 ## Evaluation
 

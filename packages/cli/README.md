@@ -31,7 +31,7 @@ All commands that load an atlas accept one positional root path or `--path <root
 
 ## `atlas validate [path]`
 
-Loads `.agent-atlas/**/*.yaml` files under `path` or the current working directory, applies the selected profile, then checks entity shape, ID grammar, kind consistency, relation types, relation targets, duplicate IDs, overlay conflicts, and basic public-profile safety.
+Loads entity YAML files under `path` or the current working directory, ignores local `.agent-atlas/usage/` receipts, applies the selected profile, then checks entity shape, ID grammar, kind consistency, relation types, relation targets, duplicate IDs, overlay conflicts, and basic public-profile safety.
 
 ```sh
 atlas validate examples/personal-ops-sanitized
