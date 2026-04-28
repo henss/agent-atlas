@@ -1,0 +1,15 @@
+id: document:overlay-spec
+kind: document
+title: Overlay Specification
+summary: Specification for public, private, company, and generated atlas overlays.
+visibility: public
+uri: docs/spec/overlays.md
+relations:
+  - type: documents
+    target: workflow:manage-overlays
+  - type: documents
+    target: component:core-package
+  - type: documents
+    target: component:markdown-package
+  - type: documents
+    target: component:cli-package

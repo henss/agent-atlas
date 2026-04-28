@@ -1,0 +1,6 @@
+id: document:weekly-planning-system
+uri: notion://page/sanitized-weekly-planning
+access:
+  method: mcp
+  server: notion
+  permission: read

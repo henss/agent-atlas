@@ -24,6 +24,19 @@ describe('loadAtlasGraph', () => {
     );
   });
 
+  it('applies profile overlays before graph normalization', async () => {
+    const graph = await loadAtlasGraph(path.resolve('../../examples/personal-ops-sanitized'), {
+      profile: 'private',
+    });
+
+    expect(graph.index.entitiesById.get('resource:primary-calendar')?.uri).toBe(
+      'gcal://calendar/sanitized-primary',
+    );
+    expect(graph.index.entitiesById.get('document:weekly-planning-system')?.access?.server).toBe(
+      'notion',
+    );
+  });
+
   it('traverses neighbors with relation filters', async () => {
     const graph = await loadAtlasGraph(path.resolve('../../examples/personal-ops-sanitized'));
     const neighbors = findNeighbors(graph.index, 'workflow:plan-week', {

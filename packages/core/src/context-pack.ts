@@ -1,11 +1,12 @@
 import type { AtlasCommandReference, AtlasEntity, AtlasEntityId } from '@agent-atlas/schema';
 import type { AtlasGraph, AtlasGraphEdge } from './graph.js';
 import { resolvePathInGraph } from './path-resolution.js';
+import type { AtlasProfile } from './profile.js';
 
 export interface ContextPackRequest {
   task: string;
   budget?: number;
-  profile?: 'public' | 'private' | 'company';
+  profile?: AtlasProfile;
   deterministic?: boolean;
 }
 

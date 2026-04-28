@@ -29,5 +29,5 @@ Repos may wrap these commands in local package scripts while Agent Atlas remains
 
 - Use `validate`, `show`, `neighbors`, `resolve-path`, `generate markdown`, and `context-pack`.
 - Keep generated Markdown and context packs downstream-only until a repo has stable atlas files and a known CLI path.
-- Do not rely on overlays, MCP behavior, or cross-repo global packs until the matching roadmap milestones are implemented.
+- Do not rely on MCP behavior or cross-repo global packs until the matching roadmap milestones are implemented.
 - Do not copy `templates/repo/AGENTS.md` verbatim into target repos unless its referenced surfaces exist in that repo.

@@ -6,18 +6,18 @@ import {
   createContextPack,
   findNeighbors,
   loadAtlasGraph,
+  parseAtlasProfile,
   renderContextPackMarkdown,
   resolvePathInGraph,
   validateAtlas,
 } from '@agent-atlas/core';
 import { generateMarkdownViews } from '@agent-atlas/markdown';
-import type { MarkdownProfile } from '@agent-atlas/markdown';
 import type {
   AtlasDiagnostic,
   AtlasGraph,
   AtlasGraphEdge,
+  AtlasProfile,
   AtlasValidationResult,
-  ContextPackRequest,
   PathContextMatch,
   PathOwnerMatch,
   PathResolutionResult,
@@ -49,25 +49,39 @@ Args: ${args.join(' ')}
 `);
 }
 
-function parseValidateArgs(args: string[]): { rootPath: string; json: boolean } {
+function parseValidateArgs(args: string[]): {
+  rootPath: string;
+  profile: AtlasProfile;
+  json: boolean;
+} {
   let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
   let json = false;
 
-  for (const arg of args) {
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
     if (arg === '--json') {
       json = true;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(args[index + 1]);
+      index += 1;
       continue;
     }
 
     rootPath = arg;
   }
 
-  return { rootPath, json };
+  return { rootPath, profile, json };
 }
 
 interface ShowArgs {
   entityId?: AtlasEntityId;
   rootPath: string;
+  profile: AtlasProfile;
   json: boolean;
 }
 
@@ -79,6 +93,7 @@ interface NeighborArgs extends ShowArgs {
 interface ResolvePathArgs {
   filePath?: string;
   rootPath: string;
+  profile: AtlasProfile;
   json: boolean;
   depth: number;
 }
@@ -86,7 +101,7 @@ interface ResolvePathArgs {
 interface GenerateMarkdownArgs {
   rootPath: string;
   outputPath: string;
-  profile: MarkdownProfile;
+  profile: AtlasProfile;
   json: boolean;
 }
 
@@ -94,7 +109,7 @@ interface ContextPackArgs {
   task?: string;
   rootPath: string;
   budget: number;
-  profile: ContextPackRequest['profile'];
+  profile: AtlasProfile;
   deterministic: boolean;
   json: boolean;
 }
@@ -102,6 +117,7 @@ interface ContextPackArgs {
 function parseShowArgs(args: string[]): ShowArgs {
   let entityId: AtlasEntityId | undefined;
   let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
   let json = false;
 
   for (let index = 0; index < args.length; index += 1) {
@@ -118,6 +134,12 @@ function parseShowArgs(args: string[]): ShowArgs {
       continue;
     }
 
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(args[index + 1]);
+      index += 1;
+      continue;
+    }
+
     if (!entityId) {
       entityId = arg as AtlasEntityId;
       continue;
@@ -126,13 +148,14 @@ function parseShowArgs(args: string[]): ShowArgs {
     rootPath = arg;
   }
 
-  return { entityId, rootPath, json };
+  return { entityId, rootPath, profile, json };
 }
 
 function parseNeighborArgs(args: string[]): NeighborArgs {
   const relationTypes: AtlasRelationType[] = [];
   let entityId: AtlasEntityId | undefined;
   let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
   let json = false;
   let depth = 1;
 
@@ -146,6 +169,12 @@ function parseNeighborArgs(args: string[]): NeighborArgs {
 
     if (arg === '--path') {
       rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(args[index + 1]);
       index += 1;
       continue;
     }
@@ -175,6 +204,7 @@ function parseNeighborArgs(args: string[]): NeighborArgs {
   return {
     entityId,
     rootPath,
+    profile,
     json,
     depth,
     relationTypes: relationTypes.length > 0 ? relationTypes : undefined,
@@ -184,6 +214,7 @@ function parseNeighborArgs(args: string[]): NeighborArgs {
 function parseResolvePathArgs(args: string[]): ResolvePathArgs {
   let filePath: string | undefined;
   let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
   let json = false;
   let depth = 3;
 
@@ -197,6 +228,12 @@ function parseResolvePathArgs(args: string[]): ResolvePathArgs {
 
     if (arg === '--path') {
       rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(args[index + 1]);
       index += 1;
       continue;
     }
@@ -215,13 +252,13 @@ function parseResolvePathArgs(args: string[]): ResolvePathArgs {
     rootPath = arg;
   }
 
-  return { filePath, rootPath, json, depth };
+  return { filePath, rootPath, profile, json, depth };
 }
 
 function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
   let rootPath = process.cwd();
   let outputPath = 'docs/agents';
-  let profile: MarkdownProfile = 'public';
+  let profile: AtlasProfile = 'public';
   let json = false;
 
   for (let index = 0; index < args.length; index += 1) {
@@ -249,7 +286,7 @@ function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
     }
 
     if (arg === '--profile') {
-      profile = parseMarkdownProfile(args[index + 1] ?? profile);
+      profile = parseAtlasProfile(args[index + 1] ?? profile);
       index += 1;
       continue;
     }
@@ -264,7 +301,7 @@ function parseContextPackArgs(args: string[]): ContextPackArgs {
   let task: string | undefined;
   let rootPath = process.cwd();
   let budget = 4000;
-  let profile: ContextPackRequest['profile'] = 'public';
+  let profile: AtlasProfile = 'public';
   let deterministic = false;
   let json = false;
 
@@ -294,7 +331,7 @@ function parseContextPackArgs(args: string[]): ContextPackArgs {
     }
 
     if (arg === '--profile') {
-      profile = parseContextPackProfile(args[index + 1] ?? profile);
+      profile = parseAtlasProfile(args[index + 1] ?? profile);
       index += 1;
       continue;
     }
@@ -317,6 +354,7 @@ function printValidationMarkdown(result: AtlasValidationResult): void {
   console.log(`# Atlas validation
 
 Status: ${result.status}
+Profile: \`${result.profile}\`
 
 Entities: ${result.entityCount}
 Relations: ${result.relationCount}
@@ -400,7 +438,7 @@ Owners: ${result.owners.length}`);
 
 function printGenerateMarkdownResult(result: {
   outputPath: string;
-  profile: MarkdownProfile;
+  profile: AtlasProfile;
   files: string[];
 }): void {
   console.log(`# Atlas Markdown generation
@@ -460,17 +498,21 @@ function printEdgeSection(title: string, edges: AtlasGraphEdge[]): void {
 }
 
 function showUsage(): void {
-  console.error('Usage: atlas show <entity-id> [path] [--path <path>] [--json]');
+  console.error(
+    'Usage: atlas show <entity-id> [path] [--path <path>] [--profile public|private|company] [--json]',
+  );
 }
 
 function neighborsUsage(): void {
   console.error(
-    'Usage: atlas neighbors <entity-id> [path] [--depth N] [--relation type[,type]] [--json]',
+    'Usage: atlas neighbors <entity-id> [path] [--depth N] [--relation type[,type]] [--profile public|private|company] [--json]',
   );
 }
 
 function resolvePathUsage(): void {
-  console.error('Usage: atlas resolve-path <file-path> [atlas-root] [--path <root>] [--json]');
+  console.error(
+    'Usage: atlas resolve-path <file-path> [atlas-root] [--path <root>] [--profile public|private|company] [--json]',
+  );
 }
 
 function generateMarkdownUsage(): void {
@@ -505,14 +547,6 @@ function isAtlasRelationType(value: string): value is AtlasRelationType {
   return (ATLAS_RELATION_TYPES as readonly string[]).includes(value);
 }
 
-function parseMarkdownProfile(value: string): MarkdownProfile {
-  return value === 'private' || value === 'company' ? value : 'public';
-}
-
-function parseContextPackProfile(value: string): ContextPackRequest['profile'] {
-  return value === 'private' || value === 'company' ? value : 'public';
-}
-
 function formatProvenance(edge: AtlasGraphEdge): string {
   return edge.provenance === 'generated' ? '(generated)' : '(explicit)';
 }
@@ -541,7 +575,7 @@ switch (command) {
     break;
   case 'validate': {
     const options = parseValidateArgs(args);
-    const result = await validateAtlas(options.rootPath);
+    const result = await validateAtlas(options.rootPath, { profile: options.profile });
     if (options.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {
@@ -558,7 +592,7 @@ switch (command) {
       break;
     }
 
-    const graph = await loadAtlasGraph(options.rootPath);
+    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
     const entity = graph.index.entitiesById.get(options.entityId);
     if (!entity) {
       console.error(`Atlas entity not found: ${options.entityId}`);
@@ -592,7 +626,7 @@ switch (command) {
       break;
     }
 
-    const graph = await loadAtlasGraph(options.rootPath);
+    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
     if (!graph.index.entitiesById.has(options.entityId)) {
       console.error(`Atlas entity not found: ${options.entityId}`);
       process.exitCode = 1;
@@ -631,7 +665,7 @@ switch (command) {
       break;
     }
 
-    const graph = await loadAtlasGraph(options.rootPath);
+    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
     const result = resolvePathInGraph(graph, options.filePath, { depth: options.depth });
 
     if (options.json) {
@@ -651,7 +685,7 @@ switch (command) {
     }
 
     const options = parseGenerateMarkdownArgs(args);
-    const graph = await loadAtlasGraph(options.rootPath);
+    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
     const files = generateMarkdownViews(graph, { profile: options.profile });
     const absoluteOutputPath = path.resolve(options.rootPath, options.outputPath);
 
@@ -683,7 +717,7 @@ switch (command) {
       break;
     }
 
-    const graph = await loadAtlasGraph(options.rootPath);
+    const graph = await loadAtlasGraph(options.rootPath, { profile: options.profile });
     const pack = createContextPack(graph, {
       task: options.task,
       budget: options.budget,

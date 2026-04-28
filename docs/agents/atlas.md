@@ -11,10 +11,10 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 ## Counts
 
 - Domains: 1
-- Workflows: 5
+- Workflows: 6
 - Systems: 0
 - Components: 6
-- Relations: 122
+- Relations: 148
 
 ## Domains
 
@@ -25,6 +25,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 - `workflow:create-context-pack` - Create Context Pack: Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
 - `workflow:define-atlas-model` - Define Atlas Model: Evolves entity fields, relation types, validation behavior, and schema documentation together.
 - `workflow:generate-agent-docs` - Generate Agent Docs: Produces compact generated Markdown views under docs/agents from canonical atlas YAML.
+- `workflow:manage-overlays` - Manage Overlays: Applies profile-specific atlas overlays while keeping public-safe base metadata separate from private or company enrichments.
 - `workflow:navigate-atlas-graph` - Navigate Atlas Graph: Loads atlas files, normalizes graph edges, traverses related entities, and resolves source paths to context.
 - `workflow:operate-atlas-cli` - Operate Atlas CLI: Exposes validation, graph navigation, path resolution, context packs, and Markdown generation through concise CLI commands.
 
@@ -32,7 +33,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 
 - `component:adapters-package` - Adapters Package: Defines adapter interfaces for external systems and future integration packages.
 - `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, graph inspection, path resolution, context packs, and generated Markdown.
-- `component:core-package` - Core Package: Loads atlas YAML, validates graph structure, normalizes relations, resolves paths, supports traversal, and creates context packs.
+- `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, and creates context packs.
 - `component:markdown-package` - Markdown Package: Renders generated agent-facing Markdown views from loaded atlas graphs.
 - `component:mcp-server-package` - MCP Server Package: Skeleton package for future MCP resources and traversal tools over atlas data.
 - `component:schema-package` - Schema Package: Defines atlas entity types, relation vocabulary, and JSON Schema validation assets.
@@ -43,4 +44,4 @@ Use `atlas resolve-path <path>` to map a source file to owning components and re
 
 ## Context Packs
 
-Context packs are planned. Until then, start from `atlas show <entity-id>`, `atlas neighbors <entity-id>`, or the generated cards in this directory.
+Use `atlas context-pack "<task>" --budget 4000` to generate a task-specific context bundle from this graph.

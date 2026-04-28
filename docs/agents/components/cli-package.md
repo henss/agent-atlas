@@ -23,10 +23,12 @@ Provides the atlas command-line interface for validation, graph inspection, path
 
 - `document:cli-readme`
 - `document:context-pack-spec` _(generated)_
+- `document:overlay-spec` _(generated)_
 
 ### `implements`
 
 - `workflow:create-context-pack`
+- `workflow:manage-overlays`
 - `workflow:operate-atlas-cli`
 
 ### `part-of`
@@ -41,6 +43,7 @@ Provides the atlas command-line interface for validation, graph inspection, path
 
 - `workflow:create-context-pack` _(generated)_
 - `workflow:generate-agent-docs` _(generated)_
+- `workflow:manage-overlays` _(generated)_
 - `workflow:operate-atlas-cli` _(generated)_
 
 ### `uses`

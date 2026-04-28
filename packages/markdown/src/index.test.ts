@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { loadAtlasGraph } from '@agent-atlas/core';
-import { generateMarkdownViews } from './index.js';
+import { generateMarkdownViews, renderEntityCard } from './index.js';
 
 describe('generateMarkdownViews', () => {
   it('generates compact public markdown views', async () => {
@@ -19,9 +19,32 @@ describe('generateMarkdownViews', () => {
   });
 
   it('includes private-profile files when requested', async () => {
-    const graph = await loadAtlasGraph(path.resolve('../../examples/personal-ops-sanitized'));
+    const graph = await loadAtlasGraph(path.resolve('../../examples/personal-ops-sanitized'), {
+      profile: 'private',
+    });
     const files = generateMarkdownViews(graph, { profile: 'private' });
 
     expect(files.map((file) => file.path)).toContain('documents/weekly-planning-system.md');
+    expect(files.find((file) => file.path === 'documents/weekly-planning-system.md')?.content).toContain(
+      'notion://page/sanitized-weekly-planning',
+    );
+  });
+
+  it('redacts private references from public markdown cards', () => {
+    const markdown = renderEntityCard(
+      {
+        id: 'document:release-process',
+        kind: 'document',
+        title: 'Release Process',
+        summary: 'Internal release process.',
+        visibility: 'public',
+        uri: 'notion://page/sanitized-release-process',
+      },
+      [],
+      'public',
+    );
+
+    expect(markdown).toContain('[redacted: private reference]');
+    expect(markdown).not.toContain('notion://page/sanitized-release-process');
   });
 });

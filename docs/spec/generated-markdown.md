@@ -33,6 +33,7 @@ Generated files should begin with:
 - how to resolve paths
 - how to generate a context pack
 - public/private profile notice
+- redacted private URI values in public profile output
 
 ## Entity card view
 

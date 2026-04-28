@@ -1,6 +1,7 @@
 import type { AtlasEntity, AtlasEntityId, AtlasRelation, AtlasRelationType } from '@agent-atlas/schema';
 import { getInverseRelationType } from '@agent-atlas/schema';
 import type { AtlasDiagnostic } from './diagnostics.js';
+import type { AtlasProfile } from './profile.js';
 import { validateAtlas } from './validation.js';
 
 export interface AtlasGraphIndex {
@@ -28,8 +29,15 @@ export interface AtlasGraph {
   diagnostics: AtlasDiagnostic[];
 }
 
-export async function loadAtlasGraph(rootPath: string): Promise<AtlasGraph> {
-  const validation = await validateAtlas(rootPath);
+export interface LoadAtlasGraphOptions {
+  profile?: AtlasProfile;
+}
+
+export async function loadAtlasGraph(
+  rootPath: string,
+  options: LoadAtlasGraphOptions = {},
+): Promise<AtlasGraph> {
+  const validation = await validateAtlas(rootPath, { profile: options.profile });
   const graphEntities = keepFirstEntityById(validation.entities);
   const edges = normalizeGraphEdges(graphEntities);
   const index = createGraphIndex(graphEntities, edges);

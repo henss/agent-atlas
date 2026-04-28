@@ -42,15 +42,18 @@ Suggested profiles:
     generated/         # reproducible if possible
 ```
 
-## Merge rules draft
+## Merge rules
 
 1. Entity identity is determined by `id`.
-2. Overlays may add optional fields.
-3. Overlays may append relations.
-4. Overlays may replace selected scalar fields only when explicitly allowed.
-5. Overlays must not change `kind` unless a migration explicitly allows it.
-6. Public profile must not include fields marked private.
-7. Generated overlays must record provenance.
+2. Base entities live outside `.agent-atlas/overlays/**` and must include normal required entity fields.
+3. Overlay files live under `.agent-atlas/overlays/<profile>/` and may be partial. They must include `id`; `kind` is optional.
+4. Supported overlay profiles are `private`, `private.local`, `company`, and `generated`.
+5. The `public` profile uses base entities only. The `private` profile applies private overlays. The `company` profile applies company overlays. Generated overlays apply to non-public profiles.
+6. Overlays may replace selected scalar fields: `title`, `summary`, `status`, `visibility`, and `uri`.
+7. Overlays merge string arrays such as aliases, tags, owners, code paths, entrypoints, and agent hints.
+8. Overlays shallow-merge `access` and `metadata`.
+9. Overlays append relations and commands, deduplicating by stable keys.
+10. Overlays must not change `kind`.
 
 ## Conflict diagnostics
 
@@ -60,7 +63,7 @@ The validator should detect:
 - duplicate relation entries
 - public files containing private-only URI schemes
 - unknown overlay profile
-- missing base entity for overlay entity, unless explicitly allowed
+- missing base entity for overlay entity
 
 ## Example
 
@@ -86,3 +89,7 @@ access:
   server: google-workspace
   permission: read-write
 ```
+
+## Generated output safety
+
+Public generated Markdown redacts private URI schemes if a public-visible entity accidentally contains one. The validator still warns so the source can be moved into an overlay.

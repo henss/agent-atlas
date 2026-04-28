@@ -73,11 +73,11 @@ Goal: generate token-budgeted context bundles for coding agents.
 
 Goal: support public core metadata plus private/company extensions.
 
-- [ ] Define overlay merge rules.
-- [ ] Implement `--profile public|private|company`.
-- [ ] Add private overlay examples.
-- [ ] Add diagnostics for accidentally public sensitive fields.
-- [ ] Add redaction helpers for generated docs.
+- [x] Define overlay merge rules.
+- [x] Implement `--profile public|private|company`.
+- [x] Add private overlay examples.
+- [x] Add diagnostics for accidentally public sensitive fields.
+- [x] Add redaction helpers for generated docs.
 
 ## M7: MCP server
 

@@ -1,7 +1,8 @@
 import type { AtlasEntity, AtlasEntityId, AtlasEntityKind } from '@agent-atlas/schema';
 import type { AtlasGraph, AtlasGraphEdge } from '@agent-atlas/core';
+import type { AtlasProfile } from '@agent-atlas/core';
 
-export type MarkdownProfile = 'public' | 'private' | 'company';
+export type MarkdownProfile = AtlasProfile;
 
 export interface MarkdownGenerationOptions {
   profile?: MarkdownProfile;
@@ -93,12 +94,18 @@ export function renderEntityCard(
   if (entity.uri || entity.access) {
     lines.push('', '## Access', '');
     if (entity.uri) {
-      lines.push(`- uri: \`${entity.uri}\``);
+      lines.push(`- uri: \`${renderUri(entity.uri, profile)}\``);
     }
     if (entity.access?.method) {
       lines.push(`- method: \`${entity.access.method}\``);
     }
-    if (entity.access?.private_overlay_required) {
+    if (profile !== 'public' && entity.access?.server) {
+      lines.push(`- server: \`${entity.access.server}\``);
+    }
+    if (profile !== 'public' && entity.access?.permission) {
+      lines.push(`- permission: \`${entity.access.permission}\``);
+    }
+    if (entity.access?.private_overlay_required || isPrivateUri(entity.uri)) {
       lines.push('- private overlay required');
     }
   }
@@ -177,7 +184,7 @@ Use \`atlas resolve-path <path>\` to map a source file to owning components and 
 
 ## Context Packs
 
-Context packs are planned. Until then, start from \`atlas show <entity-id>\`, \`atlas neighbors <entity-id>\`, or the generated cards in this directory.
+Use \`atlas context-pack "<task>" --budget 4000\` to generate a task-specific context bundle from this graph.
 `;
 }
 
@@ -245,6 +252,29 @@ function renderMetadata(entity: AtlasEntity): string[] {
     metadata.push(`- owners: ${entity.owners.join(', ')}`);
   }
   return metadata;
+}
+
+function renderUri(uri: string, profile: MarkdownProfile): string {
+  if (profile === 'public' && isPrivateUri(uri)) {
+    return '[redacted: private reference]';
+  }
+
+  return uri;
+}
+
+function isPrivateUri(uri: string | undefined): boolean {
+  if (!uri) {
+    return false;
+  }
+
+  const lowerUri = uri.toLowerCase();
+  return (
+    ['notion:', 'confluence:', 'jira:', 'gdrive:', 'google-drive:', 'gcal:', 'slack:', 'mailto:'].some(
+      (scheme) => lowerUri.startsWith(scheme),
+    ) ||
+    lowerUri.includes('localhost') ||
+    /^https?:\/\/(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(lowerUri)
+  );
 }
 
 function renderRelationGroups(edges: AtlasGraphEdge[]): string {

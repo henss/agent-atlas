@@ -30,5 +30,6 @@ Verifies:
 - `workflow:create-context-pack`
 - `workflow:define-atlas-model`
 - `workflow:generate-agent-docs`
+- `workflow:manage-overlays`
 - `workflow:navigate-atlas-graph`
 - `workflow:operate-atlas-cli`

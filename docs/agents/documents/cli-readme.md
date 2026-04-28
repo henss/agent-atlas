@@ -22,4 +22,5 @@ Package README documenting Atlas CLI commands and output conventions.
 
 - `component:cli-package`
 - `workflow:create-context-pack` _(generated)_
+- `workflow:manage-overlays` _(generated)_
 - `workflow:operate-atlas-cli`

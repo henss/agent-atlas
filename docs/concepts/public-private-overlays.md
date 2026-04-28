@@ -52,6 +52,8 @@ atlas generate markdown --profile public
 atlas context-pack "change release flow" --profile company
 ```
 
+Public profile commands load base atlas files only. Private and company profile commands load the same base files, then merge matching overlays before graph normalization, path resolution, Markdown generation, or context-pack selection.
+
 ## Security rule
 
 If a value would be harmful or awkward in a public GitHub issue, it probably belongs in an overlay. A shocking concept, keeping private things private.

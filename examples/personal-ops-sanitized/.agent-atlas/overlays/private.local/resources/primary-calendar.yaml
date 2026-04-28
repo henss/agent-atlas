@@ -1,0 +1,9 @@
+id: resource:primary-calendar
+uri: gcal://calendar/sanitized-primary
+access:
+  method: mcp
+  server: google-workspace
+  permission: read-write
+agent:
+  risk_notes:
+    - Calendar writes may affect live data when production credentials are used.

@@ -10,7 +10,8 @@ Validation should catch structural problems early and produce diagnostics that a
 
 ## Core validations
 
-- Entity IDs are valid and unique after profile merge.
+- Entity IDs are valid and unique in base atlas files.
+- Overlay files have a valid `id` and merge into an existing base entity for the selected profile.
 - Entity `kind` matches ID prefix.
 - Required fields are present.
 - Relation targets exist or are marked external.
@@ -18,6 +19,7 @@ Validation should catch structural problems early and produce diagnostics that a
 - Inverse relations are generated consistently.
 - Code paths are repo-relative and do not escape the repo.
 - Public profile does not contain private-only URI schemes.
+- Unknown overlay profiles and overlay kind conflicts are reported.
 - Overlay does not change protected fields.
 - Generated files are not hand-edited when generation checks are enabled.
 

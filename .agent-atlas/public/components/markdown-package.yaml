@@ -13,6 +13,8 @@ relations:
     target: domain:agent-atlas
   - type: implements
     target: workflow:generate-agent-docs
+  - type: implements
+    target: workflow:manage-overlays
   - type: uses
     target: component:core-package
   - type: documented-in

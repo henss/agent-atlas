@@ -22,10 +22,12 @@ Renders generated agent-facing Markdown views from loaded atlas graphs.
 ### `documented-in`
 
 - `document:generated-markdown-spec`
+- `document:overlay-spec` _(generated)_
 
 ### `implements`
 
 - `workflow:generate-agent-docs`
+- `workflow:manage-overlays`
 
 ### `part-of`
 
@@ -39,6 +41,7 @@ Renders generated agent-facing Markdown views from loaded atlas graphs.
 
 - `component:cli-package` _(generated)_
 - `workflow:generate-agent-docs` _(generated)_
+- `workflow:manage-overlays` _(generated)_
 
 ### `uses`
 

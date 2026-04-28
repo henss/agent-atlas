@@ -6,7 +6,7 @@ ID: `component:core-package`
 Kind: `component`
 Profile: `public`
 
-Loads atlas YAML, validates graph structure, normalizes relations, resolves paths, supports traversal, and creates context packs.
+Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, and creates context packs.
 
 ## Metadata
 
@@ -22,10 +22,12 @@ Loads atlas YAML, validates graph structure, normalizes relations, resolves path
 ### `documented-in`
 
 - `document:context-pack-spec` _(generated)_
+- `document:overlay-spec` _(generated)_
 
 ### `implements`
 
 - `workflow:create-context-pack`
+- `workflow:manage-overlays`
 - `workflow:navigate-atlas-graph`
 
 ### `part-of`
@@ -41,6 +43,7 @@ Loads atlas YAML, validates graph structure, normalizes relations, resolves path
 - `component:cli-package` _(generated)_
 - `component:markdown-package` _(generated)_
 - `workflow:create-context-pack` _(generated)_
+- `workflow:manage-overlays` _(generated)_
 - `workflow:navigate-atlas-graph` _(generated)_
 - `workflow:operate-atlas-cli` _(generated)_
 

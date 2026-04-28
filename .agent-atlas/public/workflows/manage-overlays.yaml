@@ -1,0 +1,25 @@
+id: workflow:manage-overlays
+kind: workflow
+title: Manage Overlays
+summary: Applies profile-specific atlas overlays while keeping public-safe base metadata separate from private or company enrichments.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:core-package
+  - type: uses
+    target: component:cli-package
+  - type: uses
+    target: component:markdown-package
+  - type: documented-in
+    target: document:overlay-spec
+  - type: documented-in
+    target: document:cli-readme
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Changing overlay merge behavior or profile selection
+    - Updating public/private redaction behavior
+  token_budget_hint: 1600
