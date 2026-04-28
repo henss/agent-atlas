@@ -27,6 +27,7 @@ Provides the atlas command-line interface for validation, boundary checks, graph
 - `document:context-pack-spec` _(generated)_
 - `document:incremental-authoring-guide`
 - `document:overlay-spec` _(generated)_
+- `document:package-publish-readiness` _(generated)_
 - `document:registry-spec`
 - `document:rollout-evidence-guide`
 - `document:usage-evidence-spec`

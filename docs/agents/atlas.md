@@ -14,7 +14,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 - Workflows: 7
 - Systems: 0
 - Components: 7
-- Relations: 247
+- Relations: 250
 
 ## Domains
 

@@ -83,7 +83,7 @@ node packages/cli/dist/index.js global generate markdown examples/company-cross-
 
 See [`packages/cli/README.md`](./packages/cli/README.md) for the full command reference.
 
-For sibling-checkout consumers, the current local compatibility contract is workspace package version `0.16.0`, entity `schema_version: 1`, usage receipt `version: 1`, boundary policy `version: 1`, and registry `version: 1`. Package publishing is still out of scope.
+For sibling-checkout consumers, the current local compatibility contract is workspace package version `0.16.0`, entity `schema_version: 1`, usage receipt `version: 1`, boundary policy `version: 1`, and registry `version: 1`. Package publishing is still out of scope until a deliberate preview release passes the [package publish readiness checklist](./docs/guides/package-publish-readiness.md).
 
 ## Roadmap status
 
@@ -128,9 +128,10 @@ Use overlays for private context instead of contaminating public files.
 
 1. [`docs/guides/authoring-atlas-files.md`](./docs/guides/authoring-atlas-files.md)
 2. [`docs/guides/local-cli-consumption.md`](./docs/guides/local-cli-consumption.md)
-3. [`docs/concepts/typed-context-graph.md`](./docs/concepts/typed-context-graph.md)
-4. [`docs/spec/entities.md`](./docs/spec/entities.md)
-5. [`docs/agents/atlas.md`](./docs/agents/atlas.md)
+3. [`docs/guides/package-publish-readiness.md`](./docs/guides/package-publish-readiness.md)
+4. [`docs/concepts/typed-context-graph.md`](./docs/concepts/typed-context-graph.md)
+5. [`docs/spec/entities.md`](./docs/spec/entities.md)
+6. [`docs/agents/atlas.md`](./docs/agents/atlas.md)
 
 ## License
 

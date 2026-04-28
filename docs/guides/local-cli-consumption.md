@@ -52,7 +52,7 @@ Use one built Agent Atlas sibling checkout as the unit of compatibility:
 - Registry config version: `version: 1`.
 - CLI, generated Markdown, registry commands, schema validation, and MCP server should come from the same checkout.
 - Run `node ../agent-atlas/packages/cli/dist/index.js doctor --path .` when wiring a repo into scripts or CI.
-- Package publishing remains out of scope until a separate distribution decision.
+- Package publishing remains out of scope until a separate distribution decision. Before publishing `@agent-atlas/cli`, use the publish-readiness gate in `docs/guides/package-publish-readiness.md`.
 
 ## Consumer rollout checklist
 
