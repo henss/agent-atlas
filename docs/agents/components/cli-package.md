@@ -6,7 +6,7 @@ ID: `component:cli-package`
 Kind: `component`
 Profile: `public`
 
-Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown, cross-repo registry commands, migrations, benchmarks, setup doctor checks, and usage evidence.
+Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown checks, incremental card suggestions, stale-reference diffing, cross-repo registry commands, migrations, benchmarks, setup doctor checks, and usage evidence.
 
 ## Metadata
 
@@ -25,6 +25,7 @@ Provides the atlas command-line interface for validation, boundary checks, graph
 - `document:boundary-safety-spec`
 - `document:cli-readme`
 - `document:context-pack-spec` _(generated)_
+- `document:incremental-authoring-guide`
 - `document:overlay-spec` _(generated)_
 - `document:registry-spec`
 - `document:rollout-evidence-guide`

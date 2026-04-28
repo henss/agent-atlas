@@ -2,7 +2,7 @@
 
 This roadmap is intentionally staged. Building everything at once is how frameworks become haunted furniture.
 
-Status: M0-M13 are complete. M14-M16 are the next authoring, registry, and MCP hardening milestones.
+Status: M0-M14 are complete. M15-M16 are the next registry and MCP hardening milestones.
 
 ## M0: Foundations
 
@@ -163,11 +163,11 @@ Goal: make public, private, and company rollouts safer to audit.
 
 Goal: reduce the cost of keeping atlas metadata current.
 
-- [ ] Add `atlas suggest-card --path <file>` to emit draft component, workflow, or test-scope cards without writing by default.
-- [ ] Add `atlas diff` for changed entities, stale generated docs, orphaned paths, and removed files referenced by cards.
-- [ ] Add `atlas generate --check` for CI and control-plane validation without rewriting generated docs.
-- [ ] Diagnose stale card references: missing paths, globs matching nothing, missing entrypoints, and test commands that reference missing scripts.
-- [ ] Add authoring recipes for one-seam updates so agents do not blanket-seed repos.
+- [x] Add `atlas suggest-card --path <file>` to emit draft component, workflow, or test-scope cards without writing by default.
+- [x] Add `atlas diff` for changed entities, stale generated docs, orphaned paths, and removed files referenced by cards.
+- [x] Add `atlas generate --check` for CI and control-plane validation without rewriting generated docs.
+- [x] Diagnose stale card references: missing paths, globs matching nothing, missing entrypoints, and test commands that reference missing scripts.
+- [x] Add authoring recipes for one-seam updates so agents do not blanket-seed repos.
 
 ## M15: Control-plane and global registry hardening
 

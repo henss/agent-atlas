@@ -47,6 +47,8 @@ node ../agent-atlas/packages/cli/dist/index.js boundary-check --path . --profile
 node ../agent-atlas/packages/cli/dist/index.js doctor --path .
 node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts --path .
 node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000
+node ../agent-atlas/packages/cli/dist/index.js suggest-card --path packages/core/src/example.ts --root .
+node ../agent-atlas/packages/cli/dist/index.js diff --path .
 node ../agent-atlas/packages/cli/dist/index.js usage-note "change packages/core/src/example.ts" --path . --command context-pack --entity component:example --file packages/core/src/example.ts
 node ../agent-atlas/packages/cli/dist/index.js evaluate --path .
 node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile private
@@ -64,6 +66,8 @@ Before broad search, use the atlas:
 - Root view: `docs/agents/atlas.md`
 - Check setup: `node ../agent-atlas/packages/cli/dist/index.js doctor --path .`
 - Resolve a file: `node ../agent-atlas/packages/cli/dist/index.js resolve-path <path> --path .`
+- Suggest a card: `node ../agent-atlas/packages/cli/dist/index.js suggest-card --path <path> --root .`
+- Check stale atlas references: `node ../agent-atlas/packages/cli/dist/index.js diff --path .`
 - Generate task context: `node ../agent-atlas/packages/cli/dist/index.js context-pack "<task>" --path . --budget 4000`
 - Record adoption evidence: `node ../agent-atlas/packages/cli/dist/index.js usage-note "<task>" --path . --command context-pack`
 ```
@@ -76,8 +80,8 @@ Use the template in `docs/ci/github-actions-agent-atlas.yml` as a starting point
 node ../agent-atlas/packages/cli/dist/index.js validate .
 node ../agent-atlas/packages/cli/dist/index.js boundary-check --path . --profile public
 node ../agent-atlas/packages/cli/dist/index.js doctor --path .
-node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile public
-git diff --exit-code docs/agents
+node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile public --check
+node ../agent-atlas/packages/cli/dist/index.js diff --path .
 ```
 
 ## Script templates

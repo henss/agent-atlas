@@ -1,0 +1,13 @@
+id: document:incremental-authoring-guide
+kind: document
+title: Incremental Authoring Guide
+summary: Guide for one-seam atlas updates using path resolution, draft card suggestions, generated-doc checks, and stale-reference diffing.
+visibility: public
+uri: docs/guides/incremental-authoring.md
+relations:
+  - type: documents
+    target: workflow:define-atlas-model
+  - type: documents
+    target: workflow:operate-atlas-cli
+  - type: part-of
+    target: domain:agent-atlas

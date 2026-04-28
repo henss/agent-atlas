@@ -20,7 +20,7 @@ Package: `packages/schema`
 
 ## 3. Core graph engine
 
-Loads entities, applies overlays, validates, normalizes relations, generates inverse edges, resolves paths, builds context packs, merges global registries, plans migrations, runs lightweight benchmarks, diagnoses local checkout setup, writes local usage receipts, evaluates context-pack output against those receipts, and checks profile boundaries.
+Loads entities, applies overlays, validates, normalizes relations, generates inverse edges, resolves paths, builds context packs, merges global registries, plans migrations, runs lightweight benchmarks, diagnoses local checkout setup, writes local usage receipts, evaluates context-pack output against those receipts, checks profile boundaries, and analyzes stale authoring references.
 
 Package: `packages/core`
 
@@ -55,15 +55,15 @@ Package: `packages/adapters`
 
 ## Current implementation
 
-The original implementation roadmap through M13 is complete:
+The original implementation roadmap through M14 is complete:
 
 1. Schema, validation, and schema-version migration support.
 2. Graph loading, traversal, path resolution, and diagnostics.
-3. CLI commands for validation, boundary checks, graph inspection, context packs, generated Markdown, migration, benchmarks, doctor checks, usage evidence, and global registries.
+3. CLI commands for validation, boundary checks, graph inspection, context packs, generated Markdown, generation checks, maintenance diffs, card suggestions, migration, benchmarks, doctor checks, usage evidence, and global registries.
 4. Generated Markdown views under `docs/agents/*`.
 5. Public/private/company overlays and redaction behavior.
 6. Read-only MCP resources and tools.
 7. Adapter interfaces and generic adapters.
 8. Cross-repo registry loading and global context packs.
 
-The next roadmap milestones focus on incremental authoring, registry operations, and MCP deployment.
+The next roadmap milestones focus on registry operations and MCP deployment.

@@ -22,6 +22,9 @@ node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/ex
 node ../agent-atlas/packages/cli/dist/index.js show component:example --path .
 node ../agent-atlas/packages/cli/dist/index.js neighbors component:example --path . --depth 2
 node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile private
+node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile private --check
+node ../agent-atlas/packages/cli/dist/index.js suggest-card --path packages/core/src/example.ts --root .
+node ../agent-atlas/packages/cli/dist/index.js diff --path .
 node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000 --profile private
 node ../agent-atlas/packages/cli/dist/index.js usage-note "change packages/core/src/example.ts" --path . --command context-pack --entity component:example --file packages/core/src/example.ts
 node ../agent-atlas/packages/cli/dist/index.js evaluate --path .
@@ -40,7 +43,7 @@ All atlas-loading commands accept one positional root path or `--path <root>`. D
 
 Use one built Agent Atlas sibling checkout as the unit of compatibility:
 
-- Workspace package version: `0.13.0`.
+- Workspace package version: `0.14.0`.
 - Entity schema version: `schema_version: 1`.
 - Usage receipt version: `version: 1`.
 - Registry config version: `version: 1`.
@@ -54,6 +57,9 @@ Use one built Agent Atlas sibling checkout as the unit of compatibility:
 - Run `boundary-check --profile public` before publishing generated agent docs or public examples.
 - Run `doctor --path .` when a downstream script, MCP config, or CI job fails unexpectedly.
 - Run `generate markdown` when a repo publishes `docs/agents/*`.
+- Run `generate markdown --check` in CI when generated docs are committed.
+- Run `diff --path .` to find stale atlas references, changed atlas cards, and stale generated docs before review.
+- Use `suggest-card --path <file> --root .` when a changed file needs a starter `component` or `test-scope` card.
 - Use `context-pack` for broad or multi-seam tasks.
 - Use `usage-note` after representative tasks during adoption pilots.
 - Use `evaluate` to compare receipts against deterministic context-pack output.

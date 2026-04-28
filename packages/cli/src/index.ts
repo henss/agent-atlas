@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
+  analyzeAtlasMaintenance,
   benchmarkAtlas,
   checkAtlasBoundary,
   createContextPack,
@@ -15,6 +16,7 @@ import {
   parseAtlasProfile,
   renderContextPackMarkdown,
   resolvePathInGraph,
+  suggestAtlasCard,
   validateAtlas,
   writeUsageNote,
 } from '@agent-atlas/core';
@@ -30,7 +32,9 @@ import type {
   PathResolutionResult,
   NeighborResult,
   AtlasDoctorResult,
+  AtlasMaintenanceReport,
   BoundaryCheckResult,
+  SuggestedAtlasCard,
   UsageEvidenceEvaluation,
   WriteUsageNoteResult,
 } from '@agent-atlas/core';
@@ -63,6 +67,9 @@ Implemented commands:
 - atlas resolve-path <path>
 - atlas context-pack "<task>" --budget 4000
 - atlas generate markdown
+- atlas generate markdown --check
+- atlas suggest-card --path <file>
+- atlas diff
 - atlas migrate [path] --to 1 [--write]
 - atlas benchmark [path]
 - atlas doctor [path]
@@ -171,6 +178,7 @@ interface GenerateMarkdownArgs {
   rootPath: string;
   outputPath: string;
   profile: AtlasProfile;
+  check: boolean;
   json: boolean;
 }
 
@@ -222,6 +230,25 @@ interface BoundaryCheckArgs {
   policyPath?: string;
   includeGenerated: boolean;
   json: boolean;
+}
+
+interface SuggestCardArgs {
+  filePath?: string;
+  rootPath: string;
+  json: boolean;
+}
+
+interface DiffArgs {
+  rootPath: string;
+  profile: AtlasProfile;
+  json: boolean;
+}
+
+interface CliDiffReport extends AtlasMaintenanceReport {
+  generatedOutputPath: string;
+  staleGeneratedFiles: string[];
+  missingGeneratedFiles: string[];
+  extraGeneratedFiles: string[];
 }
 
 interface UsageNoteArgs {
@@ -408,6 +435,7 @@ function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
   let rootPath = process.cwd();
   let outputPath = 'docs/agents';
   let profile: AtlasProfile = 'public';
+  let check = false;
   let json = false;
   let rootPathWasSet = false;
 
@@ -420,6 +448,11 @@ function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
 
     if (arg === '--json') {
       json = true;
+      continue;
+    }
+
+    if (arg === '--check') {
+      check = true;
       continue;
     }
 
@@ -448,7 +481,7 @@ function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
     [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
-  return { rootPath, outputPath, profile, json };
+  return { rootPath, outputPath, profile, check, json };
 }
 
 function parseContextPackArgs(args: string[]): ContextPackArgs {
@@ -786,6 +819,78 @@ function parseBoundaryCheckArgs(args: string[]): BoundaryCheckArgs {
   }
 
   return { rootPath, profile, policyPath, includeGenerated, json };
+}
+
+function parseSuggestCardArgs(args: string[]): SuggestCardArgs {
+  let filePath: string | undefined;
+  let rootPath = process.cwd();
+  let json = false;
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--path') {
+      filePath = readOptionValue(args, index, '--path');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--root') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--root'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return { filePath, rootPath, json };
+}
+
+function parseDiffArgs(args: string[]): DiffArgs {
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
+  let json = false;
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return { rootPath, profile, json };
 }
 
 function parseUsageNoteArgs(args: string[]): UsageNoteArgs {
@@ -1188,6 +1293,91 @@ Errors: ${errors.length}`);
   printDiagnosticSection('Warnings', warnings);
 }
 
+function printSuggestCardMarkdown(result: SuggestedAtlasCard): void {
+  console.log(`# Atlas suggested card
+
+Kind: \`${result.kind}\`
+Entity: \`${result.entityId}\`
+Path: \`${result.path}\`
+
+## Draft YAML
+
+\`\`\`yaml
+${result.yaml.trimEnd()}
+\`\`\`
+
+## Notes
+
+${result.notes.map((note) => `- ${note}`).join('\n')}`);
+}
+
+function printDiffMarkdown(result: CliDiffReport): void {
+  const errors = result.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'error',
+  );
+  const warnings = result.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'warning',
+  );
+
+  console.log(`# Atlas diff
+
+Status: ${result.status}
+Root: \`${result.rootPath}\`
+
+Changed atlas files: ${result.changedAtlasFiles.length}
+Changed generated files: ${result.changedGeneratedFiles.length}
+Stale generated files: ${result.staleGeneratedFiles.length}
+Missing generated files: ${result.missingGeneratedFiles.length}
+Extra generated files: ${result.extraGeneratedFiles.length}
+Warnings: ${warnings.length}
+Errors: ${errors.length}`);
+
+  printFileList('Changed Atlas Files', result.changedAtlasFiles);
+  printFileList('Changed Generated Files', result.changedGeneratedFiles);
+  printFileList('Stale Generated Files', result.staleGeneratedFiles);
+  printFileList('Missing Generated Files', result.missingGeneratedFiles);
+  printFileList('Extra Generated Files', result.extraGeneratedFiles);
+  printDiagnosticSection('Errors', errors);
+  printDiagnosticSection('Warnings', warnings);
+}
+
+function printGenerateCheckMarkdown(result: {
+  outputPath: string;
+  profile: AtlasProfile;
+  staleFiles: string[];
+  missingFiles: string[];
+  extraFiles: string[];
+}): void {
+  const status =
+    result.staleFiles.length === 0 &&
+    result.missingFiles.length === 0 &&
+    result.extraFiles.length === 0
+      ? 'passed'
+      : 'failed';
+  console.log(`# Atlas Markdown check
+
+Status: ${status}
+Profile: \`${result.profile}\`
+Output: \`${result.outputPath}\`
+Stale files: ${result.staleFiles.length}
+Missing files: ${result.missingFiles.length}
+Extra files: ${result.extraFiles.length}`);
+
+  printFileList('Stale Files', result.staleFiles);
+  printFileList('Missing Files', result.missingFiles);
+  printFileList('Extra Files', result.extraFiles);
+}
+
+function printFileList(title: string, files: string[]): void {
+  if (files.length === 0) {
+    return;
+  }
+  console.log(`\n## ${title}\n`);
+  for (const file of files) {
+    console.log(`- \`${file}\``);
+  }
+}
+
 function printUsageNoteMarkdown(result: WriteUsageNoteResult): void {
   console.log(`# Atlas usage note
 
@@ -1393,7 +1583,7 @@ function resolvePathUsage(): void {
 
 function generateMarkdownUsage(): void {
   console.error(
-    'Usage: atlas generate markdown [path] [--path <root>] [--output docs/agents] [--profile public|private|company] [--json]',
+    'Usage: atlas generate markdown [path] [--path <root>] [--output docs/agents] [--profile public|private|company] [--check] [--json]',
   );
 }
 
@@ -1424,6 +1614,18 @@ function doctorUsage(): void {
 function boundaryCheckUsage(): void {
   console.error(
     'Usage: atlas boundary-check [path] [--path <root>] [--profile public|private|company] [--policy agent-atlas.boundary.yaml] [--no-generated] [--json]',
+  );
+}
+
+function suggestCardUsage(): void {
+  console.error(
+    'Usage: atlas suggest-card --path <file> [--root <atlas-root>] [--json]',
+  );
+}
+
+function diffUsage(): void {
+  console.error(
+    'Usage: atlas diff [path] [--path <root>] [--profile public|private|company] [--json]',
   );
 }
 
@@ -1496,6 +1698,90 @@ async function cleanGeneratedMarkdownOutput(outputPath: string): Promise<void> {
       force: true,
     });
   }
+}
+
+async function checkGeneratedMarkdownOutput(
+  outputPath: string,
+  profile: AtlasProfile,
+  files: Array<{ path: string; content: string }>,
+): Promise<{
+  outputPath: string;
+  profile: AtlasProfile;
+  staleFiles: string[];
+  missingFiles: string[];
+  extraFiles: string[];
+}> {
+  const staleFiles: string[] = [];
+  const missingFiles: string[] = [];
+  const expectedFiles = new Set(files.map((file) => normalizeGeneratedPath(file.path)));
+  for (const file of files) {
+    const absoluteFilePath = path.join(outputPath, file.path);
+    try {
+      const existing = await readFile(absoluteFilePath, 'utf8');
+      if (existing.replace(/\r\n/g, '\n') !== file.content.replace(/\r\n/g, '\n')) {
+        staleFiles.push(file.path);
+      }
+    } catch {
+      missingFiles.push(file.path);
+    }
+  }
+
+  const existingGeneratedFiles = await collectExistingGeneratedMarkdownFiles(outputPath);
+  const extraFiles = existingGeneratedFiles
+    .filter((filePath) => !expectedFiles.has(filePath))
+    .sort();
+
+  return {
+    outputPath,
+    profile,
+    staleFiles,
+    missingFiles,
+    extraFiles,
+  };
+}
+
+async function collectExistingGeneratedMarkdownFiles(
+  outputPath: string,
+): Promise<string[]> {
+  const files: string[] = [];
+
+  async function walk(directory: string): Promise<void> {
+    let entries;
+    try {
+      entries = await readdir(directory, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        await walk(entryPath);
+        continue;
+      }
+
+      if (!entry.isFile() || !entry.name.endsWith('.md')) {
+        continue;
+      }
+
+      try {
+        const content = await readFile(entryPath, 'utf8');
+        if (content.startsWith('<!-- Generated by Agent Atlas. Do not edit directly. -->')) {
+          files.push(normalizeGeneratedPath(path.relative(outputPath, entryPath)));
+        }
+      } catch {
+        // Ignore unreadable files here; the normal generator check will report
+        // expected files that cannot be read as missing.
+      }
+    }
+  }
+
+  await walk(outputPath);
+  return files.sort();
+}
+
+function normalizeGeneratedPath(filePath: string): string {
+  return filePath.replaceAll('\\', '/');
 }
 
 async function main(): Promise<void> {
@@ -1644,6 +1930,26 @@ switch (command) {
       options.outputPath,
     );
 
+    if (options.check) {
+      const result = await checkGeneratedMarkdownOutput(
+        absoluteOutputPath,
+        options.profile,
+        files,
+      );
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        printGenerateCheckMarkdown(result);
+      }
+      process.exitCode =
+        result.staleFiles.length > 0 ||
+        result.missingFiles.length > 0 ||
+        result.extraFiles.length > 0
+          ? 1
+          : 0;
+      break;
+    }
+
     await cleanGeneratedMarkdownOutput(absoluteOutputPath);
     for (const file of files) {
       const absoluteFilePath = path.join(absoluteOutputPath, file.path);
@@ -1689,6 +1995,56 @@ switch (command) {
     } else {
       console.log(renderContextPackMarkdown(pack));
     }
+    break;
+  }
+  case 'suggest-card': {
+    const options = parseSuggestCardArgs(args);
+    if (!options.filePath) {
+      suggestCardUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const result = await suggestAtlasCard(options.rootPath, options.filePath);
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printSuggestCardMarkdown(result);
+    }
+    break;
+  }
+  case 'diff': {
+    const options = parseDiffArgs(args);
+    const graph = await loadAtlasGraph(options.rootPath, {
+      profile: options.profile,
+    });
+    const maintenance = await analyzeAtlasMaintenance(graph);
+    const generated = await checkGeneratedMarkdownOutput(
+      path.resolve(options.rootPath, 'docs/agents'),
+      options.profile,
+      generateMarkdownViews(graph, { profile: options.profile }),
+    );
+    const generatedHasDrift =
+      generated.staleFiles.length > 0 ||
+      generated.missingFiles.length > 0 ||
+      generated.extraFiles.length > 0;
+    const result: CliDiffReport = {
+      ...maintenance,
+      generatedOutputPath: generated.outputPath,
+      staleGeneratedFiles: generated.staleFiles,
+      missingGeneratedFiles: generated.missingFiles,
+      extraGeneratedFiles: generated.extraFiles,
+      status:
+        maintenance.status === 'failed' || generatedHasDrift
+          ? 'failed'
+          : 'passed',
+    };
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printDiffMarkdown(result);
+    }
+    process.exitCode = result.status === 'failed' ? 1 : 0;
     break;
   }
   case 'migrate': {

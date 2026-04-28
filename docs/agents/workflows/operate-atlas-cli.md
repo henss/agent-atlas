@@ -17,6 +17,7 @@ Exposes validation, graph navigation, path resolution, context packs, Markdown g
 ### `documented-in`
 
 - `document:cli-readme`
+- `document:incremental-authoring-guide` _(generated)_
 
 ### `implemented-by`
 

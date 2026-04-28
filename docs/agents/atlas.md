@@ -14,7 +14,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 - Workflows: 7
 - Systems: 0
 - Components: 6
-- Relations: 222
+- Relations: 232
 
 ## Domains
 
@@ -33,8 +33,8 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 ## Systems And Components
 
 - `component:adapters-package` - Adapters Package: Defines adapter interfaces and generic adapters for Backstage, Sourcegraph, local docs, and external resource references.
-- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown, cross-repo registry commands, migrations, benchmarks, setup doctor checks, and usage evidence.
-- `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, merges cross-repo registries, runs migrations, benchmarks load performance, evaluates local usage evidence, and checks profile boundaries.
+- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown checks, incremental card suggestions, stale-reference diffing, cross-repo registry commands, migrations, benchmarks, setup doctor checks, and usage evidence.
+- `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, suggests starter cards, diagnoses stale references, merges cross-repo registries, runs migrations, benchmarks load performance, evaluates local usage evidence, and checks profile boundaries.
 - `component:markdown-package` - Markdown Package: Renders generated agent-facing Markdown views from loaded atlas graphs.
 - `component:mcp-server-package` - MCP Server Package: Read-only MCP server exposing atlas resources and traversal tools over stdio.
 - `component:schema-package` - Schema Package: Defines atlas entity types, relation vocabulary, and JSON Schema validation assets.
