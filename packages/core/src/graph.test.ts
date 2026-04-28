@@ -34,6 +34,7 @@ describe('loadAtlasGraph', () => {
     expect(neighbors.map((neighbor) => neighbor.entity.id).sort()).toEqual([
       'component:google-calendar-adapter',
       'component:mealie-adapter',
+      'component:planning-output-helpers',
       'component:weekly-planner',
     ]);
     expect(neighbors.every((neighbor) => neighbor.via?.type === 'uses')).toBe(true);

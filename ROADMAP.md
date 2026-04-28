@@ -41,11 +41,11 @@ Goal: make atlas data navigable.
 
 Goal: let agents start from a file and find broader context.
 
-- [ ] Implement glob matching for `code.paths`.
-- [ ] Implement `atlas resolve-path <path>`.
-- [ ] Return owning components, workflows, domains, docs, and tests.
-- [ ] Add confidence scoring for ambiguous path matches.
-- [ ] Add examples for multi-component path ownership.
+- [x] Implement glob matching for `code.paths`.
+- [x] Implement `atlas resolve-path <path>`.
+- [x] Return owning components, workflows, domains, docs, and tests.
+- [x] Add confidence scoring for ambiguous path matches.
+- [x] Add examples for multi-component path ownership.
 
 ## M4: Generated Markdown views
 

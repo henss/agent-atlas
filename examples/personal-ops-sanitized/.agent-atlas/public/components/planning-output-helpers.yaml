@@ -1,0 +1,15 @@
+id: component:planning-output-helpers
+kind: component
+title: Planning Output Helpers
+summary: Shared formatting and serialization helpers used by weekly planning output code.
+visibility: public
+code:
+  paths:
+    - packages/planning/src/shared/**
+relations:
+  - type: part-of
+    target: domain:calendar
+  - type: used-by
+    target: workflow:plan-week
+  - type: tested-by
+    target: test-scope:planning-tests

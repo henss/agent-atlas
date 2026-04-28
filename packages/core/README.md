@@ -10,12 +10,12 @@ Implemented responsibilities:
 - generate inverse relation edges for traversal
 - build incoming/outgoing graph indexes
 - traverse graph neighbors with depth and relation filters
+- resolve source paths to owning components and related context
 - emit validation, orphan, and cycle diagnostics
 
 Planned responsibilities:
 
 - apply overlays
-- resolve paths to components/workflows/domains
 - create context packs
 
 Keep this package UI-free and vendor-neutral.

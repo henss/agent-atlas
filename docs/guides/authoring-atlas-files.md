@@ -82,6 +82,36 @@ relations:
     target: test-scope:calendar-tests
 ```
 
+## Model code ownership
+
+Use `code.paths` on components to support bottom-up path resolution:
+
+```yaml
+id: component:weekly-planner
+kind: component
+title: Weekly Planner
+summary: Combines calendar constraints and task signals into a weekly plan.
+code:
+  paths:
+    - packages/planning/**
+  entrypoints:
+    - packages/planning/src/weeklyPlanner.ts
+```
+
+More specific overlapping paths are allowed when a file belongs to a narrower helper component:
+
+```yaml
+id: component:planning-output-helpers
+kind: component
+title: Planning Output Helpers
+summary: Shared formatting helpers used by weekly planning output code.
+code:
+  paths:
+    - packages/planning/src/shared/**
+```
+
+`atlas resolve-path` ranks the narrower owner above broader package ownership.
+
 ## Use agent hints sparingly
 
 Agent hints are helpful, but typed relations are more important.

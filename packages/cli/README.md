@@ -71,3 +71,19 @@ Filter traversal by relation type with comma-separated values:
 ```sh
 atlas neighbors workflow:plan-week examples/personal-ops-sanitized --relation uses,tested-by
 ```
+
+## `atlas resolve-path <file-path> [path]`
+
+Matches a repo-relative or absolute source path against component `code.paths` and `code.entrypoints`, then returns owning components plus related workflows, domains, documents, and tests.
+
+```sh
+atlas resolve-path packages/planning/src/weeklyPlanner.ts examples/personal-ops-sanitized
+```
+
+Ambiguous ownership is scored so more specific matches appear first:
+
+```sh
+atlas resolve-path packages/planning/src/shared/format.ts examples/personal-ops-sanitized
+```
+
+Use `--depth N` to control related-context traversal depth, or `--json` for machine-readable output.

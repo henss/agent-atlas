@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
-import { findNeighbors, loadAtlasGraph, validateAtlas } from '@agent-atlas/core';
+import { findNeighbors, loadAtlasGraph, resolvePathInGraph, validateAtlas } from '@agent-atlas/core';
 import type {
   AtlasDiagnostic,
   AtlasGraph,
   AtlasGraphEdge,
   AtlasValidationResult,
+  PathContextMatch,
+  PathOwnerMatch,
+  PathResolutionResult,
   NeighborResult,
 } from '@agent-atlas/core';
 import type { AtlasEntity, AtlasEntityId, AtlasRelationType } from '@agent-atlas/schema';
@@ -59,6 +62,13 @@ interface ShowArgs {
 interface NeighborArgs extends ShowArgs {
   depth: number;
   relationTypes?: AtlasRelationType[];
+}
+
+interface ResolvePathArgs {
+  filePath?: string;
+  rootPath: string;
+  json: boolean;
+  depth: number;
 }
 
 function parseShowArgs(args: string[]): ShowArgs {
@@ -143,6 +153,43 @@ function parseNeighborArgs(args: string[]): NeighborArgs {
   };
 }
 
+function parseResolvePathArgs(args: string[]): ResolvePathArgs {
+  let filePath: string | undefined;
+  let rootPath = process.cwd();
+  let json = false;
+  let depth = 3;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--path') {
+      rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--depth') {
+      depth = parsePositiveInteger(args[index + 1], 3);
+      index += 1;
+      continue;
+    }
+
+    if (!filePath) {
+      filePath = arg;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return { filePath, rootPath, json, depth };
+}
+
 function printValidationMarkdown(result: AtlasValidationResult): void {
   const errors = result.diagnostics.filter((diagnostic) => diagnostic.level === 'error');
   const warnings = result.diagnostics.filter((diagnostic) => diagnostic.level === 'warning');
@@ -218,6 +265,46 @@ Count: ${neighbors.length}`);
   }
 }
 
+function printPathResolutionMarkdown(result: PathResolutionResult): void {
+  console.log(`# Atlas path resolution
+
+Path: \`${result.normalizedPath}\`
+Owners: ${result.owners.length}`);
+
+  printOwnerSection(result.owners);
+  printContextSection('Workflows', result.workflows);
+  printContextSection('Domains', result.domains);
+  printContextSection('Documents', result.documents);
+  printContextSection('Tests', result.tests);
+}
+
+function printOwnerSection(owners: PathOwnerMatch[]): void {
+  if (owners.length === 0) {
+    return;
+  }
+
+  console.log('\n## Owners\n');
+  for (const owner of owners) {
+    console.log(
+      `- \`${owner.entity.id}\` (${owner.matchType}, ${owner.confidence.toFixed(2)}): ${owner.entity.title} via \`${owner.pattern}\``,
+    );
+  }
+}
+
+function printContextSection(title: string, matches: PathContextMatch[]): void {
+  if (matches.length === 0) {
+    return;
+  }
+
+  console.log(`\n## ${title}\n`);
+  for (const match of matches) {
+    const via = match.via.map((edge) => edge.type).join(' -> ');
+    console.log(
+      `- d${match.distance} \`${match.entity.id}\` (${match.confidence.toFixed(2)}): ${match.entity.title} via \`${via}\``,
+    );
+  }
+}
+
 function printEdgeSection(title: string, edges: AtlasGraphEdge[]): void {
   if (edges.length === 0) {
     return;
@@ -238,6 +325,10 @@ function neighborsUsage(): void {
   console.error(
     'Usage: atlas neighbors <entity-id> [path] [--depth N] [--relation type[,type]] [--json]',
   );
+}
+
+function resolvePathUsage(): void {
+  console.error('Usage: atlas resolve-path <file-path> [atlas-root] [--path <root>] [--json]');
 }
 
 function parsePositiveInteger(value: string | undefined, fallback: number): number {
@@ -353,6 +444,26 @@ switch (command) {
     } else {
       printNeighborsMarkdown(options.entityId, options.depth, options.relationTypes, neighbors);
     }
+    break;
+  }
+  case 'resolve-path': {
+    const options = parseResolvePathArgs(args);
+    if (!options.filePath) {
+      resolvePathUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const graph = await loadAtlasGraph(options.rootPath);
+    const result = resolvePathInGraph(graph, options.filePath, { depth: options.depth });
+
+    if (options.json) {
+      console.log(JSON.stringify({ ...result, diagnostics: graph.diagnostics }, null, 2));
+    } else {
+      printPathResolutionMarkdown(result);
+    }
+
+    process.exitCode = result.owners.length === 0 ? 1 : 0;
     break;
   }
   default:
