@@ -18,6 +18,10 @@ Specification for validation diagnostics, severity levels, and actionable fix hi
 
 ## Relations
 
+### `documented-in`
+
+- `document:boundary-safety-spec` _(generated)_
+
 ### `documents`
 
 - `component:core-package`

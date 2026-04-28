@@ -11,3 +11,4 @@ export * from './migrations.js';
 export * from './benchmark.js';
 export * from './doctor.js';
 export * from './usage-evidence.js';
+export * from './boundary.js';

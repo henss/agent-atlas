@@ -9,7 +9,7 @@ It helps agents answer four questions before they spend tokens searching blindly
 3. **What should be loaded next?** Token-aware context packs, generated docs, and MCP resources.
 4. **How should changes be verified?** Scope-aware test and validation guidance.
 
-The M0-M12 roadmap is implemented. The project now provides a working schema, validator, graph loader, traversal engine, path resolver, Markdown generator, context-pack builder, overlay support, read-only MCP server, adapter interfaces, cross-repo registry support, migration tooling, diagnostics, CLI tests, benchmarks, setup doctor checks, local usage receipts, and context-pack evaluation for sibling-checkout consumers.
+The M0-M13 roadmap is implemented. The project now provides a working schema, validator, graph loader, traversal engine, path resolver, Markdown generator, context-pack builder, overlay support, read-only MCP server, adapter interfaces, cross-repo registry support, migration tooling, diagnostics, CLI tests, benchmarks, setup doctor checks, local usage receipts, context-pack evaluation, and boundary checks for sibling-checkout consumers.
 
 ## Core idea
 
@@ -50,6 +50,7 @@ packages/adapters/         # integration interfaces and reusable adapters
 - Preview or write schema migrations with `atlas migrate`.
 - Run lightweight load benchmarks with `atlas benchmark`.
 - Check downstream setup with `atlas doctor`.
+- Audit profile boundaries with `atlas boundary-check`.
 - Record local adoption receipts with `atlas usage-note`.
 - Evaluate context-pack selection against receipts with `atlas evaluate`.
 
@@ -60,6 +61,7 @@ Until package publishing is deliberately enabled, use a built local checkout:
 ```sh
 pnpm -r build
 node packages/cli/dist/index.js validate .
+node packages/cli/dist/index.js boundary-check --path . --profile public
 node packages/cli/dist/index.js doctor --path .
 node packages/cli/dist/index.js resolve-path packages/core/src/index.ts --path .
 node packages/cli/dist/index.js context-pack "change CLI path handling" --path . --budget 4000
@@ -71,11 +73,11 @@ node packages/cli/dist/index.js global validate examples/company-cross-repo-sani
 
 See [`packages/cli/README.md`](./packages/cli/README.md) for the full command reference.
 
-For sibling-checkout consumers, the current local compatibility contract is workspace package version `0.12.0`, entity `schema_version: 1`, usage receipt `version: 1`, and registry `version: 1`. Package publishing is still out of scope.
+For sibling-checkout consumers, the current local compatibility contract is workspace package version `0.13.0`, entity `schema_version: 1`, usage receipt `version: 1`, boundary policy `version: 1`, and registry `version: 1`. Package publishing is still out of scope.
 
 ## Roadmap status
 
-M0-M12 are complete. Current roadmap work is focused on boundary safety, incremental authoring, global registry hardening, and MCP operational hardening.
+M0-M13 are complete. Current roadmap work is focused on incremental authoring, global registry hardening, and MCP operational hardening.
 
 See [`ROADMAP.md`](./ROADMAP.md).
 

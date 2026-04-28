@@ -43,6 +43,7 @@ From the target repo:
 
 ```sh
 node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js boundary-check --path . --profile public
 node ../agent-atlas/packages/cli/dist/index.js doctor --path .
 node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts --path .
 node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000
@@ -73,6 +74,7 @@ Use the template in `docs/ci/github-actions-agent-atlas.yml` as a starting point
 
 ```sh
 node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js boundary-check --path . --profile public
 node ../agent-atlas/packages/cli/dist/index.js doctor --path .
 node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile public
 git diff --exit-code docs/agents

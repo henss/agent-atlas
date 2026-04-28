@@ -23,6 +23,7 @@ Validation should catch structural problems early and produce diagnostics that a
 - Unknown overlay profiles and overlay kind conflicts are reported.
 - Overlay does not change protected fields.
 - Generated files are not hand-edited when generation checks are enabled.
+- Boundary checks reject profile leaks in atlas files and generated `docs/agents/*`.
 
 ## Example diagnostic
 

@@ -16,6 +16,7 @@ From the target repo, call the built CLI from the sibling checkout:
 
 ```sh
 node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js boundary-check --path . --profile public
 node ../agent-atlas/packages/cli/dist/index.js doctor --path .
 node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts --path .
 node ../agent-atlas/packages/cli/dist/index.js show component:example --path .
@@ -39,7 +40,7 @@ All atlas-loading commands accept one positional root path or `--path <root>`. D
 
 Use one built Agent Atlas sibling checkout as the unit of compatibility:
 
-- Workspace package version: `0.12.0`.
+- Workspace package version: `0.13.0`.
 - Entity schema version: `schema_version: 1`.
 - Usage receipt version: `version: 1`.
 - Registry config version: `version: 1`.
@@ -50,6 +51,7 @@ Use one built Agent Atlas sibling checkout as the unit of compatibility:
 ## Consumer rollout checklist
 
 - Run `validate` before committing atlas files.
+- Run `boundary-check --profile public` before publishing generated agent docs or public examples.
 - Run `doctor --path .` when a downstream script, MCP config, or CI job fails unexpectedly.
 - Run `generate markdown` when a repo publishes `docs/agents/*`.
 - Use `context-pack` for broad or multi-seam tasks.

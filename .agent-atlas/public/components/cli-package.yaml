@@ -1,7 +1,7 @@
 id: component:cli-package
 kind: component
 title: CLI Package
-summary: Provides the atlas command-line interface for validation, graph inspection, path resolution, context packs, generated Markdown, cross-repo registry commands, migrations, benchmarks, setup doctor checks, and usage evidence.
+summary: Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown, cross-repo registry commands, migrations, benchmarks, setup doctor checks, and usage evidence.
 visibility: public
 code:
   paths:
@@ -29,6 +29,10 @@ relations:
     target: document:versioning-spec
   - type: documented-in
     target: document:usage-evidence-spec
+  - type: documented-in
+    target: document:boundary-safety-spec
+  - type: documented-in
+    target: document:boundary-checks-guide
   - type: documented-in
     target: document:rollout-evidence-guide
   - type: tested-by

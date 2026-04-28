@@ -1,0 +1,13 @@
+id: document:boundary-checks-guide
+kind: document
+title: Boundary Checks Guide
+summary: Guide for running public, private, and company boundary checks with repo-local policy markers.
+visibility: public
+uri: docs/guides/boundary-checks.md
+relations:
+  - type: documents
+    target: component:cli-package
+  - type: documents
+    target: document:boundary-safety-spec
+  - type: part-of
+    target: domain:agent-atlas

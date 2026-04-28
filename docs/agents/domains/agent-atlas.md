@@ -24,6 +24,8 @@ Typed context graph framework for helping coding agents navigate repositories an
 - `component:schema-package`
 - `document:adapter-spec` _(generated)_
 - `document:authoring-guide` _(generated)_
+- `document:boundary-checks-guide` _(generated)_
+- `document:boundary-safety-spec` _(generated)_
 - `document:ci-template` _(generated)_
 - `document:contributor-examples` _(generated)_
 - `document:registry-spec` _(generated)_

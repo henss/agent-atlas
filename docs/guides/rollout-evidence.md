@@ -13,6 +13,7 @@ Recommended checks:
 ```sh
 node ../agent-atlas/packages/cli/dist/index.js doctor --path .
 node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js boundary-check --path . --profile public
 ```
 
 Exit criteria:
@@ -48,6 +49,7 @@ Recommended checks:
 
 ```sh
 node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js boundary-check --path . --profile public
 node ../agent-atlas/packages/cli/dist/index.js evaluate --path . --json
 ```
 

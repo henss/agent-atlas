@@ -1,6 +1,6 @@
 {
   "name": "@agent-atlas/cli",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Command-line interface for Agent Atlas.",
   "type": "module",
   "bin": {

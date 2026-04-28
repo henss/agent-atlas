@@ -2,7 +2,7 @@
 
 This roadmap is intentionally staged. Building everything at once is how frameworks become haunted furniture.
 
-Status: M0-M12 are complete. M13-M16 are the next boundary safety, authoring, registry, and MCP hardening milestones.
+Status: M0-M13 are complete. M14-M16 are the next authoring, registry, and MCP hardening milestones.
 
 ## M0: Foundations
 
@@ -152,12 +152,12 @@ Goal: prove Atlas reduces agent search cost before broadening metadata.
 
 Goal: make public, private, and company rollouts safer to audit.
 
-- [ ] Add `atlas boundary-check <repo> --profile public|private|company`.
-- [ ] Reject public-profile atlas files that include private paths, issue keys, internal URLs, local user paths, or configured private markers.
-- [ ] Reject company-profile files that include secrets, credentials, copied document bodies, or live customer data.
-- [ ] Support repo-local boundary policy files so control planes can supply private marker sets without putting them in the public project.
-- [ ] Check generated `docs/agents/*` output for the same boundary leaks as canonical atlas files.
-- [ ] Document how public pilot repos combine Atlas boundary checks with their own public-boundary checks.
+- [x] Add `atlas boundary-check <repo> --profile public|private|company`.
+- [x] Reject public-profile atlas files that include private paths, issue keys, internal URLs, local user paths, or configured private markers.
+- [x] Reject company-profile files that include secrets, credentials, copied document bodies, or live customer data.
+- [x] Support repo-local boundary policy files so control planes can supply private marker sets without putting them in the public project.
+- [x] Check generated `docs/agents/*` output for the same boundary leaks as canonical atlas files.
+- [x] Document how public pilot repos combine Atlas boundary checks with their own public-boundary checks.
 
 ## M14: Incremental authoring and maintenance tools
 

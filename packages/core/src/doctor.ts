@@ -63,6 +63,7 @@ export async function doctorAtlas(
       'migrate',
       'benchmark',
       'doctor',
+      'boundary-check',
       'usage-note',
       'evaluate',
       'global validate',

@@ -124,6 +124,19 @@ Status: passed
     expect(evaluation.stdout).toContain('Receipt count: 1');
     expect(evaluation.stdout).toContain('Missing-card mentions: 1');
   });
+
+  it('checks atlas boundary leaks', async () => {
+    const root = await makeAtlasFixture();
+    const { stdout } = await execFileAsync('node', [
+      CLI_PATH,
+      'boundary-check',
+      '--path',
+      root,
+    ]);
+
+    expect(stdout).toContain('# Atlas boundary check');
+    expect(stdout).toContain('Status: passed');
+  });
 });
 
 async function makeAtlasFixture(

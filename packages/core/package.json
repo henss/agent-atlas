@@ -1,6 +1,6 @@
 {
   "name": "@agent-atlas/core",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Core graph loading, validation, traversal, and context pack logic for Agent Atlas.",
   "type": "module",
   "exports": {

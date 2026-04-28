@@ -18,8 +18,9 @@ Implemented responsibilities:
 - run lightweight load benchmarks
 - diagnose sibling-checkout setup with doctor checks
 - write local usage receipts and evaluate context-pack recall
+- check public/private/company boundary policy before publication
 - emit validation, orphan, and cycle diagnostics
 
 Keep this package UI-free and vendor-neutral.
 
-Roadmap work after M12 should keep shared behavior here when it is not UI-specific, especially diagnostics, boundary checks, registry checks, generated-doc checks, and authoring analysis.
+Roadmap work after M13 should keep shared behavior here when it is not UI-specific, especially diagnostics, registry checks, generated-doc checks, and authoring analysis.

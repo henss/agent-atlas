@@ -1,0 +1,15 @@
+id: document:boundary-safety-spec
+kind: document
+title: Boundary Safety Specification
+summary: Specification for profile boundary checks, repo-local policy files, generated-doc leak checks, and public pilot guidance.
+visibility: public
+uri: docs/spec/boundary-safety.md
+relations:
+  - type: documents
+    target: component:core-package
+  - type: documents
+    target: component:cli-package
+  - type: documents
+    target: document:validation-spec
+  - type: part-of
+    target: domain:agent-atlas

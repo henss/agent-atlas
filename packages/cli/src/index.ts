@@ -4,6 +4,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
   benchmarkAtlas,
+  checkAtlasBoundary,
   createContextPack,
   doctorAtlas,
   evaluateUsageEvidence,
@@ -29,6 +30,7 @@ import type {
   PathResolutionResult,
   NeighborResult,
   AtlasDoctorResult,
+  BoundaryCheckResult,
   UsageEvidenceEvaluation,
   WriteUsageNoteResult,
 } from '@agent-atlas/core';
@@ -64,6 +66,7 @@ Implemented commands:
 - atlas migrate [path] --to 1 [--write]
 - atlas benchmark [path]
 - atlas doctor [path]
+- atlas boundary-check [path]
 - atlas usage-note "<task>" --command <command>
 - atlas evaluate [path]
 - atlas global validate [path]
@@ -210,6 +213,14 @@ interface BenchmarkArgs {
 interface DoctorArgs {
   rootPath: string;
   profile: AtlasProfile;
+  json: boolean;
+}
+
+interface BoundaryCheckArgs {
+  rootPath: string;
+  profile: AtlasProfile;
+  policyPath?: string;
+  includeGenerated: boolean;
   json: boolean;
 }
 
@@ -728,6 +739,55 @@ function parseDoctorArgs(args: string[]): DoctorArgs {
   return { rootPath, profile, json };
 }
 
+function parseBoundaryCheckArgs(args: string[]): BoundaryCheckArgs {
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
+  let json = false;
+  let policyPath: string | undefined;
+  let includeGenerated = true;
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--no-generated') {
+      includeGenerated = false;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--policy') {
+      policyPath = readOptionValue(args, index, '--policy');
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return { rootPath, profile, policyPath, includeGenerated, json };
+}
+
 function parseUsageNoteArgs(args: string[]): UsageNoteArgs {
   let task: string | undefined;
   let rootPath = process.cwd();
@@ -1105,6 +1165,29 @@ Commands: ${result.commands.map((commandName) => `\`${commandName}\``).join(', '
   }
 }
 
+function printBoundaryCheckMarkdown(result: BoundaryCheckResult): void {
+  const errors = result.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'error',
+  );
+  const warnings = result.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'warning',
+  );
+
+  console.log(`# Atlas boundary check
+
+Status: ${result.status}
+Root: \`${result.rootPath}\`
+Profile: \`${result.profile}\`
+Policy: ${result.policyPath ? `\`${result.policyPath}\`` : 'default'}
+
+Files checked: ${result.checkedFiles}
+Warnings: ${warnings.length}
+Errors: ${errors.length}`);
+
+  printDiagnosticSection('Errors', errors);
+  printDiagnosticSection('Warnings', warnings);
+}
+
 function printUsageNoteMarkdown(result: WriteUsageNoteResult): void {
   console.log(`# Atlas usage note
 
@@ -1335,6 +1418,12 @@ function benchmarkUsage(): void {
 function doctorUsage(): void {
   console.error(
     'Usage: atlas doctor [path] [--path <root>] [--profile public|private|company] [--json]',
+  );
+}
+
+function boundaryCheckUsage(): void {
+  console.error(
+    'Usage: atlas boundary-check [path] [--path <root>] [--profile public|private|company] [--policy agent-atlas.boundary.yaml] [--no-generated] [--json]',
   );
 }
 
@@ -1652,6 +1741,23 @@ switch (command) {
       console.log(JSON.stringify(result, null, 2));
     } else {
       printDoctorMarkdown(result);
+    }
+
+    process.exitCode = result.status === 'failed' ? 1 : 0;
+    break;
+  }
+  case 'boundary-check': {
+    const options = parseBoundaryCheckArgs(args);
+    const result = await checkAtlasBoundary(options.rootPath, {
+      profile: options.profile,
+      policyPath: options.policyPath,
+      includeGenerated: options.includeGenerated,
+    });
+
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printBoundaryCheckMarkdown(result);
     }
 
     process.exitCode = result.status === 'failed' ? 1 : 0;
