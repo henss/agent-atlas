@@ -43,6 +43,51 @@ Errors: 0
       ),
     });
   });
+
+  it('prints concise doctor Markdown', async () => {
+    const root = await makeAtlasFixture();
+    const { stdout } = await execFileAsync('node', [
+      CLI_PATH,
+      'doctor',
+      '--path',
+      root,
+    ]);
+
+    expect(stdout.replace(/\r\n/g, '\n')).toContain(`# Atlas doctor
+
+Status: passed
+`);
+    expect(stdout).toContain('Commands:');
+    expect(stdout).toContain('doctor');
+    expect(stdout).toContain('atlas input');
+  });
+
+  it('rejects unknown flags instead of treating them as paths', async () => {
+    await expect(
+      execFileAsync('node', [CLI_PATH, 'validate', '--badflag']),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('Unknown option: --badflag'),
+    });
+  });
+
+  it('rejects duplicate positional and --path roots', async () => {
+    const root = await makeAtlasFixture();
+
+    await expect(
+      execFileAsync('node', [
+        CLI_PATH,
+        'resolve-path',
+        'packages/example.ts',
+        root,
+        '--path',
+        root,
+      ]),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(
+        'Use either one positional path or --path <root>, not both.',
+      ),
+    });
+  });
 });
 
 async function makeAtlasFixture(

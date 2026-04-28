@@ -9,7 +9,7 @@ It helps agents answer four questions before they spend tokens searching blindly
 3. **What should be loaded next?** Token-aware context packs, generated docs, and MCP resources.
 4. **How should changes be verified?** Scope-aware test and validation guidance.
 
-The original M0-M10 roadmap is implemented. The project now provides a working schema, validator, graph loader, traversal engine, path resolver, Markdown generator, context-pack builder, overlay support, read-only MCP server, adapter interfaces, cross-repo registry support, migration tooling, diagnostics, CLI tests, and benchmarks.
+The M0-M11 roadmap is implemented. The project now provides a working schema, validator, graph loader, traversal engine, path resolver, Markdown generator, context-pack builder, overlay support, read-only MCP server, adapter interfaces, cross-repo registry support, migration tooling, diagnostics, CLI tests, benchmarks, setup doctor checks, and a local compatibility contract for sibling-checkout consumers.
 
 ## Core idea
 
@@ -49,6 +49,7 @@ packages/adapters/         # integration interfaces and reusable adapters
 - Merge central registries and per-repo atlases for cross-repo context packs.
 - Preview or write schema migrations with `atlas migrate`.
 - Run lightweight load benchmarks with `atlas benchmark`.
+- Check downstream setup with `atlas doctor`.
 
 ## CLI snapshot
 
@@ -57,6 +58,7 @@ Until package publishing is deliberately enabled, use a built local checkout:
 ```sh
 pnpm -r build
 node packages/cli/dist/index.js validate .
+node packages/cli/dist/index.js doctor --path .
 node packages/cli/dist/index.js resolve-path packages/core/src/index.ts --path .
 node packages/cli/dist/index.js context-pack "change CLI path handling" --path . --budget 4000
 node packages/cli/dist/index.js generate markdown --profile public
@@ -65,9 +67,11 @@ node packages/cli/dist/index.js global validate examples/company-cross-repo-sani
 
 See [`packages/cli/README.md`](./packages/cli/README.md) for the full command reference.
 
+For sibling-checkout consumers, the current local compatibility contract is workspace package version `0.11.0`, entity `schema_version: 1`, and registry `version: 1`. Package publishing is still out of scope.
+
 ## Roadmap status
 
-M0-M10 are complete. Current roadmap work is focused on consumer ergonomics, adoption evidence, boundary safety, incremental authoring, global registry hardening, and MCP operational hardening.
+M0-M11 are complete. Current roadmap work is focused on adoption evidence, boundary safety, incremental authoring, global registry hardening, and MCP operational hardening.
 
 See [`ROADMAP.md`](./ROADMAP.md).
 

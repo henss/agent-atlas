@@ -1,7 +1,7 @@
 id: document:versioning-spec
 kind: document
 title: Versioning Specification
-summary: Specification for schema_version and atlas migration behavior.
+summary: Specification for schema_version, migration behavior, and sibling-checkout compatibility versions.
 visibility: public
 uri: docs/spec/versioning.md
 relations:

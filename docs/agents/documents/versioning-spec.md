@@ -6,7 +6,7 @@ ID: `document:versioning-spec`
 Kind: `document`
 Profile: `public`
 
-Specification for schema_version and atlas migration behavior.
+Specification for schema_version, migration behavior, and sibling-checkout compatibility versions.
 
 ## Metadata
 

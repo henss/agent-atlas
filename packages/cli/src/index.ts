@@ -5,6 +5,7 @@ import path from 'node:path';
 import {
   benchmarkAtlas,
   createContextPack,
+  doctorAtlas,
   findNeighbors,
   loadGlobalAtlasGraph,
   loadAtlasGraph,
@@ -25,6 +26,7 @@ import type {
   PathOwnerMatch,
   PathResolutionResult,
   NeighborResult,
+  AtlasDoctorResult,
 } from '@agent-atlas/core';
 import type {
   AtlasEntity,
@@ -34,6 +36,13 @@ import type {
 import { ATLAS_RELATION_TYPES } from '@agent-atlas/schema';
 
 const [, , command, ...args] = process.argv;
+
+class CliUsageError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CliUsageError';
+  }
+}
 
 function printHelp(): void {
   console.log(`# Agent Atlas CLI
@@ -50,13 +59,43 @@ Implemented commands:
 - atlas generate markdown
 - atlas migrate [path] --to 1 [--write]
 - atlas benchmark [path]
+- atlas doctor [path]
 - atlas global validate [path]
 - atlas global list [path]
 - atlas global context-pack "<task>" --budget 8000
 
+Path rule: use one positional root path or --path <root>, not both.
 Current command: ${command ?? '(none)'}
 Args: ${args.join(' ')}
 `);
+}
+
+function readOptionValue(
+  args: string[],
+  index: number,
+  optionName: string,
+): string {
+  const value = args[index + 1];
+  if (!value || value.startsWith('-')) {
+    throw new CliUsageError(`Missing value for ${optionName}.`);
+  }
+  return value;
+}
+
+function rejectUnknownOption(arg: string): void {
+  if (arg.startsWith('-')) {
+    throw new CliUsageError(`Unknown option: ${arg}`);
+  }
+}
+
+function setRootPath(
+  nextRootPath: string,
+  rootPathWasSet: boolean,
+): [string, boolean] {
+  if (rootPathWasSet) {
+    throw new CliUsageError('Use either one positional path or --path <root>, not both.');
+  }
+  return [nextRootPath, true];
 }
 
 function parseValidateArgs(args: string[]): {
@@ -67,6 +106,7 @@ function parseValidateArgs(args: string[]): {
   let rootPath = process.cwd();
   let profile: AtlasProfile = 'public';
   let json = false;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -77,12 +117,22 @@ function parseValidateArgs(args: string[]): {
     }
 
     if (arg === '--profile') {
-      profile = parseAtlasProfile(args[index + 1]);
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
-    rootPath = arg;
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return { rootPath, profile, json };
@@ -151,11 +201,18 @@ interface BenchmarkArgs {
   json: boolean;
 }
 
+interface DoctorArgs {
+  rootPath: string;
+  profile: AtlasProfile;
+  json: boolean;
+}
+
 function parseShowArgs(args: string[]): ShowArgs {
   let entityId: AtlasEntityId | undefined;
   let rootPath = process.cwd();
   let profile: AtlasProfile = 'public';
   let json = false;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -166,23 +223,27 @@ function parseShowArgs(args: string[]): ShowArgs {
     }
 
     if (arg === '--path') {
-      rootPath = args[index + 1] ?? rootPath;
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
       index += 1;
       continue;
     }
 
     if (arg === '--profile') {
-      profile = parseAtlasProfile(args[index + 1]);
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
+    rejectUnknownOption(arg);
     if (!entityId) {
       entityId = arg as AtlasEntityId;
       continue;
     }
 
-    rootPath = arg;
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return { entityId, rootPath, profile, json };
@@ -195,6 +256,7 @@ function parseNeighborArgs(args: string[]): NeighborArgs {
   let profile: AtlasProfile = 'public';
   let json = false;
   let depth = 1;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -205,37 +267,41 @@ function parseNeighborArgs(args: string[]): NeighborArgs {
     }
 
     if (arg === '--path') {
-      rootPath = args[index + 1] ?? rootPath;
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
       index += 1;
       continue;
     }
 
     if (arg === '--profile') {
-      profile = parseAtlasProfile(args[index + 1]);
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
     if (arg === '--depth') {
-      depth = parsePositiveInteger(args[index + 1], 1);
+      depth = parsePositiveInteger(readOptionValue(args, index, '--depth'), 1);
       index += 1;
       continue;
     }
 
     if (arg === '--relation' || arg === '--relations') {
-      for (const type of parseRelationTypes(args[index + 1] ?? '')) {
+      for (const type of parseRelationTypes(readOptionValue(args, index, arg))) {
         relationTypes.push(type);
       }
       index += 1;
       continue;
     }
 
+    rejectUnknownOption(arg);
     if (!entityId) {
       entityId = arg as AtlasEntityId;
       continue;
     }
 
-    rootPath = arg;
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return {
@@ -254,6 +320,7 @@ function parseResolvePathArgs(args: string[]): ResolvePathArgs {
   let profile: AtlasProfile = 'public';
   let json = false;
   let depth = 3;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -264,29 +331,33 @@ function parseResolvePathArgs(args: string[]): ResolvePathArgs {
     }
 
     if (arg === '--path') {
-      rootPath = args[index + 1] ?? rootPath;
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
       index += 1;
       continue;
     }
 
     if (arg === '--profile') {
-      profile = parseAtlasProfile(args[index + 1]);
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
     if (arg === '--depth') {
-      depth = parsePositiveInteger(args[index + 1], 3);
+      depth = parsePositiveInteger(readOptionValue(args, index, '--depth'), 3);
       index += 1;
       continue;
     }
 
+    rejectUnknownOption(arg);
     if (!filePath) {
       filePath = arg;
       continue;
     }
 
-    rootPath = arg;
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return { filePath, rootPath, profile, json, depth };
@@ -297,6 +368,7 @@ function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
   let outputPath = 'docs/agents';
   let profile: AtlasProfile = 'public';
   let json = false;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -311,24 +383,28 @@ function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
     }
 
     if (arg === '--path') {
-      rootPath = args[index + 1] ?? rootPath;
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
       index += 1;
       continue;
     }
 
     if (arg === '--output') {
-      outputPath = args[index + 1] ?? outputPath;
+      outputPath = readOptionValue(args, index, '--output');
       index += 1;
       continue;
     }
 
     if (arg === '--profile') {
-      profile = parseAtlasProfile(args[index + 1] ?? profile);
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
-    rootPath = arg;
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return { rootPath, outputPath, profile, json };
@@ -341,6 +417,7 @@ function parseContextPackArgs(args: string[]): ContextPackArgs {
   let profile: AtlasProfile = 'public';
   let deterministic = false;
   let json = false;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -356,29 +433,33 @@ function parseContextPackArgs(args: string[]): ContextPackArgs {
     }
 
     if (arg === '--path') {
-      rootPath = args[index + 1] ?? rootPath;
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
       index += 1;
       continue;
     }
 
     if (arg === '--budget') {
-      budget = parsePositiveInteger(args[index + 1], budget);
+      budget = parsePositiveInteger(readOptionValue(args, index, '--budget'), budget);
       index += 1;
       continue;
     }
 
     if (arg === '--profile') {
-      profile = parseAtlasProfile(args[index + 1] ?? profile);
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
+    rejectUnknownOption(arg);
     if (!task) {
       task = arg;
       continue;
     }
 
-    rootPath = arg;
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return { task, rootPath, budget, profile, deterministic, json };
@@ -389,6 +470,7 @@ function parseGlobalArgs(args: string[]): GlobalArgs {
   let rootPath = process.cwd();
   let profile: AtlasProfile = 'company';
   let json = false;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -399,23 +481,27 @@ function parseGlobalArgs(args: string[]): GlobalArgs {
     }
 
     if (arg === '--path') {
-      rootPath = args[index + 1] ?? rootPath;
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
       index += 1;
       continue;
     }
 
     if (arg === '--profile') {
-      profile = parseAtlasProfile(args[index + 1] ?? profile);
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
+    rejectUnknownOption(arg);
     if (!subcommand) {
       subcommand = arg;
       continue;
     }
 
-    rootPath = arg;
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return { subcommand, rootPath, profile, json };
@@ -428,6 +514,7 @@ function parseGlobalContextPackArgs(args: string[]): GlobalContextPackArgs {
   let budget = 8000;
   let deterministic = false;
   let json = false;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -447,29 +534,33 @@ function parseGlobalContextPackArgs(args: string[]): GlobalContextPackArgs {
     }
 
     if (arg === '--path') {
-      rootPath = args[index + 1] ?? rootPath;
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
       index += 1;
       continue;
     }
 
     if (arg === '--budget') {
-      budget = parsePositiveInteger(args[index + 1], budget);
+      budget = parsePositiveInteger(readOptionValue(args, index, '--budget'), budget);
       index += 1;
       continue;
     }
 
     if (arg === '--profile') {
-      profile = parseAtlasProfile(args[index + 1] ?? profile);
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
+    rejectUnknownOption(arg);
     if (!task) {
       task = arg;
       continue;
     }
 
-    rootPath = arg;
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return {
@@ -488,6 +579,7 @@ function parseMigrateArgs(args: string[]): MigrateArgs {
   let toVersion = 1;
   let write = false;
   let json = false;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -503,18 +595,22 @@ function parseMigrateArgs(args: string[]): MigrateArgs {
     }
 
     if (arg === '--to') {
-      toVersion = parsePositiveInteger(args[index + 1], toVersion);
+      toVersion = parsePositiveInteger(readOptionValue(args, index, '--to'), toVersion);
       index += 1;
       continue;
     }
 
     if (arg === '--path') {
-      rootPath = args[index + 1] ?? rootPath;
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
       index += 1;
       continue;
     }
 
-    rootPath = arg;
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return { rootPath, toVersion, write, json };
@@ -525,6 +621,7 @@ function parseBenchmarkArgs(args: string[]): BenchmarkArgs {
   let profile: AtlasProfile = 'public';
   let iterations = 3;
   let json = false;
+  let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -535,27 +632,70 @@ function parseBenchmarkArgs(args: string[]): BenchmarkArgs {
     }
 
     if (arg === '--profile') {
-      profile = parseAtlasProfile(args[index + 1] ?? profile);
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
     if (arg === '--iterations') {
-      iterations = parsePositiveInteger(args[index + 1], iterations);
+      iterations = parsePositiveInteger(
+        readOptionValue(args, index, '--iterations'),
+        iterations,
+      );
       index += 1;
       continue;
     }
 
     if (arg === '--path') {
-      rootPath = args[index + 1] ?? rootPath;
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
       index += 1;
       continue;
     }
 
-    rootPath = arg;
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
   return { rootPath, profile, iterations, json };
+}
+
+function parseDoctorArgs(args: string[]): DoctorArgs {
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
+  let json = false;
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return { rootPath, profile, json };
 }
 
 function printValidationMarkdown(result: AtlasValidationResult): void {
@@ -740,6 +880,33 @@ Diagnostics: ${result.diagnosticsCount}
 | index access | ${result.normalizeMs.min} | ${result.normalizeMs.avg} | ${result.normalizeMs.max} |`);
 }
 
+function printDoctorMarkdown(result: AtlasDoctorResult): void {
+  console.log(`# Atlas doctor
+
+Status: ${result.status}
+Root: \`${result.rootPath}\`
+Profile: \`${result.profile}\`
+Schema version: ${result.schemaVersion}
+Registry version: ${result.registryVersion}
+
+Commands: ${result.commands.map((commandName) => `\`${commandName}\``).join(', ')}`);
+
+  if (Object.keys(result.packageVersions).length > 0) {
+    console.log('\n## Package versions\n');
+    for (const [name, version] of Object.entries(result.packageVersions).sort()) {
+      console.log(`- \`${name}\`: \`${version}\``);
+    }
+  }
+
+  console.log('\n## Checks\n');
+  for (const check of result.checks) {
+    console.log(`- ${check.status}: ${check.name} - ${check.message}`);
+    if (check.hint) {
+      console.log(`  Fix: ${check.hint}`);
+    }
+  }
+}
+
 function printGlobalRegistryMarkdown(
   graph: AtlasGraph & {
     registry: {
@@ -914,6 +1081,12 @@ function benchmarkUsage(): void {
   );
 }
 
+function doctorUsage(): void {
+  console.error(
+    'Usage: atlas doctor [path] [--path <root>] [--profile public|private|company] [--json]',
+  );
+}
+
 function globalUsage(): void {
   console.error(
     'Usage: atlas global validate|list|context-pack [path] [--path <registry-root>] [--profile public|private|company] [--json]',
@@ -969,6 +1142,7 @@ async function cleanGeneratedMarkdownOutput(outputPath: string): Promise<void> {
   }
 }
 
+async function main(): Promise<void> {
 switch (command) {
   case undefined:
   case 'help':
@@ -1201,6 +1375,21 @@ switch (command) {
     }
     break;
   }
+  case 'doctor': {
+    const options = parseDoctorArgs(args);
+    const result = await doctorAtlas(options.rootPath, {
+      profile: options.profile,
+    });
+
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printDoctorMarkdown(result);
+    }
+
+    process.exitCode = result.status === 'failed' ? 1 : 0;
+    break;
+  }
   case 'global': {
     const globalSubcommand = args[0];
     if (globalSubcommand === 'context-pack') {
@@ -1287,3 +1476,14 @@ switch (command) {
     printHelp();
     process.exitCode = 1;
 }
+}
+
+await main().catch((error: unknown) => {
+  if (error instanceof CliUsageError) {
+    console.error(error.message);
+    process.exitCode = 1;
+    return;
+  }
+
+  throw error;
+});

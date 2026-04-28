@@ -2,7 +2,7 @@
 
 This roadmap is intentionally staged. Building everything at once is how frameworks become haunted furniture.
 
-Status: M0-M10 are complete. M11-M16 are the next hardening and adoption milestones for downstream consumers, control planes, boundary safety, and MCP operations.
+Status: M0-M11 are complete. M12-M16 are the next adoption evidence, boundary safety, authoring, registry, and MCP hardening milestones.
 
 ## M0: Foundations
 
@@ -131,12 +131,12 @@ Goal: make the project boringly useful.
 
 Goal: make Atlas boring to invoke from downstream repos and agent runtimes.
 
-- [ ] Make CLI path arguments consistent across commands, including `<path>` and `--path` forms.
-- [ ] Remove footguns where stale or alternate invocation shapes silently load zero entities.
-- [ ] Define the sibling-checkout compatibility contract for CLI, schema, generated docs, and registry versions.
-- [ ] Add `atlas doctor` for build state, package availability, supported commands, schema version, MCP availability, and common downstream setup mistakes.
-- [ ] Add copy-paste script templates for public repos, private repos, company repos, and central registry repos.
-- [ ] Keep npm package publishing out of scope until a separate distribution decision is made.
+- [x] Make CLI path arguments consistent across commands, including `<path>` and `--path` forms.
+- [x] Remove footguns where stale or alternate invocation shapes silently load zero entities.
+- [x] Define the sibling-checkout compatibility contract for CLI, schema, generated docs, and registry versions.
+- [x] Add `atlas doctor` for build state, package availability, supported commands, schema version, MCP availability, and common downstream setup mistakes.
+- [x] Add copy-paste script templates for public repos, private repos, company repos, and central registry repos.
+- [x] Keep npm package publishing out of scope until a separate distribution decision is made.
 
 ## M12: Adoption evidence and efficiency measurement
 

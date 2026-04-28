@@ -147,7 +147,7 @@ export function createAtlasMcpServer(options: AtlasMcpServerOptions): McpServer 
   const server = new McpServer(
     {
       name: 'agent-atlas',
-      version: '0.0.0-seed',
+      version: '0.11.0',
     },
     {
       capabilities: {},

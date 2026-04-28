@@ -33,7 +33,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 ## Systems And Components
 
 - `component:adapters-package` - Adapters Package: Defines adapter interfaces and generic adapters for Backstage, Sourcegraph, local docs, and external resource references.
-- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, graph inspection, path resolution, context packs, generated Markdown, cross-repo registry commands, migrations, and benchmarks.
+- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, graph inspection, path resolution, context packs, generated Markdown, cross-repo registry commands, migrations, benchmarks, and setup doctor checks.
 - `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, merges cross-repo registries, runs migrations, and benchmarks load performance.
 - `component:markdown-package` - Markdown Package: Renders generated agent-facing Markdown views from loaded atlas graphs.
 - `component:mcp-server-package` - MCP Server Package: Read-only MCP server exposing atlas resources and traversal tools over stdio.

@@ -1,7 +1,7 @@
 id: document:roadmap
 kind: document
 title: Roadmap
-summary: Roadmap showing completed M0-M10 implementation milestones and active M11-M16 hardening and adoption work.
+summary: Roadmap showing completed M0-M11 implementation milestones and active M12-M16 adoption, boundary, authoring, registry, and MCP hardening work.
 visibility: public
 uri: ROADMAP.md
 relations:

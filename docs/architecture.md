@@ -20,7 +20,7 @@ Package: `packages/schema`
 
 ## 3. Core graph engine
 
-Loads entities, applies overlays, validates, normalizes relations, generates inverse edges, resolves paths, builds context packs, merges global registries, plans migrations, and runs lightweight benchmarks.
+Loads entities, applies overlays, validates, normalizes relations, generates inverse edges, resolves paths, builds context packs, merges global registries, plans migrations, runs lightweight benchmarks, and diagnoses local checkout setup.
 
 Package: `packages/core`
 
@@ -55,15 +55,15 @@ Package: `packages/adapters`
 
 ## Current implementation
 
-The original implementation roadmap through M10 is complete:
+The original implementation roadmap through M11 is complete:
 
 1. Schema, validation, and schema-version migration support.
 2. Graph loading, traversal, path resolution, and diagnostics.
-3. CLI commands for validation, graph inspection, context packs, generated Markdown, migration, benchmarks, and global registries.
+3. CLI commands for validation, graph inspection, context packs, generated Markdown, migration, benchmarks, doctor checks, and global registries.
 4. Generated Markdown views under `docs/agents/*`.
 5. Public/private/company overlays and redaction behavior.
 6. Read-only MCP resources and tools.
 7. Adapter interfaces and generic adapters.
 8. Cross-repo registry loading and global context packs.
 
-The next roadmap milestones harden consumer ergonomics, adoption evidence, boundary safety, incremental authoring, registry operations, and MCP deployment.
+The next roadmap milestones focus on adoption evidence, boundary safety, incremental authoring, registry operations, and MCP deployment.

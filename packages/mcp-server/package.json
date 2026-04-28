@@ -1,7 +1,7 @@
 {
   "name": "@agent-atlas/mcp-server",
-  "version": "0.0.0-seed",
-  "description": "Read-only MCP server skeleton for Agent Atlas.",
+  "version": "0.11.0",
+  "description": "Read-only MCP server for Agent Atlas.",
   "type": "module",
   "exports": {
     ".": "./dist/index.js"

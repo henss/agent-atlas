@@ -6,7 +6,7 @@ ID: `document:cli-readme`
 Kind: `document`
 Profile: `public`
 
-Package README documenting Atlas CLI commands and output conventions.
+Package README documenting Atlas CLI commands, path argument rules, doctor checks, compatibility contract, and output conventions.
 
 ## Metadata
 

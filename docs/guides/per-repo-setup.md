@@ -43,12 +43,13 @@ From the target repo:
 
 ```sh
 node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js doctor --path .
 node ../agent-atlas/packages/cli/dist/index.js resolve-path packages/core/src/example.ts --path .
 node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000
 node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile private
 ```
 
-Prefer `--path <root>` when the command also has flags or free-form task text. M11 is reserved for tightening path ergonomics across commands.
+All atlas-loading commands accept one positional root path or `--path <root>`. Do not pass both. Prefer `--path <root>` in scripts so the target repo is obvious.
 
 ## Add to AGENTS.md
 
@@ -58,6 +59,7 @@ Root `AGENTS.md` should tell agents:
 Before broad search, use the atlas:
 
 - Root view: `docs/agents/atlas.md`
+- Check setup: `node ../agent-atlas/packages/cli/dist/index.js doctor --path .`
 - Resolve a file: `node ../agent-atlas/packages/cli/dist/index.js resolve-path <path> --path .`
 - Generate task context: `node ../agent-atlas/packages/cli/dist/index.js context-pack "<task>" --path . --budget 4000`
 ```
@@ -68,6 +70,18 @@ Use the template in `docs/ci/github-actions-agent-atlas.yml` as a starting point
 
 ```sh
 node ../agent-atlas/packages/cli/dist/index.js validate .
+node ../agent-atlas/packages/cli/dist/index.js doctor --path .
 node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile public
 git diff --exit-code docs/agents
 ```
+
+## Script templates
+
+Copy-paste script starters live under `templates/scripts/`:
+
+- `public-repo.sh`: public validation and generated docs check
+- `private-repo.sh`: private profile validation, generated docs, and context-pack smoke test
+- `company-repo.sh`: company profile validation, benchmark, and MCP stdio pointer
+- `central-registry-repo.sh`: global registry validation, listing, and context-pack smoke test
+
+Each template uses `ATLAS_CHECKOUT=../agent-atlas` by default and can be adapted to the downstream repo layout.

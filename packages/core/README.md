@@ -16,8 +16,9 @@ Implemented responsibilities:
 - load cross-repo registry configs and merge imported atlases
 - plan and write schema-version migrations
 - run lightweight load benchmarks
+- diagnose sibling-checkout setup with doctor checks
 - emit validation, orphan, and cycle diagnostics
 
 Keep this package UI-free and vendor-neutral.
 
-Roadmap work after M10 should keep shared behavior here when it is not UI-specific, especially diagnostics, boundary checks, registry checks, generated-doc checks, and authoring analysis.
+Roadmap work after M11 should keep shared behavior here when it is not UI-specific, especially diagnostics, boundary checks, registry checks, generated-doc checks, and authoring analysis.

@@ -1,7 +1,7 @@
 id: document:cli-readme
 kind: document
 title: CLI README
-summary: Package README documenting Atlas CLI commands and output conventions.
+summary: Package README documenting Atlas CLI commands, path argument rules, doctor checks, compatibility contract, and output conventions.
 visibility: public
 uri: packages/cli/README.md
 relations:

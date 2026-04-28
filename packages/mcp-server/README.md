@@ -26,3 +26,5 @@ atlas-mcp --path . --profile public
 ```
 
 Profiles match the CLI: `public`, `private`, and `company`.
+
+The stdio entrypoint accepts one positional root path or `--path <root>`. Passing both is an error so agent host configs do not accidentally point at the wrong atlas.
