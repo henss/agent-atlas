@@ -1,0 +1,16 @@
+id: resource:google-launch-folder
+kind: resource
+title: Google Launch Folder
+summary: Public-safe placeholder for a private Google Workspace launch folder.
+visibility: public
+uri: google://redacted
+access:
+  method: private-overlay
+  private_overlay_required: true
+relations:
+  - type: part-of
+    target: system:onboarding-platform
+agent:
+  load_when:
+    - Looking for launch planning docs, spreadsheets, or slide decks
+  token_budget_hint: 200

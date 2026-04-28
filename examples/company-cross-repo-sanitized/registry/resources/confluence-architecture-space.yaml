@@ -1,0 +1,16 @@
+id: resource:confluence-architecture-space
+kind: resource
+title: Confluence Architecture Space
+summary: Public-safe placeholder for private Confluence architecture pages.
+visibility: public
+uri: confluence://redacted
+access:
+  method: private-overlay
+  private_overlay_required: true
+relations:
+  - type: part-of
+    target: system:onboarding-platform
+agent:
+  load_when:
+    - Looking for system architecture background
+  token_budget_hint: 200

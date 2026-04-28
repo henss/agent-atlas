@@ -1,0 +1,11 @@
+id: document:adapter-spec
+kind: document
+title: Adapter Specification
+summary: Specification for adapter interfaces, optional generic adapters, and safe external resource references.
+visibility: public
+uri: docs/spec/adapters.md
+relations:
+  - type: documents
+    target: component:adapters-package
+  - type: part-of
+    target: domain:agent-atlas

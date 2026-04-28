@@ -1,0 +1,19 @@
+id: document:external-resource-references
+kind: document
+title: External Resource References
+summary: Sanitized examples for pointing atlas entities at Notion, Confluence, and Google Workspace resources without embedding private IDs.
+visibility: public
+relations:
+  - type: part-of
+    target: system:onboarding-platform
+  - type: documents
+    target: resource:notion-onboarding-runbook
+  - type: documents
+    target: resource:confluence-architecture-space
+  - type: documents
+    target: resource:google-launch-folder
+agent:
+  load_when:
+    - Modeling references to external knowledge systems
+    - Adding private overlays for real resource IDs
+  token_budget_hint: 500

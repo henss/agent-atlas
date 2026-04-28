@@ -14,7 +14,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 - Workflows: 7
 - Systems: 0
 - Components: 6
-- Relations: 160
+- Relations: 164
 
 ## Domains
 
@@ -32,7 +32,7 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 
 ## Systems And Components
 
-- `component:adapters-package` - Adapters Package: Defines adapter interfaces for external systems and future integration packages.
+- `component:adapters-package` - Adapters Package: Defines adapter interfaces and generic adapters for Backstage, Sourcegraph, local docs, and external resource references.
 - `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, graph inspection, path resolution, context packs, and generated Markdown.
 - `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, and creates context packs.
 - `component:markdown-package` - Markdown Package: Renders generated agent-facing Markdown views from loaded atlas graphs.

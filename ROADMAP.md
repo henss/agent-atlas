@@ -94,13 +94,13 @@ Goal: expose the atlas to agents through standard tools/resources.
 
 Goal: reuse existing systems instead of rebuilding them badly.
 
-- [ ] Define code index adapter interface.
-- [ ] Define developer portal adapter interface.
-- [ ] Define external resource resolver interface.
-- [ ] Add optional Backstage adapter.
-- [ ] Add optional Sourcegraph adapter.
-- [ ] Add optional local filesystem/docs adapter.
-- [ ] Add examples for Notion/Confluence/Google resource references without embedding private data.
+- [x] Define code index adapter interface.
+- [x] Define developer portal adapter interface.
+- [x] Define external resource resolver interface.
+- [x] Add optional Backstage adapter.
+- [x] Add optional Sourcegraph adapter.
+- [x] Add optional local filesystem/docs adapter.
+- [x] Add examples for Notion/Confluence/Google resource references without embedding private data.
 
 ## M9: Cross-repo registry
 

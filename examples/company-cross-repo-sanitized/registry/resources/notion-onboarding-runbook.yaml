@@ -1,0 +1,16 @@
+id: resource:notion-onboarding-runbook
+kind: resource
+title: Notion Onboarding Runbook
+summary: Public-safe placeholder for a private Notion runbook reference.
+visibility: public
+uri: notion://redacted
+access:
+  method: private-overlay
+  private_overlay_required: true
+relations:
+  - type: part-of
+    target: system:onboarding-platform
+agent:
+  load_when:
+    - Looking for the operational onboarding runbook
+  token_budget_hint: 200

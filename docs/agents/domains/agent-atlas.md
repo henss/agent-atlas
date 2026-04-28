@@ -22,6 +22,7 @@ Typed context graph framework for helping coding agents navigate repositories an
 - `component:markdown-package`
 - `component:mcp-server-package`
 - `component:schema-package`
+- `document:adapter-spec` _(generated)_
 - `workflow:create-context-pack` _(generated)_
 - `workflow:define-atlas-model` _(generated)_
 - `workflow:expose-atlas-mcp` _(generated)_

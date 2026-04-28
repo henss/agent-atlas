@@ -6,7 +6,7 @@ ID: `component:adapters-package`
 Kind: `component`
 Profile: `public`
 
-Defines adapter interfaces for external systems and future integration packages.
+Defines adapter interfaces and generic adapters for Backstage, Sourcegraph, local docs, and external resource references.
 
 ## Metadata
 
@@ -21,6 +21,7 @@ Defines adapter interfaces for external systems and future integration packages.
 
 ### `documented-in`
 
+- `document:adapter-spec`
 - `document:readme`
 
 ### `part-of`

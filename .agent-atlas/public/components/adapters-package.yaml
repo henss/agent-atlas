@@ -1,7 +1,7 @@
 id: component:adapters-package
 kind: component
 title: Adapters Package
-summary: Defines adapter interfaces for external systems and future integration packages.
+summary: Defines adapter interfaces and generic adapters for Backstage, Sourcegraph, local docs, and external resource references.
 visibility: public
 code:
   paths:
@@ -13,5 +13,7 @@ relations:
     target: domain:agent-atlas
   - type: documented-in
     target: document:readme
+  - type: documented-in
+    target: document:adapter-spec
   - type: tested-by
     target: test-scope:workspace-build-and-test
