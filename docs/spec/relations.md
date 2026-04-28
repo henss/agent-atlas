@@ -52,7 +52,9 @@ Optional fields:
 ### Data and resource flow
 
 - `reads-from`
+- `read-by`
 - `writes-to`
+- `written-by`
 - `syncs-with`
 - `derived-from`
 - `source-of-truth-for`

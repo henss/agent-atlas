@@ -50,6 +50,8 @@ All entities require:
 - `title`
 - `summary`
 
+M1 does not define additional required fields for specific entity kinds. Kind-specific sections below document optional fields that are meaningful for that kind.
+
 ## Optional common fields
 
 - `status`: `active`, `planned`, `deprecated`, `archived`, `experimental`

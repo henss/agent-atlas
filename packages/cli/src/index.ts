@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import { validateAtlas } from '@agent-atlas/core';
+import type { AtlasDiagnostic, AtlasValidationResult } from '@agent-atlas/core';
+
 const [, , command, ...args] = process.argv;
 
 function printHelp(): void {
@@ -23,6 +26,51 @@ Args: ${args.join(' ')}
 `);
 }
 
+function parseValidateArgs(args: string[]): { rootPath: string; json: boolean } {
+  let rootPath = process.cwd();
+  let json = false;
+
+  for (const arg of args) {
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return { rootPath, json };
+}
+
+function printValidationMarkdown(result: AtlasValidationResult): void {
+  const errors = result.diagnostics.filter((diagnostic) => diagnostic.level === 'error');
+  const warnings = result.diagnostics.filter((diagnostic) => diagnostic.level === 'warning');
+
+  console.log(`# Atlas validation
+
+Status: ${result.status}
+
+Entities: ${result.entityCount}
+Relations: ${result.relationCount}
+Warnings: ${warnings.length}
+Errors: ${errors.length}`);
+
+  printDiagnosticSection('Errors', errors);
+  printDiagnosticSection('Warnings', warnings);
+}
+
+function printDiagnosticSection(title: string, diagnostics: AtlasDiagnostic[]): void {
+  if (diagnostics.length === 0) {
+    return;
+  }
+
+  console.log(`\n## ${title}\n`);
+  for (const diagnostic of diagnostics) {
+    const subject = diagnostic.entityId ? `\`${diagnostic.entityId}\`` : '`atlas`';
+    console.log(`- ${subject}: ${diagnostic.message} \`${diagnostic.code}\``);
+  }
+}
+
 switch (command) {
   case undefined:
   case 'help':
@@ -30,6 +78,17 @@ switch (command) {
   case '-h':
     printHelp();
     break;
+  case 'validate': {
+    const options = parseValidateArgs(args);
+    const result = await validateAtlas(options.rootPath);
+    if (options.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printValidationMarkdown(result);
+    }
+    process.exitCode = result.status === 'failed' ? 1 : 0;
+    break;
+  }
   default:
     console.error(`Atlas CLI command not implemented yet: ${command}`);
     printHelp();

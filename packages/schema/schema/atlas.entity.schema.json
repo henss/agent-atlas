@@ -12,7 +12,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9-]*:[a-z0-9][a-z0-9._/-]*$"
+      "pattern": "^(domain|system|workflow|repository|component|interface|tool|resource|document|dataset|secret-scope|test-scope):[a-z0-9][a-z0-9._/-]*$"
     },
     "kind": {
       "type": "string",
@@ -159,10 +159,45 @@
         ],
         "properties": {
           "type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "part-of",
+              "contains",
+              "owned-by",
+              "alias-of",
+              "implements",
+              "implemented-by",
+              "exposes",
+              "configured-by",
+              "uses",
+              "used-by",
+              "depends-on",
+              "dependency-of",
+              "calls",
+              "called-by",
+              "reads-from",
+              "read-by",
+              "writes-to",
+              "written-by",
+              "syncs-with",
+              "derived-from",
+              "source-of-truth-for",
+              "documented-in",
+              "documents",
+              "related-to",
+              "supersedes",
+              "superseded-by",
+              "tested-by",
+              "verifies",
+              "validated-by",
+              "requires-secret-scope",
+              "requires-permission",
+              "accessed-through"
+            ]
           },
           "target": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^(domain|system|workflow|repository|component|interface|tool|resource|document|dataset|secret-scope|test-scope):[a-z0-9][a-z0-9._/-]*$"
           },
           "summary": {
             "type": "string"
