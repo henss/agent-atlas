@@ -124,3 +124,65 @@ Goal: make the project boringly useful.
 - [x] Contributor examples.
 - [x] CI templates.
 - [x] Performance benchmarks for large repos.
+
+## M11: Consumer ergonomics and version discipline
+
+Goal: make Atlas boring to invoke from downstream repos and agent runtimes.
+
+- [ ] Make CLI path arguments consistent across commands, including `<path>` and `--path` forms.
+- [ ] Remove footguns where stale or alternate invocation shapes silently load zero entities.
+- [ ] Define the sibling-checkout compatibility contract for CLI, schema, generated docs, and registry versions.
+- [ ] Add `atlas doctor` for build state, package availability, supported commands, schema version, MCP availability, and common downstream setup mistakes.
+- [ ] Add copy-paste script templates for public repos, private repos, company repos, and central registry repos.
+- [ ] Keep npm package publishing out of scope until a separate distribution decision is made.
+
+## M12: Adoption evidence and efficiency measurement
+
+Goal: prove Atlas reduces agent search cost before broadening metadata.
+
+- [ ] Add a local `atlas usage-note` or session receipt format for task label, command used, selected entities, selected files/tests, broad-search fallback, and missing or misleading cards.
+- [ ] Add an evaluator that compares context packs against known task packets or completed sessions from downstream control-plane usage.
+- [ ] Document success metrics for fewer broad searches, fewer irrelevant reads, better first-pass test selection, and less repeated orientation.
+- [ ] Add a rollout evidence guide for moving repos from `guidance-only` to `pilot` to `active`.
+- [ ] Keep usage evidence local and downstream-owned; do not add hosted telemetry or phone-home behavior.
+
+## M13: Boundary safety and policy integration
+
+Goal: make public, private, and company rollouts safer to audit.
+
+- [ ] Add `atlas boundary-check <repo> --profile public|private|company`.
+- [ ] Reject public-profile atlas files that include private paths, issue keys, internal URLs, local user paths, or configured private markers.
+- [ ] Reject company-profile files that include secrets, credentials, copied document bodies, or live customer data.
+- [ ] Support repo-local boundary policy files so control planes can supply private marker sets without putting them in the public project.
+- [ ] Check generated `docs/agents/*` output for the same boundary leaks as canonical atlas files.
+- [ ] Document how public pilot repos combine Atlas boundary checks with their own public-boundary checks.
+
+## M14: Incremental authoring and maintenance tools
+
+Goal: reduce the cost of keeping atlas metadata current.
+
+- [ ] Add `atlas suggest-card --path <file>` to emit draft component, workflow, or test-scope cards without writing by default.
+- [ ] Add `atlas diff` for changed entities, stale generated docs, orphaned paths, and removed files referenced by cards.
+- [ ] Add `atlas generate --check` for CI and control-plane validation without rewriting generated docs.
+- [ ] Diagnose stale card references: missing paths, globs matching nothing, missing entrypoints, and test commands that reference missing scripts.
+- [ ] Add authoring recipes for one-seam updates so agents do not blanket-seed repos.
+
+## M15: Control-plane and global registry hardening
+
+Goal: make central registries reliable for portfolio and company control planes.
+
+- [ ] Add global registry diagnostics for duplicate repository IDs, missing imports, missing repository entities, profile mismatches, and weak cross-repo context packs.
+- [ ] Add a registry lock or manifest output with imported repo path, profile, entity count, relation count, and schema version.
+- [ ] Add `atlas global generate markdown` for central registry summaries without merging private or company content into product repos.
+- [ ] Add sanitized examples for private overlays owned by a portfolio control plane and company overlays owned by a company control plane.
+- [ ] Keep cross-repo topology centralized; product repos remain small and repo-local.
+
+## M16: MCP operational hardening
+
+Goal: make read-only Atlas MCP practical for everyday agent use.
+
+- [ ] Add an MCP smoke-test CLI that starts the server, calls `resolve_path`, calls `context_pack`, and exits cleanly.
+- [ ] Add MCP config snippets for common agent hosts with profile-specific examples.
+- [ ] Improve MCP resource and tool errors for bad profiles, missing graphs, stale builds, and invalid path inputs.
+- [ ] Add read-only security assertions so MCP tests prove no file mutation or downstream command execution occurs.
+- [ ] Add portfolio and company deployment notes that keep private topology out of public examples.
