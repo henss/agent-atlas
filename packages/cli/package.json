@@ -2,7 +2,13 @@
   "name": "@agent-atlas/cli",
   "version": "0.16.0",
   "description": "Command-line interface for Agent Atlas.",
+  "license": "Apache-2.0",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henss/agent-atlas.git",
+    "directory": "packages/cli"
+  },
   "bin": {
     "atlas": "./dist/index.js"
   },
@@ -10,6 +16,7 @@
     ".": "./dist/index.js"
   },
   "files": [
+    "LICENSE",
     "README.md",
     "dist/index.js"
   ],
