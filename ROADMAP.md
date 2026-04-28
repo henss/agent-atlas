@@ -17,25 +17,25 @@ Goal: make the public framework understandable and implementable.
 
 Goal: make atlas files machine-checkable.
 
-- [ ] Implement TypeScript entity types in `packages/schema`.
-- [ ] Finalize JSON Schema for entity cards.
-- [ ] Add validation diagnostics.
-- [ ] Implement `atlas validate`.
-- [ ] Add tests for valid and invalid example entities.
-- [ ] Define stable entity ID grammar.
-- [ ] Define required vs optional fields by entity kind.
+- [x] Implement TypeScript entity types in `packages/schema`.
+- [x] Finalize JSON Schema for entity cards.
+- [x] Add validation diagnostics.
+- [x] Implement `atlas validate`.
+- [x] Add tests for valid and invalid example entities.
+- [x] Define stable entity ID grammar.
+- [x] Define required vs optional fields by entity kind.
 
 ## M2: Graph loading and traversal
 
 Goal: make atlas data navigable.
 
-- [ ] Load `.agent-atlas/**/*.yaml` files.
-- [ ] Normalize entities and relation edges.
-- [ ] Generate inverse edges.
-- [ ] Implement `atlas show <entity-id>`.
-- [ ] Implement `atlas neighbors <entity-id> --depth N`.
-- [ ] Implement relation filters.
-- [ ] Implement cycle and orphan diagnostics.
+- [x] Load `.agent-atlas/**/*.yaml` files.
+- [x] Normalize entities and relation edges.
+- [x] Generate inverse edges.
+- [x] Implement `atlas show <entity-id>`.
+- [x] Implement `atlas neighbors <entity-id> --depth N`.
+- [x] Implement relation filters.
+- [x] Implement cycle and orphan diagnostics.
 
 ## M3: Bottom-up path resolution
 

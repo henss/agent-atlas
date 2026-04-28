@@ -43,3 +43,31 @@ Use JSON for machine-readable diagnostics:
 ```sh
 atlas validate examples/personal-ops-sanitized --json
 ```
+
+## `atlas show <entity-id> [path]`
+
+Prints one entity plus incoming and outgoing relations. Generated inverse relations are included and marked.
+
+```sh
+atlas show workflow:plan-week examples/personal-ops-sanitized
+```
+
+Use `--path <path>` when passing flags after the entity ID:
+
+```sh
+atlas show workflow:plan-week --path examples/personal-ops-sanitized --json
+```
+
+## `atlas neighbors <entity-id> [path]`
+
+Traverses the normalized graph from an entity.
+
+```sh
+atlas neighbors workflow:plan-week examples/personal-ops-sanitized --depth 2
+```
+
+Filter traversal by relation type with comma-separated values:
+
+```sh
+atlas neighbors workflow:plan-week examples/personal-ops-sanitized --relation uses,tested-by
+```

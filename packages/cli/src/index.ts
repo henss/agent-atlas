@@ -1,7 +1,15 @@
 #!/usr/bin/env node
 
-import { validateAtlas } from '@agent-atlas/core';
-import type { AtlasDiagnostic, AtlasValidationResult } from '@agent-atlas/core';
+import { findNeighbors, loadAtlasGraph, validateAtlas } from '@agent-atlas/core';
+import type {
+  AtlasDiagnostic,
+  AtlasGraph,
+  AtlasGraphEdge,
+  AtlasValidationResult,
+  NeighborResult,
+} from '@agent-atlas/core';
+import type { AtlasEntity, AtlasEntityId, AtlasRelationType } from '@agent-atlas/schema';
+import { ATLAS_RELATION_TYPES } from '@agent-atlas/schema';
 
 const [, , command, ...args] = process.argv;
 
@@ -42,6 +50,99 @@ function parseValidateArgs(args: string[]): { rootPath: string; json: boolean } 
   return { rootPath, json };
 }
 
+interface ShowArgs {
+  entityId?: AtlasEntityId;
+  rootPath: string;
+  json: boolean;
+}
+
+interface NeighborArgs extends ShowArgs {
+  depth: number;
+  relationTypes?: AtlasRelationType[];
+}
+
+function parseShowArgs(args: string[]): ShowArgs {
+  let entityId: AtlasEntityId | undefined;
+  let rootPath = process.cwd();
+  let json = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--path') {
+      rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    if (!entityId) {
+      entityId = arg as AtlasEntityId;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return { entityId, rootPath, json };
+}
+
+function parseNeighborArgs(args: string[]): NeighborArgs {
+  const relationTypes: AtlasRelationType[] = [];
+  let entityId: AtlasEntityId | undefined;
+  let rootPath = process.cwd();
+  let json = false;
+  let depth = 1;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--path') {
+      rootPath = args[index + 1] ?? rootPath;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--depth') {
+      depth = parsePositiveInteger(args[index + 1], 1);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--relation' || arg === '--relations') {
+      for (const type of parseRelationTypes(args[index + 1] ?? '')) {
+        relationTypes.push(type);
+      }
+      index += 1;
+      continue;
+    }
+
+    if (!entityId) {
+      entityId = arg as AtlasEntityId;
+      continue;
+    }
+
+    rootPath = arg;
+  }
+
+  return {
+    entityId,
+    rootPath,
+    json,
+    depth,
+    relationTypes: relationTypes.length > 0 ? relationTypes : undefined,
+  };
+}
+
 function printValidationMarkdown(result: AtlasValidationResult): void {
   const errors = result.diagnostics.filter((diagnostic) => diagnostic.level === 'error');
   const warnings = result.diagnostics.filter((diagnostic) => diagnostic.level === 'warning');
@@ -71,6 +172,98 @@ function printDiagnosticSection(title: string, diagnostics: AtlasDiagnostic[]): 
   }
 }
 
+function printShowMarkdown(graph: AtlasGraph, entity: AtlasEntity): void {
+  const outgoing = graph.index.outgoingById.get(entity.id) ?? [];
+  const incoming = graph.index.incomingById.get(entity.id) ?? [];
+
+  console.log(`# ${entity.id}
+
+Kind: ${entity.kind}
+Title: ${entity.title}
+Summary: ${entity.summary}`);
+
+  if (entity.visibility) {
+    console.log(`Visibility: ${entity.visibility}`);
+  }
+
+  printEdgeSection('Outgoing', outgoing);
+  printEdgeSection('Incoming', incoming);
+}
+
+function printNeighborsMarkdown(
+  startId: AtlasEntityId,
+  depth: number,
+  relationTypes: AtlasRelationType[] | undefined,
+  neighbors: NeighborResult[],
+): void {
+  console.log(`# Atlas neighbors
+
+Start: \`${startId}\`
+Depth: ${depth}
+Relations: ${relationTypes?.map((type) => `\`${type}\``).join(', ') ?? 'all'}
+Count: ${neighbors.length}`);
+
+  if (neighbors.length === 0) {
+    return;
+  }
+
+  console.log('\n## Results\n');
+  for (const neighbor of neighbors) {
+    const via = neighbor.via
+      ? ` via \`${neighbor.via.type}\` ${formatProvenance(neighbor.via)}`
+      : '';
+    console.log(
+      `- d${neighbor.distance} \`${neighbor.entity.id}\` (${neighbor.entity.kind})${via}: ${neighbor.entity.title}`,
+    );
+  }
+}
+
+function printEdgeSection(title: string, edges: AtlasGraphEdge[]): void {
+  if (edges.length === 0) {
+    return;
+  }
+
+  console.log(`\n## ${title}\n`);
+  for (const edge of edges) {
+    const target = title === 'Incoming' ? edge.source : edge.target;
+    console.log(`- \`${edge.type}\` ${formatProvenance(edge)} \`${target}\``);
+  }
+}
+
+function showUsage(): void {
+  console.error('Usage: atlas show <entity-id> [path] [--path <path>] [--json]');
+}
+
+function neighborsUsage(): void {
+  console.error(
+    'Usage: atlas neighbors <entity-id> [path] [--depth N] [--relation type[,type]] [--json]',
+  );
+}
+
+function parsePositiveInteger(value: string | undefined, fallback: number): number {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseRelationTypes(value: string): AtlasRelationType[] {
+  return value
+    .split(',')
+    .map((type) => type.trim())
+    .filter(isAtlasRelationType);
+}
+
+function isAtlasRelationType(value: string): value is AtlasRelationType {
+  return (ATLAS_RELATION_TYPES as readonly string[]).includes(value);
+}
+
+function formatProvenance(edge: AtlasGraphEdge): string {
+  return edge.provenance === 'generated' ? '(generated)' : '(explicit)';
+}
+
 switch (command) {
   case undefined:
   case 'help':
@@ -87,6 +280,79 @@ switch (command) {
       printValidationMarkdown(result);
     }
     process.exitCode = result.status === 'failed' ? 1 : 0;
+    break;
+  }
+  case 'show': {
+    const options = parseShowArgs(args);
+    if (!options.entityId) {
+      showUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const graph = await loadAtlasGraph(options.rootPath);
+    const entity = graph.index.entitiesById.get(options.entityId);
+    if (!entity) {
+      console.error(`Atlas entity not found: ${options.entityId}`);
+      process.exitCode = 1;
+      break;
+    }
+
+    if (options.json) {
+      console.log(
+        JSON.stringify(
+          {
+            entity,
+            outgoing: graph.index.outgoingById.get(entity.id) ?? [],
+            incoming: graph.index.incomingById.get(entity.id) ?? [],
+            diagnostics: graph.diagnostics,
+          },
+          null,
+          2,
+        ),
+      );
+    } else {
+      printShowMarkdown(graph, entity);
+    }
+    break;
+  }
+  case 'neighbors': {
+    const options = parseNeighborArgs(args);
+    if (!options.entityId) {
+      neighborsUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const graph = await loadAtlasGraph(options.rootPath);
+    if (!graph.index.entitiesById.has(options.entityId)) {
+      console.error(`Atlas entity not found: ${options.entityId}`);
+      process.exitCode = 1;
+      break;
+    }
+
+    const neighbors = findNeighbors(graph.index, options.entityId, {
+      depth: options.depth,
+      relationTypes: options.relationTypes,
+    });
+
+    if (options.json) {
+      console.log(
+        JSON.stringify(
+          {
+            startId: options.entityId,
+            depth: options.depth,
+            relationTypes: options.relationTypes,
+            neighbors,
+            diagnostics: graph.diagnostics,
+          },
+          null,
+          2,
+        ),
+      );
+    } else {
+      printNeighborsMarkdown(options.entityId, options.depth, options.relationTypes, neighbors);
+    }
     break;
   }
   default:
