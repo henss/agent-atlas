@@ -1,0 +1,12 @@
+schema_version: 1
+id: repository:sample-product
+kind: repository
+title: Sample Product Repository
+summary: Portfolio control-plane view of the sample product repository.
+visibility: private
+owners:
+  - portfolio-control-plane
+metadata:
+  control_plane:
+    owner: portfolio
+    rollout_stage: pilot

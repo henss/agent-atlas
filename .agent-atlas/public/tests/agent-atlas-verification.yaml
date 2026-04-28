@@ -1,0 +1,19 @@
+id: test-scope:agent-atlas-verification
+kind: test-scope
+title: agent-atlas Verification
+summary: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
+status: active
+visibility: public
+commands:
+  - command: pnpm test
+    cwd: .
+    purpose: Repo-local verification candidate.
+  - command: pnpm build
+    cwd: .
+    purpose: Repo-local verification candidate.
+  - command: pnpm lint
+    cwd: .
+    purpose: Repo-local verification candidate.
+relations:
+  - type: verifies
+    target: component:agent-atlas-source

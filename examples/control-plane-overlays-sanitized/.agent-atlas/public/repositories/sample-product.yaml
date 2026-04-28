@@ -1,0 +1,9 @@
+schema_version: 1
+id: repository:sample-product
+kind: repository
+title: Sample Product Repository
+summary: Public placeholder for a product repository managed by an external control plane.
+visibility: public
+relations:
+  - type: accessed-through
+    target: resource:control-plane-index

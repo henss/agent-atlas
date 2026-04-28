@@ -39,6 +39,18 @@ Import fields:
 - `repository`: optional repository entity ID for a per-repo import.
 - `profile`: optional profile override for that import.
 
+## Registry diagnostics
+
+Global validation reports registry-specific diagnostics in addition to normal entity validation:
+
+- duplicate import IDs
+- duplicate repository IDs across repository imports
+- missing import paths
+- repository imports without a declared repository entity ID
+- repository imports whose declared repository entity is missing after merge
+- profile overrides that differ from the command profile
+- weak cross-repo topology where a repository import has no cross-import relations
+
 ## Merge rules
 
 Global loading:
@@ -64,7 +76,13 @@ Implemented commands:
 ```sh
 atlas global validate [registry-root]
 atlas global list [registry-root]
+atlas global manifest [registry-root]
 atlas global context-pack "<task>" [registry-root] --budget 8000
+atlas global generate markdown [registry-root] --output docs/agents/global
 ```
 
 Global commands default to the `company` profile because cross-repo registries usually contain internal topology.
+
+`atlas global manifest` prints a lock-style summary with imported paths, effective profiles, entity counts, relation counts, and schema versions.
+
+`atlas global generate markdown` writes generated Markdown from the merged registry graph into the registry checkout, not into imported product repositories. Use `--check` in CI to verify the central generated views without rewriting them.

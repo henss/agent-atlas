@@ -34,6 +34,7 @@ import type {
   AtlasDoctorResult,
   AtlasMaintenanceReport,
   BoundaryCheckResult,
+  GlobalAtlasGraph,
   SuggestedAtlasCard,
   UsageEvidenceEvaluation,
   WriteUsageNoteResult,
@@ -79,6 +80,8 @@ Implemented commands:
 - atlas global validate [path]
 - atlas global list [path]
 - atlas global context-pack "<task>" --budget 8000
+- atlas global manifest [path]
+- atlas global generate markdown [path]
 
 Path rule: use one positional root path or --path <root>, not both.
 Current command: ${command ?? '(none)'}
@@ -202,6 +205,11 @@ interface GlobalContextPackArgs extends GlobalArgs {
   task?: string;
   budget: number;
   deterministic: boolean;
+}
+
+interface GlobalGenerateMarkdownArgs extends GlobalArgs {
+  outputPath: string;
+  check: boolean;
 }
 
 interface MigrateArgs {
@@ -644,6 +652,68 @@ function parseGlobalContextPackArgs(args: string[]): GlobalContextPackArgs {
     profile,
     budget,
     deterministic,
+    json,
+  };
+}
+
+function parseGlobalGenerateMarkdownArgs(
+  args: string[],
+): GlobalGenerateMarkdownArgs {
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'company';
+  let outputPath = 'docs/agents/global';
+  let check = false;
+  let json = false;
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === 'generate' || arg === 'markdown') {
+      continue;
+    }
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--check') {
+      check = true;
+      continue;
+    }
+
+    if (arg === '--output') {
+      outputPath = readOptionValue(args, index, '--output');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return {
+    subcommand: 'generate',
+    rootPath,
+    profile,
+    outputPath,
+    check,
     json,
   };
 }
@@ -1431,23 +1501,7 @@ Misleading-card mentions: ${result.misleadingCardMentions}
   }
 }
 
-function printGlobalRegistryMarkdown(
-  graph: AtlasGraph & {
-    registry: {
-      configPath: string;
-      name: string;
-      imports: Array<{
-        id: string;
-        path: string;
-        role: string;
-        repository?: AtlasEntityId;
-        rootPath: string;
-        entityCount: number;
-        relationCount: number;
-      }>;
-    };
-  },
-): void {
+function printGlobalRegistryMarkdown(graph: GlobalAtlasGraph): void {
   const errors = graph.diagnostics.filter(
     (diagnostic) => diagnostic.level === 'error',
   );
@@ -1473,10 +1527,99 @@ Errors: ${errors.length}`);
       const repository = registryImport.repository
         ? `, repository \`${registryImport.repository}\``
         : '';
+      const schemaVersions =
+        registryImport.schemaVersions.length > 0
+          ? registryImport.schemaVersions.join(', ')
+          : 'legacy';
       console.log(
-        `- \`${registryImport.id}\` (${registryImport.role}${repository}): ${registryImport.entityCount} entities, ${registryImport.relationCount} relations`,
+        `- \`${registryImport.id}\` (${registryImport.role}, profile \`${registryImport.profile}\`${repository}): ${registryImport.entityCount} entities, ${registryImport.relationCount} relations, schema ${schemaVersions}`,
       );
     }
+  }
+
+  printDiagnosticSection('Errors', errors);
+  printDiagnosticSection('Warnings', warnings);
+}
+
+function createGlobalRegistryManifest(graph: GlobalAtlasGraph): {
+  version: 1;
+  name: string;
+  configPath: string;
+  entityCount: number;
+  relationCount: number;
+  imports: Array<{
+    id: string;
+    role: string;
+    path: string;
+    rootPath: string;
+    profile: AtlasProfile;
+    repository?: AtlasEntityId;
+    entityCount: number;
+    relationCount: number;
+    schemaVersions: number[];
+    legacyEntityCount: number;
+  }>;
+  diagnostics: AtlasDiagnostic[];
+} {
+  return {
+    version: 1,
+    name: graph.registry.name,
+    configPath: graph.registry.configPath,
+    entityCount: graph.entities.length,
+    relationCount: graph.edges.filter((edge) => edge.provenance === 'explicit')
+      .length,
+    imports: graph.registry.imports.map((registryImport) => ({
+      id: registryImport.id,
+      role: registryImport.role,
+      path: registryImport.path,
+      rootPath: registryImport.rootPath,
+      profile: registryImport.profile,
+      repository: registryImport.repository,
+      entityCount: registryImport.entityCount,
+      relationCount: registryImport.relationCount,
+      schemaVersions: registryImport.schemaVersions,
+      legacyEntityCount: registryImport.legacyEntityCount,
+    })),
+    diagnostics: graph.diagnostics,
+  };
+}
+
+function printGlobalManifestMarkdown(
+  manifest: ReturnType<typeof createGlobalRegistryManifest>,
+): void {
+  const errors = manifest.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'error',
+  );
+  const warnings = manifest.diagnostics.filter(
+    (diagnostic) => diagnostic.level === 'warning',
+  );
+
+  console.log(`# Atlas global manifest
+
+Name: ${manifest.name}
+Config: \`${manifest.configPath}\`
+Status: ${errors.length > 0 ? 'failed' : 'passed'}
+
+Registry version: ${manifest.version}
+Imports: ${manifest.imports.length}
+Entities: ${manifest.entityCount}
+Relations: ${manifest.relationCount}
+Warnings: ${warnings.length}
+Errors: ${errors.length}
+
+## Imports
+
+| ID | Role | Profile | Path | Repository | Entities | Relations | Schema |
+|---|---|---|---|---|---:|---:|---|`);
+
+  for (const registryImport of manifest.imports) {
+    const schema =
+      registryImport.schemaVersions.length > 0
+        ? registryImport.schemaVersions.join(', ')
+        : 'legacy';
+    console.log(
+      `| \`${registryImport.id}\` | ${registryImport.role} | \`${registryImport.profile}\` | \`${registryImport.path}\` | ${registryImport.repository ? `\`${registryImport.repository}\`` : ''} | ${registryImport.entityCount} | ${registryImport.relationCount} | ${schema} |`,
+    );
   }
 
   printDiagnosticSection('Errors', errors);
@@ -1643,7 +1786,7 @@ function evaluateUsage(): void {
 
 function globalUsage(): void {
   console.error(
-    'Usage: atlas global validate|list|context-pack [path] [--path <registry-root>] [--profile public|private|company] [--json]',
+    'Usage: atlas global validate|list|manifest|context-pack|generate markdown [path] [--path <registry-root>] [--profile public|private|company] [--json]',
   );
 }
 
@@ -2166,6 +2309,64 @@ switch (command) {
   }
   case 'global': {
     const globalSubcommand = args[0];
+    if (globalSubcommand === 'generate') {
+      if (args[1] !== 'markdown') {
+        globalUsage();
+        process.exitCode = 1;
+        break;
+      }
+
+      const options = parseGlobalGenerateMarkdownArgs(args);
+      const graph = await loadGlobalAtlasGraph(options.rootPath, {
+        profile: options.profile,
+      });
+      const files = generateMarkdownViews(graph, { profile: options.profile });
+      const absoluteOutputPath = path.resolve(
+        options.rootPath,
+        options.outputPath,
+      );
+
+      if (options.check) {
+        const result = await checkGeneratedMarkdownOutput(
+          absoluteOutputPath,
+          options.profile,
+          files,
+        );
+        if (options.json) {
+          console.log(JSON.stringify(result, null, 2));
+        } else {
+          printGenerateCheckMarkdown(result);
+        }
+        process.exitCode =
+          result.staleFiles.length > 0 ||
+          result.missingFiles.length > 0 ||
+          result.extraFiles.length > 0
+            ? 1
+            : 0;
+        break;
+      }
+
+      await cleanGeneratedMarkdownOutput(absoluteOutputPath);
+      for (const file of files) {
+        const absoluteFilePath = path.join(absoluteOutputPath, file.path);
+        await mkdir(path.dirname(absoluteFilePath), { recursive: true });
+        await writeFile(absoluteFilePath, file.content, 'utf8');
+      }
+
+      const result = {
+        status: 'generated',
+        profile: options.profile,
+        outputPath: absoluteOutputPath,
+        files: files.map((file) => file.path),
+      };
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        printGenerateMarkdownResult(result);
+      }
+      break;
+    }
+
     if (globalSubcommand === 'context-pack') {
       const options = parseGlobalContextPackArgs(args);
       if (!options.task) {
@@ -2205,7 +2406,7 @@ switch (command) {
     const options = parseGlobalArgs(args);
     if (
       !options.subcommand ||
-      !['validate', 'list'].includes(options.subcommand)
+      !['validate', 'list', 'manifest'].includes(options.subcommand)
     ) {
       globalUsage();
       process.exitCode = 1;
@@ -2220,24 +2421,24 @@ switch (command) {
     );
 
     if (options.json) {
-      console.log(
-        JSON.stringify(
-          {
-            registry: graph.registry,
-            entityCount: graph.entities.length,
-            relationCount: graph.edges.filter(
-              (edge) => edge.provenance === 'explicit',
-            ).length,
-            diagnostics: graph.diagnostics,
-            entities:
-              options.subcommand === 'list' ? graph.entities : undefined,
-          },
-          null,
-          2,
-        ),
-      );
+      const jsonResult =
+        options.subcommand === 'manifest'
+          ? createGlobalRegistryManifest(graph)
+          : {
+              registry: graph.registry,
+              entityCount: graph.entities.length,
+              relationCount: graph.edges.filter(
+                (edge) => edge.provenance === 'explicit',
+              ).length,
+              diagnostics: graph.diagnostics,
+              entities:
+                options.subcommand === 'list' ? graph.entities : undefined,
+            };
+      console.log(JSON.stringify(jsonResult, null, 2));
     } else if (options.subcommand === 'list') {
       printGlobalListMarkdown(graph);
+    } else if (options.subcommand === 'manifest') {
+      printGlobalManifestMarkdown(createGlobalRegistryManifest(graph));
     } else {
       printGlobalRegistryMarkdown(graph);
     }

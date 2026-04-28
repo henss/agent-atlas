@@ -1,0 +1,11 @@
+schema_version: 1
+id: resource:control-plane-index
+kind: resource
+title: Portfolio Control Plane Index
+summary: Portfolio-owned private index for repository adoption state and sanitized rollout evidence.
+visibility: private
+uri: atlas-control-plane://portfolio/sample-product
+access:
+  method: mcp
+  server: portfolio-control-plane
+  permission: read

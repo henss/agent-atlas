@@ -91,7 +91,7 @@ Copy-paste script starters live under `templates/scripts/`:
 - `public-repo.sh`: public validation and generated docs check
 - `private-repo.sh`: private profile validation, generated docs, and context-pack smoke test
 - `company-repo.sh`: company profile validation, benchmark, and MCP stdio pointer
-- `central-registry-repo.sh`: global registry validation, listing, and context-pack smoke test
+- `central-registry-repo.sh`: global registry validation, manifest output, generated Markdown checks, listing, and context-pack smoke test
 
 Each template uses `ATLAS_CHECKOUT=../agent-atlas` by default and can be adapted to the downstream repo layout.
 

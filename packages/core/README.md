@@ -14,6 +14,8 @@ Implemented responsibilities:
 - resolve source paths to owning components and related context
 - create deterministic task-specific context packs
 - load cross-repo registry configs and merge imported atlases
+- diagnose global registry imports and cross-repo topology
+- summarize registry manifests for control-plane use
 - plan and write schema-version migrations
 - run lightweight load benchmarks
 - diagnose sibling-checkout setup with doctor checks
@@ -23,4 +25,4 @@ Implemented responsibilities:
 
 Keep this package UI-free and vendor-neutral.
 
-Roadmap work after M13 should keep shared behavior here when it is not UI-specific, especially diagnostics, registry checks, generated-doc checks, and authoring analysis.
+Roadmap work after M15 should keep shared behavior here when it is not UI-specific, especially diagnostics, registry checks, generated-doc checks, MCP smoke tests, and authoring analysis.

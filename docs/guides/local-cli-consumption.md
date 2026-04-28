@@ -31,6 +31,8 @@ node ../agent-atlas/packages/cli/dist/index.js evaluate --path .
 node ../agent-atlas/packages/cli/dist/index.js migrate --path . --to 1
 node ../agent-atlas/packages/cli/dist/index.js benchmark --path . --iterations 3
 node ../agent-atlas/packages/cli/dist/index.js global validate --path .
+node ../agent-atlas/packages/cli/dist/index.js global manifest --path .
+node ../agent-atlas/packages/cli/dist/index.js global generate markdown --path . --output docs/agents/global --profile company --check
 node ../agent-atlas/packages/cli/dist/index.js global context-pack "change onboarding workflow" --path . --budget 8000 --profile private
 node ../agent-atlas/packages/mcp-server/dist/stdio.js --path . --profile private
 ```
@@ -43,7 +45,7 @@ All atlas-loading commands accept one positional root path or `--path <root>`. D
 
 Use one built Agent Atlas sibling checkout as the unit of compatibility:
 
-- Workspace package version: `0.14.0`.
+- Workspace package version: `0.15.0`.
 - Entity schema version: `schema_version: 1`.
 - Usage receipt version: `version: 1`.
 - Registry config version: `version: 1`.
@@ -66,6 +68,7 @@ Use one built Agent Atlas sibling checkout as the unit of compatibility:
 - Use the read-only MCP server when the agent host can consume MCP.
 - Run `migrate . --to 1` before schema-version cleanup; add `--write` only in an explicit migration task.
 - Use `global validate` and `global context-pack` from a central registry when a task spans repositories.
+- Use `global manifest` and `global generate markdown --check` in central registry repos to keep control-plane summaries current.
 - Keep generated Markdown and context packs downstream-only until a repo has stable atlas files and a known CLI path.
 - Do not copy `templates/repo/AGENTS.md` verbatim into target repos unless its referenced surfaces exist in that repo.
 

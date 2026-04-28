@@ -10,7 +10,7 @@ describe('createContextPack', () => {
     const graph = await loadAtlasGraph(path.resolve('../..'));
     const pack = createContextPack(graph, {
       task: 'Change CLI path resolution in packages/cli/src/index.ts',
-      budget: 1200,
+      budget: 3000,
       deterministic: true,
     });
 

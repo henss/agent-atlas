@@ -1,0 +1,12 @@
+schema_version: 1
+id: repository:sample-product
+kind: repository
+title: Sample Product Repository
+summary: Company control-plane view of the sample product repository.
+visibility: internal
+owners:
+  - company-platform
+metadata:
+  control_plane:
+    owner: company
+    rollout_stage: active

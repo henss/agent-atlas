@@ -1,0 +1,9 @@
+id: domain:agent-atlas-local
+kind: domain
+title: agent-atlas Local Surface
+summary: Repo-local architecture, docs, and verification surfaces for agent-atlas.
+status: active
+visibility: public
+relations:
+  - type: contains
+    target: repository:agent-atlas

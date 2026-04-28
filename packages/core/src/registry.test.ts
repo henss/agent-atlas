@@ -13,6 +13,13 @@ describe('loadGlobalAtlasGraph', () => {
     const graph = await loadGlobalAtlasGraph(root);
 
     expect(graph.registry.imports).toHaveLength(3);
+    expect(graph.registry.imports[0]).toEqual(
+      expect.objectContaining({
+        profile: 'company',
+        schemaVersions: [],
+        legacyEntityCount: expect.any(Number),
+      }),
+    );
     expect(graph.index.entitiesById.has('system:onboarding-platform')).toBe(
       true,
     );
@@ -59,9 +66,43 @@ describe('loadGlobalAtlasGraph', () => {
       ]),
     );
   });
+
+  it('diagnoses duplicate imports, missing paths, missing repositories, and profile overrides', async () => {
+    const root = await makeRegistryFixture({
+      registryYaml: `version: 1
+name: Broken Registry
+imports:
+  - id: central
+    path: registry
+    role: registry
+  - id: central
+    path: missing
+    role: repository
+    repository: repository:onboarding-api
+    profile: public
+  - id: missing-repository
+    path: repos/onboarding-web
+    role: repository
+    repository: repository:missing
+`,
+    });
+
+    const graph = await loadGlobalAtlasGraph(root, { profile: 'company' });
+
+    expect(graph.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'GLOBAL_DUPLICATE_IMPORT_ID' }),
+        expect.objectContaining({ code: 'GLOBAL_IMPORT_MISSING' }),
+        expect.objectContaining({ code: 'GLOBAL_REPOSITORY_ENTITY_MISSING' }),
+        expect.objectContaining({ code: 'GLOBAL_IMPORT_PROFILE_MISMATCH' }),
+      ]),
+    );
+  });
 });
 
-async function makeRegistryFixture(): Promise<string> {
+async function makeRegistryFixture(
+  options: { registryYaml?: string } = {},
+): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'agent-atlas-registry-'));
 
   await mkdir(path.join(root, 'registry'), { recursive: true });
@@ -100,7 +141,8 @@ async function makeRegistryFixture(): Promise<string> {
 
   await writeFile(
     path.join(root, 'agent-atlas.registry.yaml'),
-    `version: 1
+    options.registryYaml ??
+      `version: 1
 name: Fixture Registry
 imports:
   - id: central

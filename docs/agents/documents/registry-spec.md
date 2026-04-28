@@ -6,7 +6,7 @@ ID: `document:registry-spec`
 Kind: `document`
 Profile: `public`
 
-Specification for cross-repo registry files, imports, merge behavior, and global CLI commands.
+Specification for cross-repo registry files, diagnostics, manifests, central generated Markdown, imports, merge behavior, and global CLI commands.
 
 ## Metadata
 

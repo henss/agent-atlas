@@ -197,6 +197,54 @@ Status: passed
       stdout: expect.stringContaining('Extra files: 1'),
     });
   });
+
+  it('prints global manifests and generates registry markdown', async () => {
+    const registryRoot = path.resolve(
+      '..',
+      '..',
+      'examples',
+      'company-cross-repo-sanitized',
+    );
+    const outputPath = path.join(await mkdtemp(path.join(os.tmpdir(), 'agent-atlas-global-docs-')), 'docs');
+
+    const manifest = await execFileAsync('node', [
+      CLI_PATH,
+      'global',
+      'manifest',
+      '--path',
+      registryRoot,
+    ]);
+    expect(manifest.stdout).toContain('# Atlas global manifest');
+    expect(manifest.stdout).toContain('Registry version: 1');
+    expect(manifest.stdout).toContain('onboarding-api');
+
+    const generated = await execFileAsync('node', [
+      CLI_PATH,
+      'global',
+      'generate',
+      'markdown',
+      '--path',
+      registryRoot,
+      '--output',
+      outputPath,
+    ]);
+    expect(generated.stdout).toContain('# Atlas Markdown generation');
+    expect(generated.stdout).toContain('Status: generated');
+
+    const check = await execFileAsync('node', [
+      CLI_PATH,
+      'global',
+      'generate',
+      'markdown',
+      '--path',
+      registryRoot,
+      '--output',
+      outputPath,
+      '--check',
+    ]);
+    expect(check.stdout).toContain('# Atlas Markdown check');
+    expect(check.stdout).toContain('Status: passed');
+  });
 });
 
 async function makeAtlasFixture(

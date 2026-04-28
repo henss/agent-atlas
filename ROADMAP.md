@@ -2,7 +2,7 @@
 
 This roadmap is intentionally staged. Building everything at once is how frameworks become haunted furniture.
 
-Status: M0-M14 are complete. M15-M16 are the next registry and MCP hardening milestones.
+Status: M0-M15 are complete. M16 is the next MCP hardening milestone.
 
 ## M0: Foundations
 
@@ -173,11 +173,11 @@ Goal: reduce the cost of keeping atlas metadata current.
 
 Goal: make central registries reliable for portfolio and company control planes.
 
-- [ ] Add global registry diagnostics for duplicate repository IDs, missing imports, missing repository entities, profile mismatches, and weak cross-repo context packs.
-- [ ] Add a registry lock or manifest output with imported repo path, profile, entity count, relation count, and schema version.
-- [ ] Add `atlas global generate markdown` for central registry summaries without merging private or company content into product repos.
-- [ ] Add sanitized examples for private overlays owned by a portfolio control plane and company overlays owned by a company control plane.
-- [ ] Keep cross-repo topology centralized; product repos remain small and repo-local.
+- [x] Add global registry diagnostics for duplicate repository IDs, missing imports, missing repository entities, profile mismatches, and weak cross-repo context packs.
+- [x] Add a registry lock or manifest output with imported repo path, profile, entity count, relation count, and schema version.
+- [x] Add `atlas global generate markdown` for central registry summaries without merging private or company content into product repos.
+- [x] Add sanitized examples for private overlays owned by a portfolio control plane and company overlays owned by a company control plane.
+- [x] Keep cross-repo topology centralized; product repos remain small and repo-local.
 
 ## M16: MCP operational hardening
 

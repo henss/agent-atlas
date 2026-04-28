@@ -1,0 +1,8 @@
+schema_version: 1
+id: resource:control-plane-index
+kind: resource
+title: Control Plane Index
+summary: Sanitized placeholder for a private or company-owned registry index.
+visibility: public
+access:
+  private_overlay_required: true

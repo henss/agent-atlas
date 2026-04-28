@@ -1,0 +1,23 @@
+id: component:agent-atlas-source
+kind: component
+title: agent-atlas Source Surface
+summary: Main source, configuration, scripts, docs, and tests agents should inspect before broad repository search.
+status: active
+visibility: public
+code:
+  paths:
+    - packages/**
+    - docs/**
+    - package.json
+    - README.md
+relations:
+  - type: part-of
+    target: domain:agent-atlas-local
+  - type: tested-by
+    target: test-scope:agent-atlas-verification
+  - type: documented-in
+    target: document:agent-atlas-readme
+agent:
+  load_when:
+    - Changing source, scripts, docs, tests, or repo-level configuration.
+  token_budget_hint: 600

@@ -1,0 +1,12 @@
+id: document:agent-atlas-readme
+kind: document
+title: agent-atlas README
+summary: Primary repo entrypoint for setup, usage, architecture, and maintenance notes.
+status: active
+visibility: public
+document:
+  paths:
+    - README.md
+relations:
+  - type: documents
+    target: component:agent-atlas-source

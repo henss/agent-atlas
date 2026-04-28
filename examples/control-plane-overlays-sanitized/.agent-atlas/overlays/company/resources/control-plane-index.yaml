@@ -1,0 +1,11 @@
+schema_version: 1
+id: resource:control-plane-index
+kind: resource
+title: Company Control Plane Index
+summary: Company-owned internal index for cross-repo topology, rollout state, and registry manifests.
+visibility: internal
+uri: atlas-control-plane://company/sample-product
+access:
+  method: mcp
+  server: company-control-plane
+  permission: read

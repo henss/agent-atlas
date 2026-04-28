@@ -72,6 +72,8 @@ export async function doctorAtlas(
       'global validate',
       'global list',
       'global context-pack',
+      'global manifest',
+      'global generate markdown',
     ],
     packageVersions,
     checks,

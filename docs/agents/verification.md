@@ -6,7 +6,26 @@ Profile: `public`
 
 ## Test Scopes
 
+- `test-scope:agent-atlas-verification` - agent-atlas Verification: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
 - `test-scope:workspace-build-and-test` - Workspace Build And Test: Whole-workspace TypeScript build and test commands for validating Agent Atlas changes.
+
+## agent-atlas Verification
+
+ID: `test-scope:agent-atlas-verification`
+
+Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
+
+- command: `pnpm test`
+  purpose: Repo-local verification candidate.
+
+- command: `pnpm build`
+  purpose: Repo-local verification candidate.
+
+- command: `pnpm lint`
+  purpose: Repo-local verification candidate.
+
+Verifies:
+- `component:agent-atlas-source`
 
 ## Workspace Build And Test
 

@@ -1,7 +1,7 @@
 id: document:registry-spec
 kind: document
 title: Registry Specification
-summary: Specification for cross-repo registry files, imports, merge behavior, and global CLI commands.
+summary: Specification for cross-repo registry files, diagnostics, manifests, central generated Markdown, imports, merge behavior, and global CLI commands.
 visibility: public
 uri: docs/spec/registry.md
 relations:
