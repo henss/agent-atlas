@@ -11,9 +11,9 @@ The repo has authoring guidance, but agents are not expected to rely on Atlas.
 Recommended checks:
 
 ```sh
-node ../agent-atlas/packages/cli/dist/index.js doctor --path .
-node ../agent-atlas/packages/cli/dist/index.js validate .
-node ../agent-atlas/packages/cli/dist/index.js boundary-check --path . --profile public
+pnpm dlx @agent-atlas/cli@0.17.0 doctor --path . --profile public
+pnpm dlx @agent-atlas/cli@0.17.0 validate . --profile public
+pnpm dlx @agent-atlas/cli@0.17.0 boundary-check . --profile public
 ```
 
 Exit criteria:
@@ -29,9 +29,9 @@ Agents use Atlas on selected tasks and record receipts.
 Recommended loop:
 
 ```sh
-node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/example/src/index.ts" --path . --budget 4000
-node ../agent-atlas/packages/cli/dist/index.js usage-note "change packages/example/src/index.ts" --path . --command context-pack --entity component:example --file packages/example/src/index.ts --test "pnpm test"
-node ../agent-atlas/packages/cli/dist/index.js evaluate --path .
+pnpm dlx @agent-atlas/cli@0.17.0 context-pack "change packages/example/src/index.ts" --path . --budget 4000 --profile public
+pnpm dlx @agent-atlas/cli@0.17.0 usage-note "change packages/example/src/index.ts" --path . --command context-pack --entity component:example --file packages/example/src/index.ts --test "pnpm test"
+pnpm dlx @agent-atlas/cli@0.17.0 evaluate . --profile public
 ```
 
 Exit criteria:
@@ -48,10 +48,12 @@ Atlas is part of normal agent and CI workflows.
 Recommended checks:
 
 ```sh
-node ../agent-atlas/packages/cli/dist/index.js validate .
-node ../agent-atlas/packages/cli/dist/index.js boundary-check --path . --profile public
-node ../agent-atlas/packages/cli/dist/index.js evaluate --path . --json
+pnpm dlx @agent-atlas/cli@0.17.0 validate . --profile public
+pnpm dlx @agent-atlas/cli@0.17.0 boundary-check . --profile public
+pnpm dlx @agent-atlas/cli@0.17.0 evaluate . --profile public --json
 ```
+
+Private and company repos may use the same commands through a sibling checkout when they need the latest development version instead of the published preview package.
 
 Exit criteria:
 

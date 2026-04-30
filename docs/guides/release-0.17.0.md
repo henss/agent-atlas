@@ -42,3 +42,4 @@ These commands are proposal-first. They read usage evidence and diagnostics, wri
 - Publish with the `preview` dist-tag.
 - Do not promote to `latest` until public repo pilots validate the new proposal workflow.
 - Public repos should pin the exact version: `pnpm dlx @agent-atlas/cli@0.17.0 ...`.
+- Public repos can use `templates/scripts/public-repo-npm.sh` as the self-contained validation template.
