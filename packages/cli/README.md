@@ -13,6 +13,10 @@ atlas context-pack "<task>" --budget 4000
 atlas generate markdown
 atlas generate markdown --check
 atlas suggest-card --path <file>
+atlas discover-gaps
+atlas propose-cards --report <file>
+atlas proposal validate <proposal>
+atlas proposal apply <proposal> --select <entity-id>
 atlas diff
 atlas migrate
 atlas benchmark
@@ -180,6 +184,37 @@ atlas suggest-card --path packages/cli/src/index.ts --root .
 The command infers a conservative entity kind from the path. Test-like files become `test-scope` drafts; other files become `component` drafts. Review the ID, summary, relations, and path coverage before adding the YAML to `.agent-atlas/`.
 
 Use `--json` for editor or script integrations.
+
+## `atlas discover-gaps [path]`
+
+Reads local usage receipts, context-pack recall, optional resolve-path misses, and `atlas diff` diagnostics to produce a read-only gap report.
+
+```sh
+atlas discover-gaps --path . --receipts .runtime/agent-atlas/usage --profile private --out .runtime/current/agent-atlas/gaps/latest.json
+```
+
+Gap discovery is proposal-first: it reports repeated missing cards, misleading cards, broad-search fallbacks, low recall, stale references, and explicit resolve-path misses. It does not write atlas cards.
+
+## `atlas propose-cards --report <file>`
+
+Consumes a gap report and writes reviewable draft card proposals under `.runtime/agent-atlas/proposals` by default.
+
+```sh
+atlas propose-cards --report .runtime/current/agent-atlas/gaps/latest.json --out .runtime/agent-atlas/proposals
+```
+
+Proposal generation is deterministic by default. `--llm --llm-provider mock` exercises the bounded enrichment path without network access; live LLM providers are intentionally not wired into the preview CLI.
+
+## `atlas proposal validate|apply <proposal>`
+
+Validates and explicitly applies selected proposal entities.
+
+```sh
+atlas proposal validate .runtime/agent-atlas/proposals/example.yaml
+atlas proposal apply .runtime/agent-atlas/proposals/example.yaml --select component:example
+```
+
+`apply` refuses invalid proposals and only writes selected cards into `.agent-atlas/<profile>/`. It does not commit, push, or regenerate generated docs.
 
 ## `atlas diff [path]`
 

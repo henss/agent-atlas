@@ -4,9 +4,11 @@ import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
   analyzeAtlasMaintenance,
+  applyAtlasProposal,
   benchmarkAtlas,
   checkAtlasBoundary,
   createContextPack,
+  discoverAtlasGaps,
   doctorAtlas,
   evaluateUsageEvidence,
   findNeighbors,
@@ -14,10 +16,13 @@ import {
   loadAtlasGraph,
   migrateAtlas,
   parseAtlasProfile,
+  proposeAtlasCards,
   renderContextPackMarkdown,
   resolvePathInGraph,
   suggestAtlasCard,
+  validateAtlasProposal,
   validateAtlas,
+  writeAtlasCardProposal,
   writeUsageNote,
 } from '@agent-atlas/core';
 import { generateMarkdownViews } from '@agent-atlas/markdown';
@@ -36,7 +41,11 @@ import type {
   AtlasDoctorResult,
   AtlasMaintenanceReport,
   BoundaryCheckResult,
+  ApplyAtlasProposalResult,
+  AtlasCardProposal,
   GlobalAtlasGraph,
+  AtlasGapReport,
+  AtlasProposalValidationResult,
   SuggestedAtlasCard,
   UsageEvidenceEvaluation,
   WriteUsageNoteResult,
@@ -72,6 +81,10 @@ Implemented commands:
 - atlas generate markdown
 - atlas generate markdown --check
 - atlas suggest-card --path <file>
+- atlas discover-gaps [path]
+- atlas propose-cards --report <file>
+- atlas proposal validate <proposal>
+- atlas proposal apply <proposal> --select <entity-id>
 - atlas diff
 - atlas migrate [path] --to 1 [--write]
 - atlas benchmark [path]
@@ -252,6 +265,33 @@ interface SuggestCardArgs {
 interface DiffArgs {
   rootPath: string;
   profile: AtlasProfile;
+  json: boolean;
+}
+
+interface DiscoverGapsArgs {
+  rootPath: string;
+  profile: AtlasProfile;
+  receiptsPath?: string;
+  budget: number;
+  recallThreshold: number;
+  resolvePathMisses: string[];
+  outputPath?: string;
+  json: boolean;
+}
+
+interface ProposeCardsArgs {
+  reportPath?: string;
+  outputDirectory: string;
+  llm: boolean;
+  llmProvider?: string;
+  json: boolean;
+}
+
+interface ProposalArgs {
+  subcommand?: string;
+  proposalPath?: string;
+  rootPath?: string;
+  selectedEntityIds: AtlasEntityId[];
   json: boolean;
 }
 
@@ -975,6 +1015,159 @@ function parseDiffArgs(args: string[]): DiffArgs {
   return { rootPath, profile, json };
 }
 
+function parseDiscoverGapsArgs(args: string[]): DiscoverGapsArgs {
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
+  let receiptsPath: string | undefined;
+  let outputPath: string | undefined;
+  let budget = 4000;
+  let recallThreshold = 0.67;
+  let json = false;
+  let rootPathWasSet = false;
+  const resolvePathMisses: string[] = [];
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+    if (arg === '--receipts') {
+      receiptsPath = readOptionValue(args, index, '--receipts');
+      index += 1;
+      continue;
+    }
+    if (arg === '--budget') {
+      budget = parsePositiveInteger(readOptionValue(args, index, '--budget'), budget);
+      index += 1;
+      continue;
+    }
+    if (arg === '--recall-threshold') {
+      recallThreshold = Number(readOptionValue(args, index, '--recall-threshold'));
+      index += 1;
+      continue;
+    }
+    if (arg === '--resolve-path-miss') {
+      resolvePathMisses.push(readOptionValue(args, index, '--resolve-path-miss'));
+      index += 1;
+      continue;
+    }
+    if (arg === '--out') {
+      outputPath = readOptionValue(args, index, '--out');
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return {
+    rootPath,
+    profile,
+    receiptsPath,
+    budget,
+    recallThreshold,
+    resolvePathMisses,
+    outputPath,
+    json,
+  };
+}
+
+function parseProposeCardsArgs(args: string[]): ProposeCardsArgs {
+  let reportPath: string | undefined;
+  let outputDirectory = path.join(process.cwd(), '.runtime', 'agent-atlas', 'proposals');
+  let llm = false;
+  let llmProvider: string | undefined;
+  let json = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+    if (arg === '--report') {
+      reportPath = readOptionValue(args, index, '--report');
+      index += 1;
+      continue;
+    }
+    if (arg === '--out') {
+      outputDirectory = readOptionValue(args, index, '--out');
+      index += 1;
+      continue;
+    }
+    if (arg === '--llm') {
+      llm = true;
+      continue;
+    }
+    if (arg === '--llm-provider') {
+      llmProvider = readOptionValue(args, index, '--llm-provider');
+      llm = true;
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    if (!reportPath) {
+      reportPath = arg;
+      continue;
+    }
+    throw new CliUsageError(`Unexpected argument: ${arg}`);
+  }
+
+  return { reportPath, outputDirectory, llm, llmProvider, json };
+}
+
+function parseProposalArgs(args: string[]): ProposalArgs {
+  const subcommand = args[0];
+  let proposalPath: string | undefined;
+  let rootPath: string | undefined;
+  let json = false;
+  const selectedEntityIds: AtlasEntityId[] = [];
+
+  for (let index = 1; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+    if (arg === '--path') {
+      rootPath = readOptionValue(args, index, '--path');
+      index += 1;
+      continue;
+    }
+    if (arg === '--select') {
+      selectedEntityIds.push(readOptionValue(args, index, '--select') as AtlasEntityId);
+      index += 1;
+      continue;
+    }
+    rejectUnknownOption(arg);
+    if (!proposalPath) {
+      proposalPath = arg;
+      continue;
+    }
+    throw new CliUsageError(`Unexpected argument: ${arg}`);
+  }
+
+  return { subcommand, proposalPath, rootPath, selectedEntityIds, json };
+}
+
 function parseUsageNoteArgs(args: string[]): UsageNoteArgs {
   let task: string | undefined;
   let rootPath = process.cwd();
@@ -1484,6 +1677,78 @@ Errors: ${errors.length}`);
   printDiagnosticSection('Warnings', warnings);
 }
 
+function printGapReportMarkdown(result: AtlasGapReport): void {
+  console.log(`# Atlas gap discovery
+
+Status: passed
+Profile: \`${result.profile}\`
+Receipts: ${result.receiptCount}
+Gaps: ${result.gaps.length}
+Actionable: ${result.gaps.filter((gap) => gap.recommendedAction === 'propose-card').length}
+`);
+
+  for (const gap of result.gaps.slice(0, 20)) {
+    console.log(
+      `- \`${gap.id}\` (${gap.type}, ${gap.recommendedAction}, confidence ${gap.confidence}): ${gap.sources[0]?.detail ?? 'gap'}`
+    );
+  }
+}
+
+function printCardProposalMarkdown(result: {
+  proposalPath?: string;
+  proposal: AtlasCardProposal;
+}): void {
+  console.log(`# Atlas card proposal
+
+Status: ${result.proposal.proposedEntities.length > 0 ? 'generated' : 'empty'}
+Profile: \`${result.proposal.profile}\`
+Entities: ${result.proposal.proposedEntities.length}
+Confidence: ${result.proposal.confidence}
+${result.proposalPath ? `Path: \`${result.proposalPath}\`` : ''}
+`);
+
+  for (const entity of result.proposal.proposedEntities) {
+    console.log(`- \`${entity.id}\` -> \`${entity.filePath}\``);
+  }
+  if (result.proposal.blockedReasons.length > 0) {
+    console.log('\n## Blockers');
+    for (const reason of result.proposal.blockedReasons) {
+      console.log(`- ${reason}`);
+    }
+  }
+}
+
+function printProposalValidationMarkdown(result: AtlasProposalValidationResult): void {
+  const errors = result.diagnostics.filter((diagnostic) => diagnostic.level === 'error');
+  const warnings = result.diagnostics.filter((diagnostic) => diagnostic.level === 'warning');
+  console.log(`# Atlas proposal validation
+
+Status: ${result.status}
+Profile: \`${result.profile}\`
+Entities: ${result.proposedEntityCount}
+Errors: ${errors.length}
+Warnings: ${warnings.length}
+`);
+  printDiagnosticSection('Errors', errors);
+  printDiagnosticSection('Warnings', warnings);
+}
+
+function printProposalApplyMarkdown(result: ApplyAtlasProposalResult): void {
+  console.log(`# Atlas proposal apply
+
+Status: applied
+Applied files: ${result.appliedFiles.length}
+Skipped entities: ${result.skippedEntityIds.length}
+`);
+  printFileList('Applied Files', result.appliedFiles);
+  if (result.skippedEntityIds.length > 0) {
+    console.log('\n## Skipped Entities');
+    for (const entityId of result.skippedEntityIds) {
+      console.log(`- \`${entityId}\``);
+    }
+  }
+}
+
 function printGenerateCheckMarkdown(result: {
   outputPath: string;
   profile: AtlasProfile;
@@ -1866,6 +2131,24 @@ function suggestCardUsage(): void {
 function diffUsage(): void {
   console.error(
     'Usage: atlas diff [path] [--path <root>] [--profile public|private|company] [--json]',
+  );
+}
+
+function discoverGapsUsage(): void {
+  console.error(
+    'Usage: atlas discover-gaps [path] [--path <root>] [--receipts .agent-atlas/usage] [--budget tokens] [--profile public|private|company] [--resolve-path-miss <file>] [--out file] [--json]',
+  );
+}
+
+function proposeCardsUsage(): void {
+  console.error(
+    'Usage: atlas propose-cards --report <gap-report.json> [--out .runtime/agent-atlas/proposals] [--llm] [--llm-provider mock] [--json]',
+  );
+}
+
+function proposalUsage(): void {
+  console.error(
+    'Usage: atlas proposal validate|apply <proposal.yaml> [--path <root>] [--select <entity-id>] [--json]',
   );
 }
 
@@ -2291,6 +2574,81 @@ switch (command) {
       printDiffMarkdown(result);
     }
     process.exitCode = result.status === 'failed' ? 1 : 0;
+    break;
+  }
+  case 'discover-gaps': {
+    const options = parseDiscoverGapsArgs(args);
+    const result = await discoverAtlasGaps(options.rootPath, {
+      profile: options.profile,
+      receiptsPath: options.receiptsPath,
+      budget: options.budget,
+      recallThreshold: options.recallThreshold,
+      resolvePathMisses: options.resolvePathMisses,
+    });
+    if (options.outputPath) {
+      await mkdir(path.dirname(path.resolve(options.outputPath)), { recursive: true });
+      await writeFile(path.resolve(options.outputPath), `${JSON.stringify(result, null, 2)}\n`, 'utf8');
+    }
+    if (options.json || options.outputPath) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      printGapReportMarkdown(result);
+    }
+    break;
+  }
+  case 'propose-cards': {
+    const options = parseProposeCardsArgs(args);
+    if (!options.reportPath) {
+      proposeCardsUsage();
+      process.exitCode = 1;
+      break;
+    }
+    const report = JSON.parse(await readFile(options.reportPath, 'utf8')) as AtlasGapReport;
+    const proposal = proposeAtlasCards(report, {
+      llm: options.llm,
+      llmProvider: options.llmProvider,
+    });
+    const proposalPath = await writeAtlasCardProposal(
+      proposal,
+      path.resolve(options.outputDirectory),
+    );
+    if (options.json) {
+      console.log(JSON.stringify({ proposalPath, proposal }, null, 2));
+    } else {
+      printCardProposalMarkdown({ proposalPath, proposal });
+    }
+    break;
+  }
+  case 'proposal': {
+    const options = parseProposalArgs(args);
+    if (!options.subcommand || !options.proposalPath) {
+      proposalUsage();
+      process.exitCode = 1;
+      break;
+    }
+    if (options.subcommand === 'validate') {
+      const result = await validateAtlasProposal(options.proposalPath, options.rootPath);
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        printProposalValidationMarkdown(result);
+      }
+      process.exitCode = result.status === 'failed' ? 1 : 0;
+      break;
+    }
+    if (options.subcommand === 'apply') {
+      const result = await applyAtlasProposal(options.proposalPath, {
+        selectEntityIds: options.selectedEntityIds,
+      });
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        printProposalApplyMarkdown(result);
+      }
+      break;
+    }
+    proposalUsage();
+    process.exitCode = 1;
     break;
   }
   case 'migrate': {

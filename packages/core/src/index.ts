@@ -13,3 +13,4 @@ export * from './doctor.js';
 export * from './usage-evidence.js';
 export * from './boundary.js';
 export * from './authoring.js';
+export * from './proposals.js';

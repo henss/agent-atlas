@@ -198,6 +198,76 @@ Status: passed
     });
   });
 
+  it('discovers gaps, writes card proposals, validates them, and applies selected cards', async () => {
+    const root = await makeAtlasFixture();
+    const sourceDir = path.join(root, 'packages', 'billing', 'src');
+    await mkdir(sourceDir, { recursive: true });
+    await writeFile(path.join(sourceDir, 'sync.ts'), 'export {};\n');
+    const receiptDir = path.join(root, '.runtime', 'agent-atlas', 'usage');
+    await mkdir(receiptDir, { recursive: true });
+    for (const fileName of ['one.yaml', 'two.yaml']) {
+      await writeFile(
+        path.join(receiptDir, fileName),
+        `version: 1
+recorded_at: "2026-04-30T10:00:00.000Z"
+task: "Change billing sync"
+command: context-pack
+profile: public
+selected_entities: []
+selected_files:
+  - packages/billing/src/sync.ts
+selected_tests: []
+broad_search_fallback: true
+missing_cards:
+  - "billing sync has no owner card"
+misleading_cards: []
+`,
+      );
+    }
+
+    const reportPath = path.join(root, '.runtime', 'agent-atlas', 'gaps.json');
+    const discovered = await execFileAsync('node', [
+      CLI_PATH,
+      'discover-gaps',
+      root,
+      '--receipts',
+      '.runtime/agent-atlas/usage',
+      '--out',
+      reportPath,
+    ]);
+    expect(discovered.stdout).toContain('"gaps"');
+
+    const proposalDir = path.join(root, '.runtime', 'agent-atlas', 'proposals');
+    const proposed = await execFileAsync('node', [
+      CLI_PATH,
+      'propose-cards',
+      '--report',
+      reportPath,
+      '--out',
+      proposalDir,
+    ]);
+    expect(proposed.stdout).toContain('# Atlas card proposal');
+
+    const proposalPath = path.join(proposalDir, 'change-billing-sync.yaml');
+    const validation = await execFileAsync('node', [
+      CLI_PATH,
+      'proposal',
+      'validate',
+      proposalPath,
+    ]);
+    expect(validation.stdout).toContain('Status: passed');
+
+    const applied = await execFileAsync('node', [
+      CLI_PATH,
+      'proposal',
+      'apply',
+      proposalPath,
+      '--select',
+      'component:packages-billing-src',
+    ]);
+    expect(applied.stdout).toContain('# Atlas proposal apply');
+  });
+
   it('prints global manifests and generates registry markdown', async () => {
     const registryRoot = path.resolve(
       '..',
