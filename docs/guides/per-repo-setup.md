@@ -2,7 +2,7 @@
 
 This guide describes the current local-checkout adoption path for Agent Atlas.
 
-Agent Atlas is not published as an npm package yet. Keep package publishing out of scope until a separate distribution decision is made.
+Private and company repos should use the sibling-checkout path when they need the latest development version. Public repos that need self-contained scripts may use exact pinned preview CLI packages such as `@agent-atlas/cli@0.17.0`.
 
 ## Prepare the Agent Atlas checkout
 

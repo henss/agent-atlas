@@ -1,6 +1,6 @@
 # Local CLI Consumption
 
-Agent Atlas is not published as a package yet. Portfolio and company adopters should use a sibling local checkout until package publishing is deliberately enabled.
+Private portfolio and company adopters should use a sibling local checkout when they need the latest development version. Public repos may use the pinned preview npm CLI package when they need self-contained scripts.
 
 ## Build the CLI
 
@@ -38,7 +38,7 @@ node ../agent-atlas/packages/cli/dist/index.js global context-pack "change onboa
 node ../agent-atlas/packages/mcp-server/dist/stdio.js --path . --profile private
 ```
 
-Repos may wrap these commands in local package scripts while Agent Atlas remains unpublished.
+Repos may wrap these commands in local package scripts. Public repos can alternatively use `pnpm dlx @agent-atlas/cli@0.17.0 ...` for commands that only need the published CLI.
 
 All atlas-loading commands accept one positional root path or `--path <root>`. Do not pass both. Prefer explicit `--path <root>` in scripts because it stays readable when commands also include free-form task text or additional flags.
 
@@ -46,13 +46,13 @@ All atlas-loading commands accept one positional root path or `--path <root>`. D
 
 Use one built Agent Atlas sibling checkout as the unit of compatibility:
 
-- Workspace package version: `0.16.0`.
+- Workspace package version: `0.17.0`.
 - Entity schema version: `schema_version: 1`.
 - Usage receipt version: `version: 1`.
 - Registry config version: `version: 1`.
 - CLI, generated Markdown, registry commands, schema validation, and MCP server should come from the same checkout.
 - Run `node ../agent-atlas/packages/cli/dist/index.js doctor --path .` when wiring a repo into scripts or CI.
-- Package publishing remains out of scope until a separate distribution decision. Before publishing `@agent-atlas/cli`, use the publish-readiness gate in `docs/guides/package-publish-readiness.md`.
+- Preview CLI publishing is available for public-repo self-contained scripts. Before publishing `@agent-atlas/cli`, use the reproducible release script and publish-readiness gate in `docs/guides/package-publish-readiness.md`.
 
 ## Consumer rollout checklist
 
@@ -83,4 +83,4 @@ Use the scripts in `templates/scripts/` as copy-paste starters:
 - `company-repo.sh`
 - `central-registry-repo.sh`
 
-They intentionally call the built sibling checkout directly and keep npm publishing out of scope.
+They intentionally call the built sibling checkout directly for private/company development. Public repos should prefer exact npm pins once a preview version has passed their local validation.

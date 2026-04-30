@@ -2,7 +2,12 @@
 
 Agent Atlas is still consumed from sibling checkouts by default. Public repos can become self-contained once the CLI has a deliberately scoped preview npm release.
 
-Use this checklist before publishing any Agent Atlas npm artifact.
+Use this checklist before publishing any Agent Atlas npm artifact. Prefer the reproducible release script over hand-running the individual commands:
+
+```sh
+pnpm release:package -- --package packages/cli --version 0.17.0 --tag preview
+pnpm release:package -- --package packages/cli --version 0.17.0 --tag preview --publish
+```
 
 ## Intended First Artifact
 
@@ -48,7 +53,7 @@ Use this checklist before publishing any Agent Atlas npm artifact.
   - local generated docs not needed by CLI runtime
   - test fixtures that are not needed by consumers
 - `package.json` in the packed CLI must not contain `workspace:*` dependencies.
-- The packed preview CLI tarball should contain `dist/index.js`, `README.md`, and `package.json` only unless a new runtime need is explicit.
+- The packed preview CLI tarball should contain `dist/index.js`, `README.md`, `LICENSE`, and `package.json` only unless a new runtime need is explicit.
 
 ## Local Tarball Verification
 
@@ -60,7 +65,7 @@ npm pack
 mkdir %TEMP%\agent-atlas-pack-smoke
 cd %TEMP%\agent-atlas-pack-smoke
 npm init -y
-npm install D:\workspace\agent-atlas\packages\cli\agent-atlas-cli-0.16.0.tgz
+npm install D:\workspace\agent-atlas\packages\cli\agent-atlas-cli-0.17.0.tgz
 npx atlas --help
 mkdir .agent-atlas\public\repositories
 ```
@@ -103,7 +108,7 @@ After publish, public repos should pin the preview version instead of using `lat
 }
 ```
 
-Use a concrete version before committing scripts, for example `@agent-atlas/cli@0.16.0`.
+Use a concrete version before committing scripts, for example `@agent-atlas/cli@0.17.0`.
 
 ## Hook Guidance
 

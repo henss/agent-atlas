@@ -14,7 +14,7 @@ The current supported version is `1`. Legacy files without `schema_version` rema
 
 ## Sibling-checkout compatibility
 
-Until package publishing is deliberately enabled, downstream repos should use one built Agent Atlas sibling checkout for every local integration surface:
+For private and company work, downstream repos may use one built Agent Atlas sibling checkout for every local integration surface:
 
 - CLI commands
 - schema validation
@@ -24,13 +24,15 @@ Until package publishing is deliberately enabled, downstream repos should use on
 
 The current local contract is:
 
-- workspace package version: `0.16.0`
+- workspace package version: `0.17.0`
 - entity schema version: `1`
 - usage receipt version: `1`
 - boundary policy version: `1`
 - registry config version: `1`
 
 Generated Markdown should be refreshed with the same checkout version used for validation. `atlas doctor --path <repo>` reports the package versions, supported commands, schema version, registry version, build state, and MCP availability for the current checkout.
+
+Public repos may use the preview npm CLI package when they need self-contained scripts. Pin exact versions such as `@agent-atlas/cli@0.17.0`; do not rely on `latest` while the release line uses the `preview` dist-tag.
 
 ## Migration principles
 

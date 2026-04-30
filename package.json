@@ -1,7 +1,7 @@
 {
   "name": "agent-atlas-root",
   "private": true,
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "Typed context graph and traversal toolkit for AI coding agents.",
   "type": "module",
   "packageManager": "pnpm@9.0.0",
@@ -10,7 +10,9 @@
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "atlas:help": "pnpm --filter @agent-atlas/cli build && node packages/cli/dist/index.js --help",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "release:package": "node scripts/release-package.mjs",
+    "release:cli:preview": "node scripts/release-package.mjs --package packages/cli --tag preview"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
