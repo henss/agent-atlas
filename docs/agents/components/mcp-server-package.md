@@ -22,6 +22,7 @@ Read-only MCP server exposing atlas resources and traversal tools over stdio, wi
 ### `documented-in`
 
 - `document:mcp-deployment-guide`
+- `document:mcp-server-readme`
 - `document:mcp-spec`
 
 ### `implements`

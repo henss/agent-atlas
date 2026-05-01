@@ -20,6 +20,8 @@ relations:
   - type: uses
     target: component:core-package
   - type: documented-in
+    target: document:markdown-readme
+  - type: documented-in
     target: document:generated-markdown-spec
   - type: tested-by
     target: test-scope:workspace-build-and-test

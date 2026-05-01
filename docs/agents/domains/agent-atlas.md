@@ -61,23 +61,29 @@ Typed context graph framework, CLI, MCP server, review UI, and adapter layer for
 - `component:schema-package`
 - `component:ui-package`
 - `document:adapter-spec` _(generated)_
+- `document:adapters-readme` _(generated)_
 - `document:authoring-guide` _(generated)_
 - `document:boundary-checks-guide` _(generated)_
 - `document:boundary-safety-spec` _(generated)_
 - `document:ci-template` _(generated)_
 - `document:contributor-examples` _(generated)_
+- `document:core-readme` _(generated)_
 - `document:cross-repo-atlas-guide` _(generated)_
 - `document:id-format-spec` _(generated)_
 - `document:incremental-authoring-guide` _(generated)_
 - `document:llm-agent-usage-guide` _(generated)_
 - `document:local-cli-consumption-guide` _(generated)_
+- `document:markdown-readme` _(generated)_
 - `document:mcp-deployment-guide` _(generated)_
+- `document:mcp-server-readme` _(generated)_
 - `document:per-repo-setup-guide` _(generated)_
 - `document:public-private-overlays` _(generated)_
 - `document:registry-spec` _(generated)_
 - `document:release-0-16-guide` _(generated)_
 - `document:release-0-17-guide` _(generated)_
 - `document:rollout-evidence-guide` _(generated)_
+- `document:schema-readme` _(generated)_
+- `document:ui-readme` _(generated)_
 - `document:usage-evidence-spec` _(generated)_
 - `document:validation-spec` _(generated)_
 - `document:versioning-spec` _(generated)_

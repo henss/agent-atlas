@@ -308,6 +308,7 @@ interface DiscoverGapsArgs {
   budget: number;
   recallThreshold: number;
   resolvePathMisses: string[];
+  static: boolean;
   outputPath?: string;
   json: boolean;
 }
@@ -1117,6 +1118,7 @@ function parseDiscoverGapsArgs(args: string[]): DiscoverGapsArgs {
   let outputPath: string | undefined;
   let budget = 4000;
   let recallThreshold = 0.67;
+  let staticDiscovery = true;
   let json = false;
   let rootPathWasSet = false;
   const resolvePathMisses: string[] = [];
@@ -1126,6 +1128,10 @@ function parseDiscoverGapsArgs(args: string[]): DiscoverGapsArgs {
 
     if (arg === '--json') {
       json = true;
+      continue;
+    }
+    if (arg === '--no-static') {
+      staticDiscovery = false;
       continue;
     }
     if (arg === '--profile') {
@@ -1178,6 +1184,7 @@ function parseDiscoverGapsArgs(args: string[]): DiscoverGapsArgs {
     budget,
     recallThreshold,
     resolvePathMisses,
+    static: staticDiscovery,
     outputPath,
     json,
   };
@@ -2348,7 +2355,7 @@ function maintainUsage(): void {
 
 function discoverGapsUsage(): void {
   console.error(
-    'Usage: atlas discover-gaps [path] [--path <root>] [--receipts .agent-atlas/usage] [--budget tokens] [--profile public|private|company] [--resolve-path-miss <file>] [--out file] [--json]',
+    'Usage: atlas discover-gaps [path] [--path <root>] [--receipts .agent-atlas/usage] [--budget tokens] [--profile public|private|company] [--resolve-path-miss <file>] [--no-static] [--out file] [--json]',
   );
 }
 
@@ -2962,6 +2969,7 @@ switch (command) {
       budget: options.budget,
       recallThreshold: options.recallThreshold,
       resolvePathMisses: options.resolvePathMisses,
+      static: options.static,
     });
     if (options.outputPath) {
       await mkdir(path.dirname(path.resolve(options.outputPath)), { recursive: true });

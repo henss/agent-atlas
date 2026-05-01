@@ -23,6 +23,7 @@ Loads atlas YAML, applies selected overlays, validates graph structure, normaliz
 
 - `document:boundary-safety-spec`
 - `document:context-pack-spec` _(generated)_
+- `document:core-readme`
 - `document:cross-repo-atlas-guide`
 - `document:id-format-spec`
 - `document:incremental-authoring-guide`

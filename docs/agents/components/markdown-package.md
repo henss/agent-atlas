@@ -22,6 +22,7 @@ Renders generated agent-facing Markdown views from loaded atlas graphs.
 ### `documented-in`
 
 - `document:generated-markdown-spec`
+- `document:markdown-readme`
 - `document:overlay-spec` _(generated)_
 
 ### `implements`

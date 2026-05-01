@@ -24,6 +24,7 @@ Serves the local read-only human review UI for browsing atlas entities, relation
 - `document:cli-readme`
 - `document:entity-spec`
 - `document:release-0-17-guide` _(generated)_
+- `document:ui-readme`
 
 ### `implements`
 

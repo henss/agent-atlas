@@ -1,0 +1,11 @@
+id: document:core-readme
+kind: document
+title: Core README
+summary: Package README for core atlas loading, graph traversal, diagnostics, context packs, registries, migrations, maintenance, and boundary checks.
+visibility: public
+uri: packages/core/README.md
+relations:
+  - type: documents
+    target: component:core-package
+  - type: part-of
+    target: domain:agent-atlas

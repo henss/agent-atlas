@@ -1,0 +1,11 @@
+id: document:ui-readme
+kind: document
+title: UI README
+summary: Package README for the local read-only review UI, hash routes, API previews, and non-editing boundaries.
+visibility: public
+uri: packages/ui/README.md
+relations:
+  - type: documents
+    target: component:ui-package
+  - type: part-of
+    target: domain:agent-atlas

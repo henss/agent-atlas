@@ -22,6 +22,7 @@ Defines adapter interfaces and generic adapters for Backstage, Sourcegraph, loca
 ### `documented-in`
 
 - `document:adapter-spec`
+- `document:adapters-readme`
 - `document:readme`
 
 ### `part-of`

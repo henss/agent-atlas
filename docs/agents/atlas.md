@@ -81,8 +81,14 @@ Profile: `public`
 ## Other entities
 
 - `document:adapter-spec` (document) - Adapter Specification: Specification for adapter interfaces, optional generic adapters, and safe external resource references.
+- `document:adapters-readme` (document) - Adapters README: Package README for adapter interfaces, built-in adapter implementations, and safe external resource resolver behavior.
 - `document:agent-atlas-readme` (document) - agent-atlas README: Primary repo entrypoint for setup, usage, architecture, and maintenance notes.
 - `document:ci-template` (document) - CI Template: GitHub Actions template for validating, testing, linting, and generating Agent Atlas outputs.
+- `document:core-readme` (document) - Core README: Package README for core atlas loading, graph traversal, diagnostics, context packs, registries, migrations, maintenance, and boundary checks.
+- `document:markdown-readme` (document) - Markdown README: Package README for generated agent-facing Markdown outputs, profile handling, and generated file conventions.
+- `document:mcp-server-readme` (document) - MCP Server README: Package README for read-only MCP resources, tools, stdio entrypoint, smoke tests, and host configuration.
+- `document:schema-readme` (document) - Schema README: Package README for entity types, relation vocabulary, entity kinds, required fields, and JSON Schema assets.
+- `document:ui-readme` (document) - UI README: Package README for the local read-only review UI, hash routes, API previews, and non-editing boundaries.
 - `document:validation-spec` (document) - Validation Specification: Specification for validation diagnostics, severity levels, and actionable fix hints.
 - `document:versioning-spec` (document) - Versioning Specification: Specification for schema_version, usage receipt version, migration behavior, and sibling-checkout compatibility versions.
 - `repository:agent-atlas` (repository) - agent-atlas: Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.

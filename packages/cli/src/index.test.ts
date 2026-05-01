@@ -305,6 +305,21 @@ misleading_cards: []
     expect(applied.stdout).toContain('# Atlas proposal apply');
   });
 
+  it('discovers static document gaps without usage receipts', async () => {
+    const root = await makeAtlasFixture();
+    await mkdir(path.join(root, 'docs', 'guides'), { recursive: true });
+    await writeFile(path.join(root, 'docs', 'guides', 'foo.md'), '# Foo\n');
+
+    const discovered = await execFileAsync('node', [
+      CLI_PATH,
+      'discover-gaps',
+      root,
+    ]);
+
+    expect(discovered.stdout).toContain('Gaps: 1');
+    expect(discovered.stdout).toContain('untracked-document');
+  });
+
   it('runs policy-driven maintenance fixes and checks', async () => {
     const root = await makeAtlasFixture();
     await execFileAsync('git', ['init'], { cwd: root });

@@ -1,0 +1,11 @@
+id: document:mcp-server-readme
+kind: document
+title: MCP Server README
+summary: Package README for read-only MCP resources, tools, stdio entrypoint, smoke tests, and host configuration.
+visibility: public
+uri: packages/mcp-server/README.md
+relations:
+  - type: documents
+    target: component:mcp-server-package
+  - type: part-of
+    target: domain:agent-atlas

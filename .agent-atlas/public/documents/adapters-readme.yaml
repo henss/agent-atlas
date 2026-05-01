@@ -1,0 +1,11 @@
+id: document:adapters-readme
+kind: document
+title: Adapters README
+summary: Package README for adapter interfaces, built-in adapter implementations, and safe external resource resolver behavior.
+visibility: public
+uri: packages/adapters/README.md
+relations:
+  - type: documents
+    target: component:adapters-package
+  - type: part-of
+    target: domain:agent-atlas

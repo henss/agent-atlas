@@ -1,0 +1,11 @@
+id: document:markdown-readme
+kind: document
+title: Markdown README
+summary: Package README for generated agent-facing Markdown outputs, profile handling, and generated file conventions.
+visibility: public
+uri: packages/markdown/README.md
+relations:
+  - type: documents
+    target: component:markdown-package
+  - type: part-of
+    target: domain:agent-atlas

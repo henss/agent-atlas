@@ -66,6 +66,79 @@ describe('atlas proposals', () => {
     );
   });
 
+  it('discovers untracked source documents and proposes document cards', async () => {
+    const root = await makeProposalFixture();
+    await mkdir(path.join(root, 'docs', 'guides'), { recursive: true });
+    await writeFile(path.join(root, 'docs', 'guides', 'foo.md'), '# Foo\n');
+
+    const report = await discoverAtlasGaps(root, {
+      receiptsPath: '.runtime/agent-atlas/usage',
+    });
+    const gap = report.gaps.find((candidate) => candidate.type === 'untracked-document');
+    const proposal = proposeAtlasCards(report);
+
+    expect(gap?.affectedPaths).toEqual(['docs/guides/foo.md']);
+    expect(proposal.proposedEntities[0]?.kind).toBe('document');
+    expect(proposal.proposedEntities[0]?.yaml).toContain('uri: docs/guides/foo.md');
+  });
+
+  it('discovers stale milestone summaries on document cards', async () => {
+    const root = await makeProposalFixture();
+    await mkdir(path.join(root, '.agent-atlas', 'public', 'documents'), { recursive: true });
+    await writeFile(path.join(root, 'ROADMAP.md'), 'Status: M0-M17 are complete.\n');
+    await writeFile(
+      path.join(root, '.agent-atlas', 'public', 'documents', 'roadmap.yaml'),
+      `id: document:roadmap
+kind: document
+title: Roadmap
+summary: Roadmap showing completed M0-M16 implementation.
+visibility: public
+uri: ROADMAP.md
+relations:
+  - type: documents
+    target: component:existing
+`,
+    );
+
+    const report = await discoverAtlasGaps(root, {
+      receiptsPath: '.runtime/agent-atlas/usage',
+    });
+
+    expect(report.gaps.map((gap) => gap.type)).toContain('stale-summary');
+  });
+
+  it('discovers document cards with weak relation coverage', async () => {
+    const root = await makeProposalFixture();
+    await mkdir(path.join(root, '.agent-atlas', 'public', 'documents'), { recursive: true });
+    await writeFile(path.join(root, 'README.md'), '# Example\n');
+    await writeFile(
+      path.join(root, '.agent-atlas', 'public', 'documents', 'readme.yaml'),
+      `id: document:readme
+kind: document
+title: Readme
+summary: Readme.
+visibility: public
+uri: README.md
+relations: []
+`,
+    );
+
+    const report = await discoverAtlasGaps(root, {
+      receiptsPath: '.runtime/agent-atlas/usage',
+    });
+
+    expect(report.gaps.map((gap) => gap.type)).toContain('weak-relation-coverage');
+  });
+
+  it('does not report static gaps for this repository atlas', async () => {
+    const repoRoot = path.resolve(process.cwd(), '../..');
+    const report = await discoverAtlasGaps(repoRoot, {
+      receiptsPath: '.runtime/agent-atlas/usage',
+    });
+
+    expect(report.gaps).toHaveLength(0);
+  }, 15000);
+
   it('rejects public proposals with private markers', async () => {
     const root = await makeProposalFixture();
     const proposalPath = path.join(root, 'proposal.yaml');

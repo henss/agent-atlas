@@ -26,6 +26,8 @@ relations:
   - type: implements
     target: workflow:operate-cross-repo-registry
   - type: documented-in
+    target: document:core-readme
+  - type: documented-in
     target: document:registry-spec
   - type: documented-in
     target: document:versioning-spec

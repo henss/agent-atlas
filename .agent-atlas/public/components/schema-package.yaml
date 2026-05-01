@@ -14,6 +14,8 @@ relations:
   - type: implements
     target: workflow:define-atlas-model
   - type: documented-in
+    target: document:schema-readme
+  - type: documented-in
     target: document:entity-spec
   - type: documented-in
     target: document:relation-spec

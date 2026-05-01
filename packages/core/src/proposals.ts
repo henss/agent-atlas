@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, stringify } from 'yaml';
 
@@ -16,10 +16,14 @@ export type AtlasGapType =
   | 'low-recall'
   | 'resolve-path-miss'
   | 'broad-search-fallback'
-  | 'maintenance-diagnostic';
+  | 'maintenance-diagnostic'
+  | 'untracked-document'
+  | 'stale-summary'
+  | 'weak-relation-coverage'
+  | 'under-modeled-capability';
 
 export interface AtlasGapSource {
-  kind: 'usage-receipt' | 'resolve-path' | 'diff';
+  kind: 'usage-receipt' | 'resolve-path' | 'diff' | 'static';
   path?: string;
   task?: string;
   detail: string;
@@ -55,12 +59,13 @@ export interface DiscoverAtlasGapsOptions {
   budget?: number;
   recallThreshold?: number;
   resolvePathMisses?: string[];
+  static?: boolean;
   now?: Date;
 }
 
 export interface ProposedAtlasEntity {
   id: AtlasEntityId;
-  kind: 'component' | 'workflow' | 'test-scope';
+  kind: 'component' | 'workflow' | 'test-scope' | 'document';
   filePath: string;
   yaml: string;
   sourceGapIds: string[];
@@ -116,6 +121,27 @@ export interface ApplyAtlasProposalResult {
 }
 
 const DEFAULT_RECALL_THRESHOLD = 0.67;
+const DOCUMENT_INVENTORY_ROOTS = [
+  'README.md',
+  'ROADMAP.md',
+  'docs/concepts',
+  'docs/guides',
+  'docs/spec',
+  'docs/ci',
+  'packages',
+];
+const CLI_CAPABILITY_CHECKS: Array<{ id: string; commands: string[]; keywords: string[] }> = [
+  { id: 'graph-navigation', commands: ['validate', 'overview', 'show', 'neighbors', 'resolve-path'], keywords: ['navigate', 'graph'] },
+  { id: 'context-packs', commands: ['context-pack'], keywords: ['context', 'pack'] },
+  { id: 'generated-docs', commands: ['generate markdown'], keywords: ['generate', 'docs'] },
+  { id: 'metadata-maintenance', commands: ['suggest-card', 'discover-gaps', 'propose-cards', 'maintain', 'diff'], keywords: ['maintain', 'metadata'] },
+  { id: 'boundary-safety', commands: ['boundary-check'], keywords: ['boundary'] },
+  { id: 'adoption-evidence', commands: ['usage-note', 'evaluate'], keywords: ['adoption'] },
+  { id: 'mcp', commands: ['mcp smoke-test'], keywords: ['mcp'] },
+  { id: 'review-ui', commands: ['ui'], keywords: ['review', 'graph'] },
+  { id: 'cross-repo-registry', commands: ['global validate', 'global list', 'global manifest', 'global context-pack', 'global generate markdown'], keywords: ['cross-repo', 'registry'] },
+  { id: 'downstream-onboarding', commands: ['doctor'], keywords: ['downstream'] },
+];
 
 export async function discoverAtlasGaps(
   rootPath: string,
@@ -135,6 +161,9 @@ export async function discoverAtlasGaps(
   collectReceiptGaps(gaps, evaluation.receipts, recallThreshold);
   await collectResolvePathMisses(gaps, repo, graph, options.resolvePathMisses ?? []);
   await collectMaintenanceGaps(gaps, graph);
+  if (options.static !== false) {
+    await collectStaticMetadataGaps(gaps, repo, graph);
+  }
 
   return {
     version: 1,
@@ -145,6 +174,7 @@ export async function discoverAtlasGaps(
     gaps: [...gaps.values()].sort((left, right) => left.id.localeCompare(right.id)),
     notes: [
       'Discovery is read-only and local-only.',
+      options.static === false ? 'Static metadata coverage checks were disabled.' : 'Static metadata coverage checks are enabled.',
       'Only actionable repeated or low-recall gaps should be passed to card proposals.',
     ],
   };
@@ -430,9 +460,176 @@ async function collectMaintenanceGaps(gaps: Map<string, AtlasGap>, graph: AtlasG
   }
 }
 
+async function collectStaticMetadataGaps(
+  gaps: Map<string, AtlasGap>,
+  repo: string,
+  graph: AtlasGraph,
+): Promise<void> {
+  const documentEntities = graph.entities.filter((entity) => entity.kind === 'document');
+  const trackedDocuments = new Set(documentEntities.flatMap(documentReferencePaths));
+
+  for (const filePath of await collectSourceDocumentPaths(repo)) {
+    if (trackedDocuments.has(filePath)) {
+      continue;
+    }
+    addGap(gaps, {
+      id: `untracked-document:${slugify(filePath)}`,
+      type: 'untracked-document',
+      taskLabels: [],
+      affectedPaths: [filePath],
+      expectedEntities: [],
+      expectedFiles: [filePath],
+      expectedTests: [],
+      confidence: 0.84,
+      recommendedAction: 'propose-card',
+      sources: [{ kind: 'static', path: filePath, detail: `Document ${filePath} has no document entity card.` }],
+      blockedReasons: [],
+    });
+  }
+
+  await collectStaleSummaryGaps(gaps, repo, documentEntities);
+  collectWeakRelationCoverageGaps(gaps, documentEntities);
+  await collectUnderModeledCapabilityGaps(gaps, repo, graph);
+}
+
+async function collectStaleSummaryGaps(
+  gaps: Map<string, AtlasGap>,
+  repo: string,
+  documentEntities: AtlasEntity[],
+): Promise<void> {
+  for (const entity of documentEntities) {
+    for (const filePath of documentReferencePaths(entity)) {
+      const source = await readTextFile(path.join(repo, filePath));
+      if (!source) {
+        continue;
+      }
+      const sourceMilestone = highestMilestone(source);
+      const summaryMilestone = highestMilestone(entity.summary);
+      if (sourceMilestone === undefined || summaryMilestone === undefined || sourceMilestone <= summaryMilestone) {
+        continue;
+      }
+      addGap(gaps, {
+        id: `stale-summary:${slugify(entity.id)}`,
+        type: 'stale-summary',
+        taskLabels: [],
+        affectedPaths: [filePath],
+        expectedEntities: [entity.id],
+        expectedFiles: [filePath],
+        expectedTests: [],
+        confidence: 0.82,
+        recommendedAction: 'fix-existing-card',
+        sources: [{ kind: 'static', path: filePath, detail: `${entity.id} summary mentions M0-M${summaryMilestone}, but ${filePath} mentions M0-M${sourceMilestone}.` }],
+        blockedReasons: [],
+      });
+    }
+  }
+}
+
+function collectWeakRelationCoverageGaps(
+  gaps: Map<string, AtlasGap>,
+  documentEntities: AtlasEntity[],
+): void {
+  for (const entity of documentEntities) {
+    const usefulRelations = (entity.relations ?? []).filter((relation) =>
+      ['documents', 'documented-in', 'part-of'].includes(relation.type)
+        && /^(workflow|component|domain|document):/.test(relation.target),
+    );
+    if (usefulRelations.length > 0) {
+      continue;
+    }
+    addGap(gaps, {
+      id: `weak-relation-coverage:${slugify(entity.id)}`,
+      type: 'weak-relation-coverage',
+      taskLabels: [],
+      affectedPaths: documentReferencePaths(entity),
+      expectedEntities: [entity.id],
+      expectedFiles: documentReferencePaths(entity),
+      expectedTests: [],
+      confidence: 0.62,
+      recommendedAction: 'fix-existing-card',
+      sources: [{ kind: 'static', detail: `${entity.id} is not linked to a workflow, component, domain, or documenting document.` }],
+      blockedReasons: [],
+    });
+  }
+}
+
+async function collectUnderModeledCapabilityGaps(
+  gaps: Map<string, AtlasGap>,
+  repo: string,
+  graph: AtlasGraph,
+): Promise<void> {
+  const cliReadme = await readTextFile(path.join(repo, 'packages', 'cli', 'README.md'));
+  if (!cliReadme) {
+    return;
+  }
+
+  const implementedCommands = extractCliCommands(cliReadme);
+  const workflowText = graph.entities
+    .filter((entity) => entity.kind === 'workflow')
+    .map((entity) => [
+      entity.id,
+      entity.title,
+      entity.summary,
+      ...(entity.agent?.load_when ?? []),
+      ...(entity.relations ?? []).map((relation) => relation.target),
+    ].join(' ').toLowerCase())
+    .join('\n');
+
+  for (const capability of CLI_CAPABILITY_CHECKS) {
+    if (!capability.commands.some((command) => implementedCommands.has(command))) {
+      continue;
+    }
+    if (capability.keywords.every((keyword) => workflowText.includes(keyword))) {
+      continue;
+    }
+    addGap(gaps, {
+      id: `under-modeled-capability:${capability.id}`,
+      type: 'under-modeled-capability',
+      taskLabels: [],
+      affectedPaths: ['packages/cli/README.md'],
+      expectedEntities: [],
+      expectedFiles: ['packages/cli/README.md'],
+      expectedTests: [],
+      confidence: 0.6,
+      recommendedAction: 'observe',
+      sources: [{ kind: 'static', path: 'packages/cli/README.md', detail: `CLI capability ${capability.id} appears implemented but lacks a clear workflow route.` }],
+      blockedReasons: ['Semantic capability gaps need human review or repeated usage evidence before proposing workflow cards.'],
+    });
+  }
+}
+
 function buildProposedEntities(report: AtlasGapReport, gaps: AtlasGap[]): ProposedAtlasEntity[] {
   const proposed: ProposedAtlasEntity[] = [];
-  const pathGaps = gaps.filter((gap) => gap.affectedPaths.length > 0 && gap.recommendedAction === 'propose-card');
+  const documentGaps = gaps.filter((gap) => gap.type === 'untracked-document' && gap.recommendedAction === 'propose-card');
+  for (const gap of documentGaps) {
+    const filePath = gap.affectedPaths[0];
+    if (!filePath) {
+      continue;
+    }
+    const slug = slugify(filePath.replace(/\.[^.]+$/, ''));
+    const id = `document:${slug}` as AtlasEntityId;
+    const title = titleFromSlug(slug.split('-').slice(-3).join('-') || slug);
+    const yaml = [
+      `id: ${id}`,
+      'kind: document',
+      `title: ${title}`,
+      `summary: Documents ${filePath}.`,
+      `visibility: ${report.profile}`,
+      `uri: ${filePath}`,
+      'relations:',
+      '  - type: part-of',
+      '    target: domain:agent-atlas',
+      'agent:',
+      '  risk_notes:',
+      '    - Draft document proposal from static Atlas coverage discovery; connect it to the most specific workflow or component before applying.',
+      '',
+    ].join('\n');
+    proposed.push({ id, kind: 'document', filePath: `documents/${slug}.yaml`, yaml, sourceGapIds: [gap.id] });
+  }
+
+  const pathGaps = gaps.filter((gap) =>
+    gap.type !== 'untracked-document' && gap.affectedPaths.length > 0 && gap.recommendedAction === 'propose-card',
+  );
   const groupedByDirectory = groupBy(pathGaps, (gap) => commonDirectory(gap.affectedPaths));
 
   for (const [directory, group] of groupedByDirectory) {
@@ -550,6 +747,123 @@ function defaultRelationsForProposal(gaps: AtlasGap[]): string[] {
     return ['  []'];
   }
   return entityIds.slice(0, 3).flatMap((entityId) => ['  - type: related-to', `    target: ${entityId}`]);
+}
+
+async function collectSourceDocumentPaths(repo: string): Promise<string[]> {
+  const documents = new Set<string>();
+  for (const root of DOCUMENT_INVENTORY_ROOTS) {
+    const absolute = path.join(repo, root);
+    if (root.endsWith('.md')) {
+      if (await fileExists(absolute)) {
+        documents.add(root);
+      }
+      continue;
+    }
+    for (const filePath of await collectMarkdownFiles(repo, absolute)) {
+      if (filePath.startsWith('docs/agents/')) {
+        continue;
+      }
+      if (root === 'packages' && !/^packages\/[^/]+\/README\.md$/.test(filePath)) {
+        continue;
+      }
+      documents.add(filePath);
+    }
+  }
+  return [...documents].sort();
+}
+
+async function collectMarkdownFiles(repo: string, directory: string): Promise<string[]> {
+  const files: string[] = [];
+  async function walk(current: string): Promise<void> {
+    let entries;
+    try {
+      entries = await readdir(current, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.git') {
+        continue;
+      }
+      const entryPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        await walk(entryPath);
+        continue;
+      }
+      if (entry.isFile() && entry.name.endsWith('.md')) {
+        files.push(normalizePath(path.relative(repo, entryPath)));
+      }
+    }
+  }
+  await walk(directory);
+  return files;
+}
+
+function documentReferencePaths(entity: AtlasEntity): string[] {
+  const references = new Set<string>();
+  if (entity.uri && isRepoMarkdownPath(entity.uri)) {
+    references.add(normalizePath(entity.uri));
+  }
+  const documentPaths = (entity as AtlasEntity & { document?: { paths?: string[] } }).document?.paths ?? [];
+  for (const filePath of documentPaths) {
+    if (isRepoMarkdownPath(filePath)) {
+      references.add(normalizePath(filePath));
+    }
+  }
+  return [...references].sort();
+}
+
+function isRepoMarkdownPath(value: string): boolean {
+  return !/^[a-z][a-z0-9+.-]*:\/\//i.test(value) && value.endsWith('.md') && isSafeRelativePath(value);
+}
+
+async function readTextFile(filePath: string): Promise<string | undefined> {
+  try {
+    return await readFile(filePath, 'utf8');
+  } catch {
+    return undefined;
+  }
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await readFile(filePath, 'utf8');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function highestMilestone(value: string): number | undefined {
+  const milestones = [...value.matchAll(/\bM0\s*-\s*M(\d+)\b/gi)]
+    .map((match) => Number(match[1]))
+    .filter((milestone) => Number.isFinite(milestone));
+  return milestones.length === 0 ? undefined : Math.max(...milestones);
+}
+
+function extractCliCommands(readme: string): Set<string> {
+  const commands = new Set<string>();
+  for (const match of readme.matchAll(/^\s*atlas\s+(.+)$/gm)) {
+    const command = normalizeCliCommand(match[1]?.trim() ?? '');
+    if (!command) {
+      continue;
+    }
+    commands.add(command);
+  }
+  return commands;
+}
+
+function normalizeCliCommand(value: string): string {
+  if (!value || value.startsWith('[')) {
+    return '';
+  }
+  const parts = value.split(/\s+/).filter(Boolean);
+  const first = parts[0] ?? '';
+  const second = parts[1] ?? '';
+  if (['global', 'generate', 'mcp'].includes(first) && second && !second.startsWith('[') && !second.startsWith('<')) {
+    return `${first} ${second}`;
+  }
+  return first;
 }
 
 function checkPublicProposalBoundary(entity: ProposedAtlasEntity, diagnostics: AtlasDiagnostic[]): void {

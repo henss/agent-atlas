@@ -206,13 +206,13 @@ Use `--json` for editor or script integrations.
 
 ## `atlas discover-gaps [path]`
 
-Reads local usage receipts, context-pack recall, optional resolve-path misses, and `atlas diff` diagnostics to produce a read-only gap report.
+Reads local usage receipts, context-pack recall, optional resolve-path misses, `atlas diff` diagnostics, and static metadata coverage checks to produce a read-only gap report.
 
 ```sh
 atlas discover-gaps --path . --receipts .runtime/agent-atlas/usage --profile private --out .runtime/current/agent-atlas/gaps/latest.json
 ```
 
-Gap discovery is proposal-first: it reports repeated missing cards, misleading cards, broad-search fallbacks, low recall, stale references, and explicit resolve-path misses. It does not write atlas cards.
+Gap discovery is proposal-first: it reports repeated missing cards, misleading cards, broad-search fallbacks, low recall, stale references, explicit resolve-path misses, untracked source documents, stale milestone summaries, weak document relations, and conservatively detected under-modeled CLI capabilities. Static coverage checks run by default; use `--no-static` for receipt-only runs. The command does not write atlas cards.
 
 ## `atlas propose-cards --report <file>`
 

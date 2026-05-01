@@ -1,0 +1,11 @@
+id: document:schema-readme
+kind: document
+title: Schema README
+summary: Package README for entity types, relation vocabulary, entity kinds, required fields, and JSON Schema assets.
+visibility: public
+uri: packages/schema/README.md
+relations:
+  - type: documents
+    target: component:schema-package
+  - type: part-of
+    target: domain:agent-atlas
