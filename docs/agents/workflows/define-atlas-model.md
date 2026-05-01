@@ -23,6 +23,7 @@ Evolves entity fields, relation types, validation behavior, and schema documenta
 - `document:authoring-guide`
 - `document:contributor-examples`
 - `document:entity-spec`
+- `document:id-format-spec`
 - `document:incremental-authoring-guide`
 - `document:relation-spec`
 
@@ -37,6 +38,7 @@ Evolves entity fields, relation types, validation behavior, and schema documenta
 - `document:authoring-guide` _(generated)_
 - `document:contributor-examples` _(generated)_
 - `document:entity-spec`
+- `document:id-format-spec` _(generated)_
 - `document:incremental-authoring-guide` _(generated)_
 - `document:relation-spec`
 

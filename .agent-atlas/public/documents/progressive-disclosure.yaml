@@ -1,0 +1,13 @@
+id: document:progressive-disclosure
+kind: document
+title: Progressive Disclosure Concept
+summary: Conceptual guide for keeping root context tiny and loading graph detail only when task relevance justifies it.
+visibility: public
+uri: docs/concepts/progressive-disclosure.md
+relations:
+  - type: documents
+    target: domain:agent-atlas
+  - type: documents
+    target: workflow:create-context-pack
+  - type: documents
+    target: workflow:navigate-atlas-graph

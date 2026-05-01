@@ -21,6 +21,7 @@ Loads atlas files, normalizes graph edges, traverses related entities, and resol
 
 ### Documents
 
+- `document:progressive-disclosure`
 - `document:typed-context-graph`
 
 ### Tests
@@ -31,6 +32,7 @@ Loads atlas files, normalizes graph edges, traverses related entities, and resol
 
 ### `documented-in`
 
+- `document:progressive-disclosure` _(generated)_
 - `document:typed-context-graph`
 
 ### `implemented-by`

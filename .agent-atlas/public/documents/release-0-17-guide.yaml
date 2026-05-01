@@ -1,0 +1,13 @@
+id: document:release-0-17-guide
+kind: document
+title: Release 0.17 Guide
+summary: Release notes for the local read-only human review UI and associated CLI integration.
+visibility: public
+uri: docs/guides/release-0.17.0.md
+relations:
+  - type: documents
+    target: workflow:review-atlas-graph
+  - type: documents
+    target: component:ui-package
+  - type: part-of
+    target: domain:agent-atlas

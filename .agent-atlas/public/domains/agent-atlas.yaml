@@ -1,7 +1,7 @@
 id: domain:agent-atlas
 kind: domain
 title: Agent Atlas
-summary: Typed context graph framework for helping coding agents navigate repositories and related context.
+summary: Typed context graph framework, CLI, MCP server, review UI, and adapter layer for helping coding agents navigate repositories and related context.
 visibility: public
 relations:
   - type: contains
@@ -22,3 +22,7 @@ relations:
     target: document:readme
   - type: documented-in
     target: document:roadmap
+  - type: documented-in
+    target: document:progressive-disclosure
+  - type: documented-in
+    target: document:public-private-overlays

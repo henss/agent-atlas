@@ -22,6 +22,7 @@ Guide for running public, private, and company boundary checks with repo-local p
 
 - `component:cli-package`
 - `document:boundary-safety-spec`
+- `workflow:audit-profile-boundaries` _(generated)_
 
 ### `part-of`
 

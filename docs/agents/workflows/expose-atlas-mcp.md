@@ -21,8 +21,10 @@ Provides read-only MCP resources, tools, smoke tests, deployment notes, and safe
 
 ### Documents
 
+- `document:llm-agent-usage-guide`
 - `document:mcp-deployment-guide`
 - `document:mcp-spec`
+- `document:release-0-16-guide`
 
 ### Tests
 
@@ -32,8 +34,10 @@ Provides read-only MCP resources, tools, smoke tests, deployment notes, and safe
 
 ### `documented-in`
 
+- `document:llm-agent-usage-guide` _(generated)_
 - `document:mcp-deployment-guide`
 - `document:mcp-spec`
+- `document:release-0-16-guide` _(generated)_
 
 ### `implemented-by`
 

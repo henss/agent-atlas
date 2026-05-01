@@ -21,5 +21,7 @@ relations:
     target: document:versioning-spec
   - type: documented-in
     target: document:validation-spec
+  - type: documented-in
+    target: document:id-format-spec
   - type: tested-by
     target: test-scope:workspace-build-and-test

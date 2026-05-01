@@ -13,6 +13,8 @@ relations:
     target: domain:agent-atlas
   - type: implements
     target: workflow:operate-atlas-cli
+  - type: implements
+    target: workflow:review-atlas-graph
   - type: uses
     target: component:core-package
   - type: documented-in

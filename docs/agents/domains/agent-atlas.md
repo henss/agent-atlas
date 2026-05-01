@@ -6,7 +6,7 @@ ID: `domain:agent-atlas`
 Kind: `domain`
 Profile: `public`
 
-Typed context graph framework for helping coding agents navigate repositories and related context.
+Typed context graph framework, CLI, MCP server, review UI, and adapter layer for helping coding agents navigate repositories and related context.
 
 ## Metadata
 
@@ -16,13 +16,19 @@ Typed context graph framework for helping coding agents navigate repositories an
 
 ### Workflows
 
+- `workflow:audit-profile-boundaries`
 - `workflow:create-context-pack`
 - `workflow:define-atlas-model`
 - `workflow:expose-atlas-mcp`
 - `workflow:generate-agent-docs`
+- `workflow:maintain-atlas-metadata`
 - `workflow:manage-overlays`
+- `workflow:measure-atlas-adoption`
 - `workflow:navigate-atlas-graph`
+- `workflow:onboard-downstream-repo`
 - `workflow:operate-atlas-cli`
+- `workflow:operate-cross-repo-registry`
+- `workflow:review-atlas-graph`
 
 ### Components
 
@@ -37,6 +43,8 @@ Typed context graph framework for helping coding agents navigate repositories an
 ### Documents
 
 - `document:generated-agent-docs`
+- `document:progressive-disclosure`
+- `document:public-private-overlays`
 - `document:readme`
 - `document:roadmap`
 
@@ -58,23 +66,39 @@ Typed context graph framework for helping coding agents navigate repositories an
 - `document:boundary-safety-spec` _(generated)_
 - `document:ci-template` _(generated)_
 - `document:contributor-examples` _(generated)_
+- `document:cross-repo-atlas-guide` _(generated)_
+- `document:id-format-spec` _(generated)_
 - `document:incremental-authoring-guide` _(generated)_
+- `document:llm-agent-usage-guide` _(generated)_
+- `document:local-cli-consumption-guide` _(generated)_
 - `document:mcp-deployment-guide` _(generated)_
+- `document:per-repo-setup-guide` _(generated)_
+- `document:public-private-overlays` _(generated)_
 - `document:registry-spec` _(generated)_
+- `document:release-0-16-guide` _(generated)_
+- `document:release-0-17-guide` _(generated)_
 - `document:rollout-evidence-guide` _(generated)_
 - `document:usage-evidence-spec` _(generated)_
 - `document:validation-spec` _(generated)_
 - `document:versioning-spec` _(generated)_
+- `workflow:audit-profile-boundaries` _(generated)_
 - `workflow:create-context-pack` _(generated)_
 - `workflow:define-atlas-model` _(generated)_
 - `workflow:expose-atlas-mcp` _(generated)_
 - `workflow:generate-agent-docs` _(generated)_
+- `workflow:maintain-atlas-metadata` _(generated)_
 - `workflow:manage-overlays` _(generated)_
+- `workflow:measure-atlas-adoption` _(generated)_
 - `workflow:navigate-atlas-graph` _(generated)_
+- `workflow:onboard-downstream-repo` _(generated)_
 - `workflow:operate-atlas-cli` _(generated)_
+- `workflow:operate-cross-repo-registry` _(generated)_
+- `workflow:review-atlas-graph` _(generated)_
 
 ### `documented-in`
 
 - `document:generated-agent-docs` _(generated)_
+- `document:progressive-disclosure`
+- `document:public-private-overlays`
 - `document:readme`
 - `document:roadmap`

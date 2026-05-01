@@ -1,0 +1,20 @@
+id: document:llm-agent-usage-guide
+kind: document
+title: LLM Agent Usage Guide
+summary: Guide for using Atlas from coding agents through overview, path resolution, context packs, generated docs, and MCP resources.
+visibility: public
+uri: docs/guides/llm-agent-usage.md
+relations:
+  - type: documents
+    target: workflow:onboard-downstream-repo
+  - type: documents
+    target: workflow:create-context-pack
+  - type: documents
+    target: workflow:expose-atlas-mcp
+  - type: part-of
+    target: domain:agent-atlas
+agent:
+  load_when:
+    - Explaining how agents should consume Atlas context.
+    - Setting up generated docs or MCP access for an agent host.
+  token_budget_hint: 800

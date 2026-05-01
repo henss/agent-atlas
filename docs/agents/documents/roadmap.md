@@ -6,7 +6,7 @@ ID: `document:roadmap`
 Kind: `document`
 Profile: `public`
 
-Roadmap showing completed M0-M16 implementation and hardening milestones.
+Roadmap showing completed M0-M17 implementation, hardening milestones, and local human review UI scope.
 
 ## Metadata
 
@@ -21,3 +21,4 @@ Roadmap showing completed M0-M16 implementation and hardening milestones.
 ### `documents`
 
 - `domain:agent-atlas`
+- `workflow:review-atlas-graph`

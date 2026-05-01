@@ -1,0 +1,25 @@
+id: workflow:audit-profile-boundaries
+kind: workflow
+title: Audit Profile Boundaries
+summary: Checks public, private, and company profile outputs for policy violations, private markers, restricted URI schemes, and generated-doc leaks.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:core-package
+  - type: uses
+    target: component:cli-package
+  - type: documented-in
+    target: document:boundary-safety-spec
+  - type: documented-in
+    target: document:boundary-checks-guide
+  - type: documented-in
+    target: document:public-private-overlays
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Changing boundary-check policy, profile leak detection, or generated-doc safety checks.
+    - Reviewing whether public Atlas metadata can be published.
+  token_budget_hint: 1400

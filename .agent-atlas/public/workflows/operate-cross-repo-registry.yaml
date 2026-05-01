@@ -1,0 +1,22 @@
+id: workflow:operate-cross-repo-registry
+kind: workflow
+title: Operate Cross-Repo Registry
+summary: Validates central registry imports, merges per-repo atlases, emits manifests, and generates global context packs or Markdown summaries.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:core-package
+  - type: uses
+    target: component:cli-package
+  - type: documented-in
+    target: document:registry-spec
+  - type: documented-in
+    target: document:cross-repo-atlas-guide
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Changing global registry validation, manifests, imports, or global context-pack behavior.
+  token_budget_hint: 1600

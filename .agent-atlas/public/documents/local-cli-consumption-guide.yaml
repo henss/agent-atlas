@@ -1,0 +1,18 @@
+id: document:local-cli-consumption-guide
+kind: document
+title: Local CLI Consumption Guide
+summary: Guide for downstream repositories using a sibling Agent Atlas checkout before package publication.
+visibility: public
+uri: docs/guides/local-cli-consumption.md
+relations:
+  - type: documents
+    target: workflow:onboard-downstream-repo
+  - type: documents
+    target: component:cli-package
+  - type: part-of
+    target: domain:agent-atlas
+agent:
+  load_when:
+    - Wiring a downstream repo to a sibling Agent Atlas checkout.
+    - Debugging local CLI setup or version compatibility.
+  token_budget_hint: 700

@@ -29,3 +29,4 @@ Generated Markdown views for agents reading this Agent Atlas repository.
 ### `written-by`
 
 - `workflow:generate-agent-docs` _(generated)_
+- `workflow:maintain-atlas-metadata` _(generated)_

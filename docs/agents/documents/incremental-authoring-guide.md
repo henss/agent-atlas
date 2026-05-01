@@ -23,6 +23,7 @@ Guide for one-seam atlas updates using path resolution, draft card suggestions, 
 - `component:cli-package` _(generated)_
 - `component:core-package` _(generated)_
 - `workflow:define-atlas-model`
+- `workflow:maintain-atlas-metadata` _(generated)_
 - `workflow:operate-atlas-cli`
 
 ### `part-of`

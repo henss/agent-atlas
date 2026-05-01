@@ -1,0 +1,24 @@
+id: workflow:review-atlas-graph
+kind: workflow
+title: Review Atlas Graph
+summary: Serves the local read-only UI for browsing entities, diagnostics, relations, focused neighborhoods, path resolution, context packs, and debug metadata.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:ui-package
+  - type: uses
+    target: component:core-package
+  - type: uses
+    target: component:cli-package
+  - type: documented-in
+    target: document:cli-readme
+  - type: documented-in
+    target: document:release-0-17-guide
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Changing atlas ui, review UI server endpoints, graph browsing, diagnostics views, or preview behavior.
+  token_budget_hint: 1600

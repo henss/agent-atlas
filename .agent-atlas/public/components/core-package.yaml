@@ -17,6 +17,14 @@ relations:
     target: workflow:create-context-pack
   - type: implements
     target: workflow:manage-overlays
+  - type: implements
+    target: workflow:audit-profile-boundaries
+  - type: implements
+    target: workflow:maintain-atlas-metadata
+  - type: implements
+    target: workflow:measure-atlas-adoption
+  - type: implements
+    target: workflow:operate-cross-repo-registry
   - type: documented-in
     target: document:registry-spec
   - type: documented-in
@@ -29,6 +37,12 @@ relations:
     target: document:validation-spec
   - type: documented-in
     target: document:incremental-authoring-guide
+  - type: documented-in
+    target: document:cross-repo-atlas-guide
+  - type: documented-in
+    target: document:id-format-spec
+  - type: documented-in
+    target: document:progressive-disclosure
   - type: uses
     target: component:schema-package
   - type: tested-by

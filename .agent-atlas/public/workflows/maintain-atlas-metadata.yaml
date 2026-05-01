@@ -1,0 +1,29 @@
+id: workflow:maintain-atlas-metadata
+kind: workflow
+title: Maintain Atlas Metadata
+summary: Runs policy-driven maintenance, stale-reference diagnostics, generated Markdown checks, and incremental card suggestions so canonical YAML and generated docs stay aligned.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:core-package
+  - type: uses
+    target: component:cli-package
+  - type: uses
+    target: component:markdown-package
+  - type: documented-in
+    target: document:authoring-guide
+  - type: documented-in
+    target: document:incremental-authoring-guide
+  - type: documented-in
+    target: document:per-repo-setup-guide
+  - type: writes-to
+    target: document:generated-agent-docs
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Editing .agent-atlas YAML or docs/agents generated views.
+    - Debugging atlas maintain, diff, suggest-card, discover-gaps, or proposal commands.
+  token_budget_hint: 1700

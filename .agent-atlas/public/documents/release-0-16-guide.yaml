@@ -1,0 +1,13 @@
+id: document:release-0-16-guide
+kind: document
+title: Release 0.16 Guide
+summary: Release notes for MCP operational hardening, smoke tests, host config guidance, and read-only safety assertions.
+visibility: public
+uri: docs/guides/release-0.16.0.md
+relations:
+  - type: documents
+    target: workflow:expose-atlas-mcp
+  - type: documents
+    target: document:mcp-deployment-guide
+  - type: part-of
+    target: domain:agent-atlas

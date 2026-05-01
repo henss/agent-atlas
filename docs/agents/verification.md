@@ -47,10 +47,16 @@ Verifies:
 - `component:mcp-server-package`
 - `component:schema-package`
 - `component:ui-package`
+- `workflow:audit-profile-boundaries`
 - `workflow:create-context-pack`
 - `workflow:define-atlas-model`
 - `workflow:expose-atlas-mcp`
 - `workflow:generate-agent-docs`
+- `workflow:maintain-atlas-metadata`
 - `workflow:manage-overlays`
+- `workflow:measure-atlas-adoption`
 - `workflow:navigate-atlas-graph`
+- `workflow:onboard-downstream-repo`
 - `workflow:operate-atlas-cli`
+- `workflow:operate-cross-repo-registry`
+- `workflow:review-atlas-graph`

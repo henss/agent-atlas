@@ -1,0 +1,25 @@
+id: workflow:onboard-downstream-repo
+kind: workflow
+title: Onboard Downstream Repo
+summary: Guides public, private, or company repositories through local CLI setup, compatibility checks, generated docs, MCP usage, and maintenance scripts.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:cli-package
+  - type: documented-in
+    target: document:local-cli-consumption-guide
+  - type: documented-in
+    target: document:per-repo-setup-guide
+  - type: documented-in
+    target: document:llm-agent-usage-guide
+  - type: documented-in
+    target: document:package-publish-readiness
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Helping another repository adopt Agent Atlas.
+    - Debugging downstream setup, doctor output, scripts, or compatibility versions.
+  token_budget_hint: 1500

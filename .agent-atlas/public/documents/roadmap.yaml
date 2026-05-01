@@ -1,9 +1,11 @@
 id: document:roadmap
 kind: document
 title: Roadmap
-summary: Roadmap showing completed M0-M16 implementation and hardening milestones.
+summary: Roadmap showing completed M0-M17 implementation, hardening milestones, and local human review UI scope.
 visibility: public
 uri: ROADMAP.md
 relations:
   - type: documents
     target: domain:agent-atlas
+  - type: documents
+    target: workflow:review-atlas-graph

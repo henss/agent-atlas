@@ -25,9 +25,13 @@ Provides the atlas command-line interface for validation, boundary checks, graph
 - `document:boundary-safety-spec`
 - `document:cli-readme`
 - `document:context-pack-spec` _(generated)_
+- `document:cross-repo-atlas-guide`
 - `document:incremental-authoring-guide`
+- `document:llm-agent-usage-guide`
+- `document:local-cli-consumption-guide`
 - `document:overlay-spec` _(generated)_
 - `document:package-publish-readiness` _(generated)_
+- `document:per-repo-setup-guide`
 - `document:registry-spec`
 - `document:rollout-evidence-guide`
 - `document:usage-evidence-spec`
@@ -35,9 +39,14 @@ Provides the atlas command-line interface for validation, boundary checks, graph
 
 ### `implements`
 
+- `workflow:audit-profile-boundaries`
 - `workflow:create-context-pack`
+- `workflow:maintain-atlas-metadata`
 - `workflow:manage-overlays`
+- `workflow:measure-atlas-adoption`
+- `workflow:onboard-downstream-repo`
 - `workflow:operate-atlas-cli`
+- `workflow:operate-cross-repo-registry`
 
 ### `part-of`
 
@@ -49,10 +58,16 @@ Provides the atlas command-line interface for validation, boundary checks, graph
 
 ### `used-by`
 
+- `workflow:audit-profile-boundaries` _(generated)_
 - `workflow:create-context-pack` _(generated)_
 - `workflow:generate-agent-docs` _(generated)_
+- `workflow:maintain-atlas-metadata` _(generated)_
 - `workflow:manage-overlays` _(generated)_
+- `workflow:measure-atlas-adoption` _(generated)_
+- `workflow:onboard-downstream-repo` _(generated)_
 - `workflow:operate-atlas-cli` _(generated)_
+- `workflow:operate-cross-repo-registry` _(generated)_
+- `workflow:review-atlas-graph` _(generated)_
 
 ### `uses`
 

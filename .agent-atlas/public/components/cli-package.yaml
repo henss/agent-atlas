@@ -17,6 +17,16 @@ relations:
     target: workflow:create-context-pack
   - type: implements
     target: workflow:manage-overlays
+  - type: implements
+    target: workflow:audit-profile-boundaries
+  - type: implements
+    target: workflow:maintain-atlas-metadata
+  - type: implements
+    target: workflow:measure-atlas-adoption
+  - type: implements
+    target: workflow:onboard-downstream-repo
+  - type: implements
+    target: workflow:operate-cross-repo-registry
   - type: uses
     target: component:core-package
   - type: uses
@@ -39,5 +49,13 @@ relations:
     target: document:rollout-evidence-guide
   - type: documented-in
     target: document:incremental-authoring-guide
+  - type: documented-in
+    target: document:local-cli-consumption-guide
+  - type: documented-in
+    target: document:per-repo-setup-guide
+  - type: documented-in
+    target: document:llm-agent-usage-guide
+  - type: documented-in
+    target: document:cross-repo-atlas-guide
   - type: tested-by
     target: test-scope:workspace-build-and-test

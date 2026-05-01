@@ -1,0 +1,13 @@
+id: document:id-format-spec
+kind: document
+title: ID Format Specification
+summary: Specification for stable Atlas entity identifiers, kind prefixes, slug rules, and validation expectations.
+visibility: public
+uri: docs/spec/id-format.md
+relations:
+  - type: documents
+    target: workflow:define-atlas-model
+  - type: documents
+    target: component:schema-package
+  - type: part-of
+    target: domain:agent-atlas

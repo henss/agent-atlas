@@ -23,10 +23,12 @@ Serves the local read-only human review UI for browsing atlas entities, relation
 
 - `document:cli-readme`
 - `document:entity-spec`
+- `document:release-0-17-guide` _(generated)_
 
 ### `implements`
 
 - `workflow:operate-atlas-cli`
+- `workflow:review-atlas-graph`
 
 ### `part-of`
 
@@ -39,6 +41,7 @@ Serves the local read-only human review UI for browsing atlas entities, relation
 ### `used-by`
 
 - `component:cli-package` _(generated)_
+- `workflow:review-atlas-graph` _(generated)_
 
 ### `uses`
 

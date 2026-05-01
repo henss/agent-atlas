@@ -26,6 +26,7 @@ Specification for local usage receipts, context-pack recall evaluation, rollout 
 
 - `component:cli-package`
 - `component:core-package`
+- `workflow:measure-atlas-adoption` _(generated)_
 
 ### `part-of`
 

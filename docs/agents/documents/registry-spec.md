@@ -18,10 +18,15 @@ Specification for cross-repo registry files, diagnostics, manifests, central gen
 
 ## Relations
 
+### `documented-in`
+
+- `document:cross-repo-atlas-guide` _(generated)_
+
 ### `documents`
 
 - `component:cli-package`
 - `component:core-package`
+- `workflow:operate-cross-repo-registry` _(generated)_
 
 ### `part-of`
 

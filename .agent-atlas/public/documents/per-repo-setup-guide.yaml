@@ -1,0 +1,18 @@
+id: document:per-repo-setup-guide
+kind: document
+title: Per-Repo Setup Guide
+summary: Guide for adding repo-local Atlas scripts, validation commands, generated docs, and maintenance checks to a product repository.
+visibility: public
+uri: docs/guides/per-repo-setup.md
+relations:
+  - type: documents
+    target: workflow:onboard-downstream-repo
+  - type: documents
+    target: workflow:maintain-atlas-metadata
+  - type: part-of
+    target: domain:agent-atlas
+agent:
+  load_when:
+    - Adding Agent Atlas to a new repository.
+    - Reviewing repo-local setup scripts or generated docs conventions.
+  token_budget_hint: 800

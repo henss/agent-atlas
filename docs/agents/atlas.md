@@ -6,7 +6,7 @@ Profile: `public`
 
 ## What this atlas represents
 
-- `domain:agent-atlas` - Agent Atlas: Typed context graph framework for helping coding agents navigate repositories and related context.
+- `domain:agent-atlas` - Agent Atlas: Typed context graph framework, CLI, MCP server, review UI, and adapter layer for helping coding agents navigate repositories and related context.
 - `domain:agent-atlas-local` - agent-atlas Local Surface: Repo-local architecture, docs, and verification surfaces for agent-atlas.
 
 ## Start here
@@ -20,6 +20,8 @@ Profile: `public`
 
 ### Agent Atlas
 
+- `workflow:audit-profile-boundaries` - Audit Profile Boundaries: Checks public, private, and company profile outputs for policy violations, private markers, restricted URI schemes, and generated-doc leaks.
+  Components: `component:cli-package`, `component:core-package`
 - `workflow:create-context-pack` - Create Context Pack: Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
   Components: `component:cli-package`, `component:core-package`
 - `workflow:define-atlas-model` - Define Atlas Model: Evolves entity fields, relation types, validation behavior, and schema documentation together.
@@ -28,11 +30,21 @@ Profile: `public`
   Components: `component:core-package`, `component:mcp-server-package`
 - `workflow:generate-agent-docs` - Generate Agent Docs: Produces compact generated Markdown views under docs/agents from canonical atlas YAML.
   Components: `component:cli-package`, `component:markdown-package`
+- `workflow:maintain-atlas-metadata` - Maintain Atlas Metadata: Runs policy-driven maintenance, stale-reference diagnostics, generated Markdown checks, and incremental card suggestions so canonical YAML and generated docs stay aligned.
+  Components: `component:cli-package`, `component:core-package`, `component:markdown-package`
 - `workflow:manage-overlays` - Manage Overlays: Applies profile-specific atlas overlays while keeping public-safe base metadata separate from private or company enrichments.
   Components: `component:cli-package`, `component:core-package`, `component:markdown-package`
+- `workflow:measure-atlas-adoption` - Measure Atlas Adoption: Records local usage receipts and evaluates context-pack selection against completed sessions without adding hosted telemetry.
+  Components: `component:cli-package`, `component:core-package`
 - `workflow:navigate-atlas-graph` - Navigate Atlas Graph: Loads atlas files, normalizes graph edges, traverses related entities, and resolves source paths to context.
   Components: `component:core-package`, `component:schema-package`
+- `workflow:onboard-downstream-repo` - Onboard Downstream Repo: Guides public, private, or company repositories through local CLI setup, compatibility checks, generated docs, MCP usage, and maintenance scripts.
+  Components: `component:cli-package`
 - `workflow:operate-atlas-cli` - Operate Atlas CLI: Exposes validation, graph navigation, path resolution, context packs, Markdown generation, policy-driven maintenance, migrations, benchmarks, global registry manifests, and global registry workflows through concise CLI commands.
+  Components: `component:cli-package`, `component:core-package`, `component:ui-package`
+- `workflow:operate-cross-repo-registry` - Operate Cross-Repo Registry: Validates central registry imports, merges per-repo atlases, emits manifests, and generates global context packs or Markdown summaries.
+  Components: `component:cli-package`, `component:core-package`
+- `workflow:review-atlas-graph` - Review Atlas Graph: Serves the local read-only UI for browsing entities, diagnostics, relations, focused neighborhoods, path resolution, context packs, and debug metadata.
   Components: `component:cli-package`, `component:core-package`, `component:ui-package`
 
 ### agent-atlas Local Surface
@@ -70,13 +82,7 @@ Profile: `public`
 
 - `document:adapter-spec` (document) - Adapter Specification: Specification for adapter interfaces, optional generic adapters, and safe external resource references.
 - `document:agent-atlas-readme` (document) - agent-atlas README: Primary repo entrypoint for setup, usage, architecture, and maintenance notes.
-- `document:boundary-checks-guide` (document) - Boundary Checks Guide: Guide for running public, private, and company boundary checks with repo-local policy markers.
-- `document:boundary-safety-spec` (document) - Boundary Safety Specification: Specification for profile boundary checks, repo-local policy files, generated-doc leak checks, and public pilot guidance.
 - `document:ci-template` (document) - CI Template: GitHub Actions template for validating, testing, linting, and generating Agent Atlas outputs.
-- `document:package-publish-readiness` (document) - Package Publish Readiness: Checklist and release gates for a preview npm publication of the Agent Atlas CLI.
-- `document:registry-spec` (document) - Registry Specification: Specification for cross-repo registry files, diagnostics, manifests, central generated Markdown, imports, merge behavior, and global CLI commands.
-- `document:rollout-evidence-guide` (document) - Rollout Evidence Guide: Guide for moving repos from guidance-only to pilot to active Atlas adoption using local usage receipts and evaluation metrics.
-- `document:usage-evidence-spec` (document) - Usage Evidence Specification: Specification for local usage receipts, context-pack recall evaluation, rollout metrics, and privacy boundaries.
 - `document:validation-spec` (document) - Validation Specification: Specification for validation diagnostics, severity levels, and actionable fix hints.
 - `document:versioning-spec` (document) - Versioning Specification: Specification for schema_version, usage receipt version, migration behavior, and sibling-checkout compatibility versions.
 - `repository:agent-atlas` (repository) - agent-atlas: Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.

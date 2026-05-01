@@ -23,8 +23,11 @@ Loads atlas YAML, applies selected overlays, validates graph structure, normaliz
 
 - `document:boundary-safety-spec`
 - `document:context-pack-spec` _(generated)_
+- `document:cross-repo-atlas-guide`
+- `document:id-format-spec`
 - `document:incremental-authoring-guide`
 - `document:overlay-spec` _(generated)_
+- `document:progressive-disclosure`
 - `document:registry-spec`
 - `document:usage-evidence-spec`
 - `document:validation-spec`
@@ -32,9 +35,13 @@ Loads atlas YAML, applies selected overlays, validates graph structure, normaliz
 
 ### `implements`
 
+- `workflow:audit-profile-boundaries`
 - `workflow:create-context-pack`
+- `workflow:maintain-atlas-metadata`
 - `workflow:manage-overlays`
+- `workflow:measure-atlas-adoption`
 - `workflow:navigate-atlas-graph`
+- `workflow:operate-cross-repo-registry`
 
 ### `part-of`
 
@@ -49,11 +56,16 @@ Loads atlas YAML, applies selected overlays, validates graph structure, normaliz
 - `component:cli-package` _(generated)_
 - `component:markdown-package` _(generated)_
 - `component:ui-package` _(generated)_
+- `workflow:audit-profile-boundaries` _(generated)_
 - `workflow:create-context-pack` _(generated)_
 - `workflow:expose-atlas-mcp` _(generated)_
+- `workflow:maintain-atlas-metadata` _(generated)_
 - `workflow:manage-overlays` _(generated)_
+- `workflow:measure-atlas-adoption` _(generated)_
 - `workflow:navigate-atlas-graph` _(generated)_
 - `workflow:operate-atlas-cli` _(generated)_
+- `workflow:operate-cross-repo-registry` _(generated)_
+- `workflow:review-atlas-graph` _(generated)_
 
 ### `uses`
 

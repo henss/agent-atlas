@@ -22,6 +22,7 @@ Guide for moving repos from guidance-only to pilot to active Atlas adoption usin
 
 - `component:cli-package`
 - `document:usage-evidence-spec`
+- `workflow:measure-atlas-adoption` _(generated)_
 
 ### `part-of`
 

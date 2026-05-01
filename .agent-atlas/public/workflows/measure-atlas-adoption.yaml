@@ -1,0 +1,22 @@
+id: workflow:measure-atlas-adoption
+kind: workflow
+title: Measure Atlas Adoption
+summary: Records local usage receipts and evaluates context-pack selection against completed sessions without adding hosted telemetry.
+visibility: public
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: uses
+    target: component:core-package
+  - type: uses
+    target: component:cli-package
+  - type: documented-in
+    target: document:usage-evidence-spec
+  - type: documented-in
+    target: document:rollout-evidence-guide
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+agent:
+  load_when:
+    - Changing usage-note, evaluate, rollout metrics, or local receipt behavior.
+  token_budget_hint: 1300

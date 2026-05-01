@@ -23,6 +23,8 @@ Selects task-relevant atlas entities, source reads, external references, verific
 
 - `document:cli-readme`
 - `document:context-pack-spec`
+- `document:llm-agent-usage-guide`
+- `document:progressive-disclosure`
 
 ### Tests
 
@@ -34,6 +36,8 @@ Selects task-relevant atlas entities, source reads, external references, verific
 
 - `document:cli-readme`
 - `document:context-pack-spec`
+- `document:llm-agent-usage-guide` _(generated)_
+- `document:progressive-disclosure` _(generated)_
 
 ### `implemented-by`
 

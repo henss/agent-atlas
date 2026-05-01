@@ -21,6 +21,7 @@ Guide for writing atlas entity cards, links, verification scopes, and private ov
 ### `documents`
 
 - `workflow:define-atlas-model`
+- `workflow:maintain-atlas-metadata` _(generated)_
 
 ### `part-of`
 

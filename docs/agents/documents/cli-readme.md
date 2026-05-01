@@ -25,3 +25,4 @@ Package README documenting Atlas CLI commands, path argument rules, doctor check
 - `workflow:create-context-pack` _(generated)_
 - `workflow:manage-overlays` _(generated)_
 - `workflow:operate-atlas-cli`
+- `workflow:review-atlas-graph` _(generated)_

@@ -18,6 +18,10 @@ Guide for read-only MCP smoke tests, host config snippets, profile selection, an
 
 ## Relations
 
+### `documented-in`
+
+- `document:release-0-16-guide` _(generated)_
+
 ### `documents`
 
 - `component:mcp-server-package`

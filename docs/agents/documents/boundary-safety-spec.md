@@ -27,6 +27,7 @@ Specification for profile boundary checks, repo-local policy files, generated-do
 - `component:cli-package`
 - `component:core-package`
 - `document:validation-spec`
+- `workflow:audit-profile-boundaries` _(generated)_
 
 ### `part-of`
 

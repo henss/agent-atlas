@@ -21,6 +21,7 @@ Checklist and release gates for a preview npm publication of the Agent Atlas CLI
 ### `documents`
 
 - `component:cli-package`
+- `workflow:onboard-downstream-repo` _(generated)_
 
 ### `related-to`
 

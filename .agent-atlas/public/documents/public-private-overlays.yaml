@@ -1,0 +1,13 @@
+id: document:public-private-overlays
+kind: document
+title: Public/Private Overlays Concept
+summary: Conceptual guide for separating public-safe atlas metadata from private and company-specific enrichments.
+visibility: public
+uri: docs/concepts/public-private-overlays.md
+relations:
+  - type: documents
+    target: workflow:manage-overlays
+  - type: documents
+    target: workflow:audit-profile-boundaries
+  - type: part-of
+    target: domain:agent-atlas

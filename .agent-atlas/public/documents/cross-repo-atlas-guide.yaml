@@ -1,0 +1,17 @@
+id: document:cross-repo-atlas-guide
+kind: document
+title: Cross-Repo Atlas Guide
+summary: Guide for central registry layouts, imported per-repo atlases, global context packs, and keeping product repositories small.
+visibility: public
+uri: docs/guides/cross-repo-atlas.md
+relations:
+  - type: documents
+    target: workflow:operate-cross-repo-registry
+  - type: documents
+    target: document:registry-spec
+  - type: part-of
+    target: domain:agent-atlas
+agent:
+  load_when:
+    - Designing or debugging central registry and multi-repository Atlas usage.
+  token_budget_hint: 700
