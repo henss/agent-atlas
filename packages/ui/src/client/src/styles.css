@@ -16,3 +16,30 @@ body {
 .react-flow__node-default {
   font-size: 12px;
 }
+
+.entityLink,
+.entityLinkCompact {
+  display: inline-flex;
+  max-width: 100%;
+  text-decoration: none;
+}
+
+.entityLink:hover,
+.entityLinkCompact:hover {
+  text-decoration: underline;
+}
+
+.previewContent {
+  max-height: 72vh;
+  overflow: auto;
+  padding: var(--mantine-spacing-sm);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-sm);
+  background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
+  color: var(--mantine-color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 12px;
+  line-height: 1.5;
+}

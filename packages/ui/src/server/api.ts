@@ -1,4 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { readFile, stat } from 'node:fs/promises';
+import path from 'node:path';
 import {
   createAtlasOverview,
   createContextPack,
@@ -20,6 +22,7 @@ import type {
   AtlasUiHealth,
   AtlasUiNeighborhood,
   AtlasUiOverview,
+  AtlasUiPreview,
   AtlasUiResolvePathResponse,
   AtlasUiSummary,
 } from '../shared.js';
@@ -30,6 +33,25 @@ export interface AtlasUiApiContext {
 }
 
 const DEFAULT_NEIGHBORHOOD_NODE_LIMIT = 80;
+const MAX_PREVIEW_BYTES = 200_000;
+const PREVIEW_EXTENSIONS = new Set([
+  '.cjs',
+  '.css',
+  '.csv',
+  '.html',
+  '.js',
+  '.json',
+  '.jsx',
+  '.md',
+  '.mjs',
+  '.toml',
+  '.ts',
+  '.tsx',
+  '.txt',
+  '.xml',
+  '.yaml',
+  '.yml',
+]);
 
 export async function handleAtlasUiApiRequest(
   request: IncomingMessage,
@@ -105,6 +127,16 @@ export async function handleAtlasUiApiRequest(
       return true;
     }
 
+    if (request.method === 'GET' && url.pathname === '/api/preview') {
+      const previewPath = url.searchParams.get('path');
+      if (!previewPath) {
+        sendError(response, 400, 'Missing required query parameter: path');
+        return true;
+      }
+      sendJson(response, await readPreview(context.rootPath, previewPath));
+      return true;
+    }
+
     if (request.method === 'POST' && url.pathname === '/api/context-pack') {
       const graph = await loadAtlasGraph(context.rootPath, { profile: context.profile });
       const body = await readJsonBody<AtlasUiContextPackRequest>(request);
@@ -128,6 +160,45 @@ export async function handleAtlasUiApiRequest(
     sendError(response, 500, error instanceof Error ? error.message : String(error));
     return true;
   }
+}
+
+export async function readPreview(
+  rootPath: string,
+  requestedPath: string,
+): Promise<AtlasUiPreview> {
+  if (path.isAbsolute(requestedPath)) {
+    throw new Error('Preview paths must be repo-relative.');
+  }
+  if (hasGlob(requestedPath) || hasUriScheme(requestedPath)) {
+    throw new Error('Preview path must be a concrete local file path.');
+  }
+
+  const absoluteRoot = path.resolve(rootPath);
+  const absolutePath = path.resolve(absoluteRoot, requestedPath);
+  if (!isPathWithin(absoluteRoot, absolutePath)) {
+    throw new Error('Preview path must stay within the atlas root.');
+  }
+
+  const extension = path.extname(absolutePath).toLowerCase();
+  if (!PREVIEW_EXTENSIONS.has(extension)) {
+    throw new Error(`Preview is not supported for ${extension || 'extensionless'} files.`);
+  }
+
+  const fileStat = await stat(absolutePath);
+  if (!fileStat.isFile()) {
+    throw new Error('Preview path must point to a file.');
+  }
+  if (fileStat.size > MAX_PREVIEW_BYTES) {
+    throw new Error(`Preview file is too large (${fileStat.size} bytes).`);
+  }
+
+  const content = await readFile(absolutePath, 'utf8');
+  return {
+    path: normalizePath(path.relative(absoluteRoot, absolutePath)),
+    fileName: path.basename(absolutePath),
+    sizeBytes: fileStat.size,
+    content,
+  };
 }
 
 export function createHealth(graph: AtlasGraph, context: AtlasUiApiContext): AtlasUiHealth {
@@ -300,6 +371,23 @@ function readNumber(record: Record<string, unknown> | undefined, key: string): n
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function hasGlob(value: string): boolean {
+  return value.includes('*') || value.includes('?') || value.includes('[') || value.includes(']');
+}
+
+function hasUriScheme(value: string): boolean {
+  return /^[a-z][a-z0-9+.-]*:/i.test(value);
+}
+
+function isPathWithin(parent: string, child: string): boolean {
+  const relative = path.relative(parent, child);
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
+function normalizePath(value: string): string {
+  return value.replaceAll('\\', '/');
 }
 
 async function readJsonBody<T>(request: IncomingMessage): Promise<T> {

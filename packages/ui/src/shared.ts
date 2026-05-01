@@ -73,4 +73,11 @@ export interface AtlasUiResolvePathResponse extends PathResolutionResult {
   diagnostics: AtlasDiagnostic[];
 }
 
+export interface AtlasUiPreview {
+  path: string;
+  fileName: string;
+  sizeBytes: number;
+  content: string;
+}
+
 export type AtlasUiRelationFilter = AtlasRelationType | 'all';

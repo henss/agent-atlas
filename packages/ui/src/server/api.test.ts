@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import type { AtlasGraph } from '@agent-atlas/core';
 import type { AtlasEntity } from '@agent-atlas/schema';
 import {
@@ -8,6 +11,7 @@ import {
   createOverview,
   createSummary,
   extractMetadataDebug,
+  readPreview,
 } from './api.js';
 
 const component: AtlasEntity = {
@@ -135,5 +139,35 @@ describe('ui api serializers', () => {
     expect(health.status).toBe('ok');
     expect(health.version).toBe(1);
     expect(health.diagnosticCounts.warning).toBe(1);
+  });
+
+  it('previews repo-contained text files', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'agent-atlas-ui-preview-'));
+    await mkdir(path.join(root, 'docs'), { recursive: true });
+    await writeFile(path.join(root, 'docs', 'readme.md'), '# Read me\n', 'utf8');
+
+    const preview = await readPreview(root, 'docs/readme.md');
+
+    expect(preview.path).toBe('docs/readme.md');
+    expect(preview.fileName).toBe('readme.md');
+    expect(preview.content).toContain('# Read me');
+  });
+
+  it('rejects unsafe and unsupported preview paths', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'agent-atlas-ui-preview-'));
+    await writeFile(path.join(root, 'binary.bin'), 'x', 'utf8');
+
+    await expect(readPreview(root, '../outside.md')).rejects.toThrow('within the atlas root');
+    await expect(readPreview(root, path.join(root, 'binary.bin'))).rejects.toThrow('repo-relative');
+    await expect(readPreview(root, 'binary.bin')).rejects.toThrow('not supported');
+  });
+
+  it('rejects directory and oversized preview paths', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'agent-atlas-ui-preview-'));
+    await mkdir(path.join(root, 'docs.md'), { recursive: true });
+    await writeFile(path.join(root, 'large.md'), 'x'.repeat(200_001), 'utf8');
+
+    await expect(readPreview(root, 'docs.md')).rejects.toThrow('point to a file');
+    await expect(readPreview(root, 'large.md')).rejects.toThrow('too large');
   });
 });

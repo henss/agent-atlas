@@ -2,7 +2,7 @@ import '@mantine/core/styles.css';
 import '@xyflow/react/dist/style.css';
 import './styles.css';
 
-import { StrictMode, useMemo, useState } from 'react';
+import { StrictMode, useEffect, useMemo, useState } from 'react';
 import type { JSX } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -15,12 +15,14 @@ import {
   Card,
   Code,
   Divider,
+  Drawer,
   Group,
   JsonInput,
   MantineProvider,
   NavLink,
   NumberInput,
   Paper,
+  Anchor,
   ScrollArea,
   SegmentedControl,
   Select,
@@ -52,6 +54,9 @@ import {
   Filter,
   GitBranch,
   Info,
+  ExternalLink,
+  FileText,
+  Link as LinkIcon,
   Network,
   RefreshCw,
   Search,
@@ -62,6 +67,7 @@ import type {
   AtlasUiHealth,
   AtlasUiNeighborhood,
   AtlasUiOverview,
+  AtlasUiPreview,
   AtlasUiResolvePathResponse,
   AtlasUiSummary,
 } from '../../shared';
@@ -85,9 +91,34 @@ const KIND_COLORS: Record<string, string> = {
   'secret-scope': 'gray',
 };
 
+const PREVIEWABLE_EXTENSIONS = new Set([
+  '.cjs',
+  '.css',
+  '.csv',
+  '.html',
+  '.js',
+  '.json',
+  '.jsx',
+  '.md',
+  '.mjs',
+  '.toml',
+  '.ts',
+  '.tsx',
+  '.txt',
+  '.xml',
+  '.yaml',
+  '.yml',
+]);
+
+type UiRoute =
+  | { view: 'overview' }
+  | { view: 'browse'; entityId?: AtlasEntityId }
+  | { view: 'resolve' }
+  | { view: 'pack' };
+
 function App(): JSX.Element {
-  const [selectedId, setSelectedId] = useState<AtlasEntityId | undefined>();
-  const [view, setView] = useState('overview');
+  const [route, setRouteState] = useState(() => parseHashRoute(window.location.hash));
+  const [previewPath, setPreviewPath] = useState<string | undefined>();
   const atlas = useQuery({
     queryKey: ['atlas'],
     queryFn: () => fetchJson<AtlasUiSummary>('/api/atlas'),
@@ -100,6 +131,41 @@ function App(): JSX.Element {
     queryKey: ['health'],
     queryFn: () => fetchJson<AtlasUiHealth>('/api/health'),
   });
+  const view = route.view;
+  const selectedId = route.view === 'browse' ? route.entityId : undefined;
+  const setRoute = (next: UiRoute): void => {
+    window.location.hash = routeToHash(next);
+    setRouteState(next);
+  };
+  useEffect(() => {
+    const onHashChange = (): void => setRouteState(parseHashRoute(window.location.hash));
+    window.addEventListener('hashchange', onHashChange);
+    if (!window.location.hash) {
+      window.location.hash = '#/overview';
+    }
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  useEffect(() => {
+    if (
+      route.view === 'browse' &&
+      route.entityId &&
+      atlas.data &&
+      !atlas.data.entities.some((entity) => entity.id === route.entityId)
+    ) {
+      setRoute({ view: 'overview' });
+    }
+  }, [atlas.data, route]);
+
+  const setView = (nextView: string): void => {
+    if (nextView === 'browse') {
+      setRoute(selectedId ? { view: 'browse', entityId: selectedId } : { view: 'overview' });
+      return;
+    }
+    if (nextView === 'resolve' || nextView === 'pack' || nextView === 'overview') {
+      setRoute({ view: nextView });
+    }
+  };
 
   return (
     <MantineProvider defaultColorScheme="auto">
@@ -158,12 +224,10 @@ function App(): JSX.Element {
                 entities={atlas.data?.entities ?? []}
                 selectedId={selectedId}
                 onOverview={() => {
-                  setView('overview');
-                  setSelectedId(undefined);
+                  setRoute({ view: 'overview' });
                 }}
                 onSelect={(id) => {
-                  setSelectedId(id);
-                  setView('browse');
+                  setRoute({ view: 'browse', entityId: id });
                 }}
               />
             ) : (
@@ -187,19 +251,25 @@ function App(): JSX.Element {
             <OverviewDashboard
               overview={overview.data}
               onSelect={(id) => {
-                setSelectedId(id);
-                setView('browse');
+                setRoute({ view: 'browse', entityId: id });
               }}
             />
           ) : null}
           {view === 'browse' && selectedId ? (
-            <EntityExplorer entityId={selectedId} summary={atlas.data} overview={overview.data} />
+            <EntityExplorer
+              entityId={selectedId}
+              summary={atlas.data}
+              overview={overview.data}
+              onSelect={(id) => setRoute({ view: 'browse', entityId: id })}
+              onPreview={setPreviewPath}
+            />
           ) : null}
           {view === 'browse' && !selectedId ? (
             <Text c="dimmed">Choose a domain, workflow, or component from the navigation.</Text>
           ) : null}
           {view === 'resolve' ? <PathResolver /> : null}
           {view === 'pack' ? <ContextPackPreview /> : null}
+          <PreviewDrawer path={previewPath} onClose={() => setPreviewPath(undefined)} />
         </AppShell.Main>
       </AppShell>
     </MantineProvider>
@@ -237,10 +307,15 @@ function HierarchyNav({
     <Stack gap="sm" h="100%">
       <NavLink
         active={!selectedId}
+        component="a"
+        href="#/overview"
         label="Atlas Overview"
         description="Start here"
         leftSection={<Network size={16} />}
-        onClick={onOverview}
+        onClick={(event) => {
+          event.preventDefault();
+          onOverview();
+        }}
       />
       <TextInput
         placeholder="Search entities"
@@ -265,10 +340,15 @@ function HierarchyNav({
             <NavLink
               key={entity.id}
               active={entity.id === selectedId}
+              component="a"
+              href={routeToHash({ view: 'browse', entityId: entity.id })}
               label={entity.title}
               description={`${entity.id} ${entityContextLabel(overview, entity.id)}`}
               leftSection={<KindBadge kind={entity.kind} compact />}
-              onClick={() => onSelect(entity.id)}
+              onClick={(event) => {
+                event.preventDefault();
+                onSelect(entity.id);
+              }}
             />
           ))
         ) : (
@@ -277,28 +357,43 @@ function HierarchyNav({
               <NavLink
                 key={domain.entity.id}
                 active={domain.entity.id === selectedId}
+                component="a"
+                href={routeToHash({ view: 'browse', entityId: domain.entity.id })}
                 label={domain.entity.title}
                 description={`${domain.workflows.length} workflows`}
                 leftSection={<KindBadge kind="domain" compact />}
-                onClick={() => onSelect(domain.entity.id)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  onSelect(domain.entity.id);
+                }}
               >
                 {domain.workflows.map((workflow) => (
                   <NavLink
                     key={workflow.entity.id}
                     active={workflow.entity.id === selectedId}
+                    component="a"
+                    href={routeToHash({ view: 'browse', entityId: workflow.entity.id })}
                     label={workflow.entity.title}
                     description={`${workflow.components.length} components`}
                     leftSection={<KindBadge kind="workflow" compact />}
-                    onClick={() => onSelect(workflow.entity.id)}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onSelect(workflow.entity.id);
+                    }}
                   >
                     {workflow.components.map((component) => (
                       <NavLink
                         key={component.id}
                         active={component.id === selectedId}
+                        component="a"
+                        href={routeToHash({ view: 'browse', entityId: component.id })}
                         label={component.title}
                         description={component.id}
                         leftSection={<KindBadge kind="component" compact />}
-                        onClick={() => onSelect(component.id)}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          onSelect(component.id);
+                        }}
                       />
                     ))}
                   </NavLink>
@@ -307,10 +402,15 @@ function HierarchyNav({
                   <NavLink
                     key={component.id}
                     active={component.id === selectedId}
+                    component="a"
+                    href={routeToHash({ view: 'browse', entityId: component.id })}
                     label={component.title}
                     description={component.id}
                     leftSection={<KindBadge kind="component" compact />}
-                    onClick={() => onSelect(component.id)}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      onSelect(component.id);
+                    }}
                   />
                 ))}
               </NavLink>
@@ -357,7 +457,7 @@ function OverviewDashboard({
               <Box>
                 <Group gap="xs" mb={4}>
                   <KindBadge kind="domain" />
-                  <Code>{domain.entity.id}</Code>
+                  <EntityLink id={domain.entity.id} title={domain.entity.id} onSelect={onSelect} compact />
                 </Group>
                 <Title order={3}>{domain.entity.title}</Title>
                 <Text c="dimmed">{domain.entity.summary}</Text>
@@ -374,7 +474,7 @@ function OverviewDashboard({
                     <Box>
                       <Group gap="xs">
                         <KindBadge kind="workflow" />
-                        <Code>{workflow.entity.id}</Code>
+                        <EntityLink id={workflow.entity.id} title={workflow.entity.id} onSelect={onSelect} compact />
                       </Group>
                       <Text fw={700} mt={4}>
                         {workflow.entity.title}
@@ -385,7 +485,16 @@ function OverviewDashboard({
                       {workflow.components.length > 0 ? (
                         <Group gap="xs" mt="xs">
                           {workflow.components.slice(0, 5).map((component) => (
-                            <Badge key={component.id} variant="light" onClick={() => onSelect(component.id)}>
+                            <Badge
+                              key={component.id}
+                              component="a"
+                              href={routeToHash({ view: 'browse', entityId: component.id })}
+                              variant="light"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                onSelect(component.id);
+                              }}
+                            >
                               {component.title}
                             </Badge>
                           ))}
@@ -410,7 +519,16 @@ function OverviewDashboard({
           </Text>
           <Group gap="xs">
             {overview.otherEntities.slice(0, 20).map((entity) => (
-              <Badge key={entity.id} variant="outline" onClick={() => onSelect(entity.id)}>
+              <Badge
+                key={entity.id}
+                component="a"
+                href={routeToHash({ view: 'browse', entityId: entity.id })}
+                variant="outline"
+                onClick={(event) => {
+                  event.preventDefault();
+                  onSelect(entity.id);
+                }}
+              >
                 {entity.title}
               </Badge>
             ))}
@@ -425,10 +543,14 @@ function EntityExplorer({
   entityId,
   summary,
   overview,
+  onSelect,
+  onPreview,
 }: {
   entityId: AtlasEntityId;
   summary?: AtlasUiSummary;
   overview?: AtlasUiOverview;
+  onSelect: (id: AtlasEntityId) => void;
+  onPreview: (path: string) => void;
 }): JSX.Element {
   const [depth, setDepth] = useState(1);
   const [relation, setRelation] = useState('all');
@@ -447,6 +569,10 @@ function EntityExplorer({
     () => [...new Set(summary?.edges.map((edge) => edge.type) ?? [])].sort(),
     [summary?.edges],
   );
+  const entitiesById = useMemo(
+    () => new Map((summary?.entities ?? []).map((candidate) => [candidate.id, candidate])),
+    [summary?.entities],
+  );
 
   if (!entity.data) {
     return <Text c="dimmed">Loading entity...</Text>;
@@ -456,9 +582,7 @@ function EntityExplorer({
   return (
     <Stack gap="md">
       {drillDown.breadcrumb.length > 0 ? (
-        <Text size="sm" c="dimmed">
-          {drillDown.breadcrumb.join(' / ')}
-        </Text>
+        <BreadcrumbText labels={drillDown.breadcrumb} />
       ) : null}
       <Group justify="space-between" align="flex-start">
         <Box>
@@ -472,7 +596,8 @@ function EntityExplorer({
         </Box>
       </Group>
       <Text>{entity.data.entity.summary}</Text>
-      <DrillDownPanel drillDown={drillDown} />
+      <ReferencesPanel entity={entity.data.entity} onPreview={onPreview} />
+      <DrillDownPanel drillDown={drillDown} onSelect={onSelect} />
 
       <Tabs defaultValue="graph">
         <Tabs.List>
@@ -517,12 +642,12 @@ function EntityExplorer({
                 This neighborhood was truncated at {neighborhood.data.nodeLimit} nodes. Narrow the relation filter or reduce depth.
               </Alert>
             ) : null}
-            <GraphCanvas selectedId={entityId} neighborhood={neighborhood.data} />
+            <GraphCanvas selectedId={entityId} neighborhood={neighborhood.data} onSelect={onSelect} />
           </Stack>
         </Tabs.Panel>
 
         <Tabs.Panel value="relations" pt="md">
-          <RelationsPanel details={entity.data} />
+          <RelationsPanel details={entity.data} entitiesById={entitiesById} onSelect={onSelect} />
         </Tabs.Panel>
 
         <Tabs.Panel value="metadata" pt="md">
@@ -537,10 +662,162 @@ function EntityExplorer({
   );
 }
 
+function BreadcrumbText({ labels }: { labels: string[] }): JSX.Element {
+  return (
+    <Group gap={6}>
+      {labels.map((label, index) => (
+        <Group key={`${label}-${index}`} gap={6}>
+          {index > 0 ? <Text size="sm" c="dimmed">/</Text> : null}
+          <Text size="sm" c="dimmed">
+            {label}
+          </Text>
+        </Group>
+      ))}
+    </Group>
+  );
+}
+
+function ReferencesPanel({
+  entity,
+  onPreview,
+}: {
+  entity: AtlasEntity;
+  onPreview: (path: string) => void;
+}): JSX.Element | null {
+  const references: JSX.Element[] = [];
+
+  if (entity.uri) {
+    references.push(
+      <ReferenceRow key="uri" label="URI" value={entity.uri} onPreview={onPreview} />,
+    );
+  }
+
+  for (const entrypoint of entity.code?.entrypoints ?? []) {
+    references.push(
+      <ReferenceRow
+        key={`entrypoint-${entrypoint}`}
+        label="Entrypoint"
+        value={entrypoint}
+        onPreview={onPreview}
+      />,
+    );
+  }
+
+  for (const codePath of entity.code?.paths ?? []) {
+    references.push(
+      <ReferenceRow
+        key={`path-${codePath}`}
+        label={hasGlob(codePath) ? 'Path pattern' : 'Path'}
+        value={codePath}
+        onPreview={onPreview}
+      />,
+    );
+  }
+
+  for (const command of entity.commands ?? []) {
+    if (command.cwd) {
+      references.push(
+        <ReferenceRow
+          key={`cwd-${command.command}-${command.cwd}`}
+          label="Command cwd"
+          value={command.cwd}
+          onPreview={onPreview}
+        />,
+      );
+    }
+  }
+
+  if (entity.access) {
+    const accessItems = [
+      entity.access.method ? `method: ${entity.access.method}` : undefined,
+      entity.access.server ? `server: ${entity.access.server}` : undefined,
+      entity.access.permission ? `permission: ${entity.access.permission}` : undefined,
+      entity.access.private_overlay_required ? 'private overlay required' : undefined,
+    ].filter((item): item is string => Boolean(item));
+    if (accessItems.length > 0) {
+      references.push(
+        <Paper key="access" withBorder p="sm" radius="sm">
+          <Group gap="xs" align="flex-start">
+            <Badge variant="light" leftSection={<LinkIcon size={12} />}>
+              Access
+            </Badge>
+            <Group gap="xs">
+              {accessItems.map((item) => (
+                <Code key={item}>{item}</Code>
+              ))}
+            </Group>
+          </Group>
+        </Paper>,
+      );
+    }
+  }
+
+  if (references.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card withBorder radius="md">
+      <Title order={4} mb="sm">
+        References
+      </Title>
+      <Stack gap="xs">{references}</Stack>
+    </Card>
+  );
+}
+
+function ReferenceRow({
+  label,
+  value,
+  onPreview,
+}: {
+  label: string;
+  value: string;
+  onPreview: (path: string) => void;
+}): JSX.Element {
+  const previewPath = previewableLocalPath(value);
+  const external = hasUriScheme(value);
+
+  return (
+    <Paper withBorder p="sm" radius="sm">
+      <Group justify="space-between" gap="sm" align="center">
+        <Group gap="xs" wrap="nowrap">
+          <Badge variant="light" leftSection={<FileText size={12} />}>
+            {label}
+          </Badge>
+          {isHttpUrl(value) ? (
+            <Anchor href={value} target="_blank" rel="noreferrer">
+              {value}
+            </Anchor>
+          ) : external ? (
+            <Group gap="xs" wrap="nowrap">
+              <Anchor href={value} target="_blank" rel="noreferrer">
+                {value}
+              </Anchor>
+              <Tooltip label="External URI scheme. The UI does not fetch this content.">
+                <ExternalLink size={14} />
+              </Tooltip>
+            </Group>
+          ) : (
+            <Code>{value}</Code>
+          )}
+        </Group>
+        {previewPath ? (
+          <Button size="xs" variant="light" leftSection={<FileSearch size={14} />} onClick={() => onPreview(previewPath)}>
+            Preview
+          </Button>
+        ) : null}
+      </Group>
+    </Paper>
+  );
+}
+
 function DrillDownPanel({
   drillDown,
+  onSelect,
 }: {
   drillDown: ReturnType<typeof entityDrillDown>;
+  onSelect: (id: AtlasEntityId) => void;
 }): JSX.Element | null {
   const sections = [
     ['Workflows', drillDown.workflows],
@@ -566,9 +843,7 @@ function DrillDownPanel({
             <Stack gap={4}>
               {items.length === 0 ? <Text size="sm" c="dimmed">None</Text> : null}
               {items.slice(0, 8).map((item) => (
-                <Code key={item.id} block>
-                  {item.id}
-                </Code>
+                <EntityLink key={item.id} id={item.id} title={item.title} onSelect={onSelect} />
               ))}
             </Stack>
           </Box>
@@ -578,12 +853,52 @@ function DrillDownPanel({
   );
 }
 
+function EntityLink({
+  id,
+  title,
+  entity,
+  onSelect,
+  compact = false,
+}: {
+  id: AtlasEntityId;
+  title?: string;
+  entity?: AtlasEntity;
+  onSelect: (id: AtlasEntityId) => void;
+  compact?: boolean;
+}): JSX.Element {
+  const displayTitle = title ?? entity?.title ?? id;
+  return (
+    <Anchor
+      href={routeToHash({ view: 'browse', entityId: id })}
+      onClick={(event) => {
+        event.preventDefault();
+        onSelect(id);
+      }}
+      className={compact ? 'entityLinkCompact' : 'entityLink'}
+    >
+      <Group gap="xs" wrap="nowrap">
+        {entity ? <KindBadge kind={entity.kind} /> : null}
+        <Text span size={compact ? 'xs' : 'sm'} fw={compact ? 500 : 600}>
+          {displayTitle}
+        </Text>
+        {!compact && displayTitle !== id ? (
+          <Text span size="xs" c="dimmed">
+            {id}
+          </Text>
+        ) : null}
+      </Group>
+    </Anchor>
+  );
+}
+
 function GraphCanvas({
   selectedId,
   neighborhood,
+  onSelect,
 }: {
   selectedId: AtlasEntityId;
   neighborhood?: AtlasUiNeighborhood;
+  onSelect: (id: AtlasEntityId) => void;
 }): JSX.Element {
   const nodes: Node[] = useMemo(() => {
     const input = neighborhood?.nodes ?? [];
@@ -625,7 +940,13 @@ function GraphCanvas({
 
   return (
     <Paper withBorder h={520} radius="md" className="graphPanel">
-      <ReactFlow nodes={nodes} edges={edges} fitView minZoom={0.2}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        fitView
+        minZoom={0.2}
+        onNodeClick={(_, node) => onSelect(node.id as AtlasEntityId)}
+      >
         <Background />
         <Controls />
         <MiniMap pannable zoomable />
@@ -634,11 +955,19 @@ function GraphCanvas({
   );
 }
 
-function RelationsPanel({ details }: { details: AtlasUiEntityDetails }): JSX.Element {
+function RelationsPanel({
+  details,
+  entitiesById,
+  onSelect,
+}: {
+  details: AtlasUiEntityDetails;
+  entitiesById: Map<AtlasEntityId, AtlasEntity>;
+  onSelect: (id: AtlasEntityId) => void;
+}): JSX.Element {
   return (
     <Group align="flex-start" grow>
-      <EdgeList title="Outgoing" edges={details.outgoing} targetField="target" />
-      <EdgeList title="Incoming" edges={details.incoming} targetField="source" />
+      <EdgeList title="Outgoing" edges={details.outgoing} targetField="target" entitiesById={entitiesById} onSelect={onSelect} />
+      <EdgeList title="Incoming" edges={details.incoming} targetField="source" entitiesById={entitiesById} onSelect={onSelect} />
     </Group>
   );
 }
@@ -647,10 +976,14 @@ function EdgeList({
   title,
   edges,
   targetField,
+  entitiesById,
+  onSelect,
 }: {
   title: string;
   edges: AtlasGraphEdge[];
   targetField: 'source' | 'target';
+  entitiesById: Map<AtlasEntityId, AtlasEntity>;
+  onSelect: (id: AtlasEntityId) => void;
 }): JSX.Element {
   return (
     <Card withBorder radius="md">
@@ -668,9 +1001,13 @@ function EdgeList({
               </Badge>
               {edge.strength ? <Badge variant="outline">{edge.strength}</Badge> : null}
             </Group>
-            <Code mt="xs" block>
-              {edge[targetField]}
-            </Code>
+            <Box mt="xs">
+              <EntityLink
+                id={edge[targetField]}
+                entity={entitiesById.get(edge[targetField])}
+                onSelect={onSelect}
+              />
+            </Box>
           </Paper>
         ))}
       </Stack>
@@ -737,6 +1074,43 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: AtlasDiagnostic[] }): 
         </Alert>
       ))}
     </Stack>
+  );
+}
+
+function PreviewDrawer({
+  path,
+  onClose,
+}: {
+  path?: string;
+  onClose: () => void;
+}): JSX.Element {
+  const preview = useQuery({
+    queryKey: ['preview', path],
+    queryFn: () => fetchJson<AtlasUiPreview>(`/api/preview?path=${encodeURIComponent(path ?? '')}`),
+    enabled: Boolean(path),
+  });
+
+  return (
+    <Drawer opened={Boolean(path)} onClose={onClose} title="Local file preview" size="xl" position="right">
+      {!path ? null : (
+        <Stack gap="md">
+          <Box>
+            <Title order={4}>{preview.data?.fileName ?? fileNameFromPath(path)}</Title>
+            <Text size="sm" c="dimmed">
+              {preview.data?.path ?? path}
+              {preview.data ? ` - ${preview.data.sizeBytes} bytes` : ''}
+            </Text>
+          </Box>
+          {preview.error ? (
+            <Alert color="red" title="Preview unavailable" icon={<AlertTriangle size={18} />}>
+              {String(preview.error)}
+            </Alert>
+          ) : null}
+          {!preview.data && !preview.error ? <Text c="dimmed">Loading preview...</Text> : null}
+          {preview.data ? <pre className="previewContent">{preview.data.content}</pre> : null}
+        </Stack>
+      )}
+    </Drawer>
   );
 }
 
@@ -951,6 +1325,64 @@ function entityDrillDown(
   }
 
   return empty;
+}
+
+function parseHashRoute(hash: string): UiRoute {
+  const normalized = hash.startsWith('#') ? hash.slice(1) : hash;
+  if (!normalized || normalized === '/' || normalized === '/overview') {
+    return { view: 'overview' };
+  }
+  if (normalized === '/resolve') {
+    return { view: 'resolve' };
+  }
+  if (normalized === '/pack') {
+    return { view: 'pack' };
+  }
+  if (normalized.startsWith('/entity/')) {
+    const rawId = normalized.slice('/entity/'.length);
+    if (rawId.trim()) {
+      return { view: 'browse', entityId: decodeURIComponent(rawId) as AtlasEntityId };
+    }
+  }
+  return { view: 'overview' };
+}
+
+function routeToHash(route: UiRoute): string {
+  if (route.view === 'browse' && route.entityId) {
+    return `#/entity/${encodeURIComponent(route.entityId).replace('%3A', ':')}`;
+  }
+  if (route.view === 'resolve') {
+    return '#/resolve';
+  }
+  if (route.view === 'pack') {
+    return '#/pack';
+  }
+  return '#/overview';
+}
+
+function previewableLocalPath(value: string): string | undefined {
+  if (hasUriScheme(value) || hasGlob(value) || value.startsWith('/') || value.startsWith('\\')) {
+    return undefined;
+  }
+  const cleanPath = value.split(/[?#]/, 1)[0] ?? value;
+  const extension = cleanPath.includes('.') ? `.${cleanPath.split('.').pop()?.toLowerCase() ?? ''}` : '';
+  return PREVIEWABLE_EXTENSIONS.has(extension) ? cleanPath : undefined;
+}
+
+function isHttpUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value);
+}
+
+function hasUriScheme(value: string): boolean {
+  return /^[a-z][a-z0-9+.-]*:/i.test(value);
+}
+
+function hasGlob(value: string): boolean {
+  return value.includes('*') || value.includes('?') || value.includes('[') || value.includes(']');
+}
+
+function fileNameFromPath(value: string): string {
+  return value.split('/').pop() || value;
 }
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
