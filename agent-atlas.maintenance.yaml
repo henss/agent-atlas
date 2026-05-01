@@ -1,0 +1,17 @@
+version: 1
+mode: agent-maintained
+profile: public
+generated_docs:
+  output: docs/agents
+  auto_regenerate: true
+metadata:
+  auto_apply: true
+  allow_add: true
+  allow_update: true
+  allow_archive: true
+  allow_delete: false
+safety:
+  require_validate: true
+  require_boundary_check: true
+  block_secret_like_values: true
+  block_profile_leaks: true

@@ -78,6 +78,13 @@ For any meaningful change:
 - Examples still reflect the intended model.
 - Security and public/private boundaries are not weakened.
 - The change preserves top-down and bottom-up traversal use cases.
+- Run `atlas maintain fix --path .` and `atlas maintain check --path .` so repo-local Atlas metadata and generated docs stay current.
+
+## Atlas maintenance
+
+This repo uses `agent-atlas.maintenance.yaml` in `agent-maintained` mode. If Atlas metadata is missing or stale while you are working, update `.agent-atlas/**` directly and regenerate `docs/agents/**` with `atlas maintain fix --path .`.
+
+Boundary and validation failures are blockers. Do not bypass them by weakening public/private boundaries or adding private data to public Atlas files.
 
 ## Avoid
 

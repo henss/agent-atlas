@@ -17,6 +17,8 @@ Main source, configuration, scripts, docs, and tests agents should inspect befor
 
 - path: `packages/**`
 - path: `docs/**`
+- path: `AGENTS.md`
+- path: `agent-atlas.maintenance.yaml`
 - path: `package.json`
 - path: `README.md`
 

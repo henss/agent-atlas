@@ -8,6 +8,8 @@ code:
   paths:
     - packages/**
     - docs/**
+    - AGENTS.md
+    - agent-atlas.maintenance.yaml
     - package.json
     - README.md
 relations:
