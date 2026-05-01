@@ -42,6 +42,7 @@ const PREVIEW_EXTENSIONS = new Set([
   '.js',
   '.json',
   '.jsx',
+  '.markdown',
   '.md',
   '.mjs',
   '.toml',

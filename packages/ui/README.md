@@ -17,5 +17,8 @@ Entity pages use hash routes such as `#/overview`,
 shared without requiring server-side routing. Local text files referenced by
 document URIs or code entrypoints can be previewed through the read-only
 `/api/preview?path=...` endpoint when the path stays inside the atlas root.
+Markdown previews are rendered with the open-source `react-markdown` and
+`remark-gfm` packages; other supported text files use a plain read-only text
+view.
 
 The UI does not edit atlas YAML files, apply proposals, or regenerate Markdown.

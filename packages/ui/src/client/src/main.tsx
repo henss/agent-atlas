@@ -45,6 +45,8 @@ import {
   type Edge,
   type Node,
 } from '@xyflow/react';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   AlertTriangle,
   BoxIcon,
@@ -99,6 +101,7 @@ const PREVIEWABLE_EXTENSIONS = new Set([
   '.js',
   '.json',
   '.jsx',
+  '.markdown',
   '.md',
   '.mjs',
   '.toml',
@@ -269,7 +272,11 @@ function App(): JSX.Element {
           ) : null}
           {view === 'resolve' ? <PathResolver /> : null}
           {view === 'pack' ? <ContextPackPreview /> : null}
-          <PreviewDrawer path={previewPath} onClose={() => setPreviewPath(undefined)} />
+          <PreviewDrawer
+            path={previewPath}
+            onClose={() => setPreviewPath(undefined)}
+            onPreview={setPreviewPath}
+          />
         </AppShell.Main>
       </AppShell>
     </MantineProvider>
@@ -1080,15 +1087,18 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: AtlasDiagnostic[] }): 
 function PreviewDrawer({
   path,
   onClose,
+  onPreview,
 }: {
   path?: string;
   onClose: () => void;
+  onPreview: (path: string) => void;
 }): JSX.Element {
   const preview = useQuery({
     queryKey: ['preview', path],
     queryFn: () => fetchJson<AtlasUiPreview>(`/api/preview?path=${encodeURIComponent(path ?? '')}`),
     enabled: Boolean(path),
   });
+  const isMarkdown = preview.data ? isMarkdownPath(preview.data.path) : isMarkdownPath(path ?? '');
 
   return (
     <Drawer opened={Boolean(path)} onClose={onClose} title="Local file preview" size="xl" position="right">
@@ -1107,10 +1117,85 @@ function PreviewDrawer({
             </Alert>
           ) : null}
           {!preview.data && !preview.error ? <Text c="dimmed">Loading preview...</Text> : null}
-          {preview.data ? <pre className="previewContent">{preview.data.content}</pre> : null}
+          {preview.data ? (
+            isMarkdown ? (
+              <MarkdownPreview preview={preview.data} onPreview={onPreview} />
+            ) : (
+              <pre className="previewContent">{preview.data.content}</pre>
+            )
+          ) : null}
         </Stack>
       )}
     </Drawer>
+  );
+}
+
+function MarkdownPreview({
+  preview,
+  onPreview,
+}: {
+  preview: AtlasUiPreview;
+  onPreview: (path: string) => void;
+}): JSX.Element {
+  const components = useMemo<Components>(
+    () => ({
+      a({ children, href }) {
+        if (!href) {
+          return <>{children}</>;
+        }
+        if (href.startsWith('#')) {
+          return <Anchor href={href}>{children}</Anchor>;
+        }
+        if (isHttpUrl(href) || hasUriScheme(href)) {
+          return (
+            <Anchor href={href} target="_blank" rel="noreferrer">
+              {children}
+            </Anchor>
+          );
+        }
+        const resolvedPath = resolveMarkdownRelativePath(preview.path, href);
+        const previewPath = previewableLocalPath(resolvedPath);
+        if (previewPath) {
+          return (
+            <Anchor
+              href="#"
+              onClick={(event) => {
+                event.preventDefault();
+                onPreview(previewPath);
+              }}
+            >
+              {children}
+            </Anchor>
+          );
+        }
+        return <Code>{href}</Code>;
+      },
+      code({ children, className }) {
+        const inline = !className;
+        return inline ? <Code>{children}</Code> : <code className={className}>{children}</code>;
+      },
+      img({ alt, src }) {
+        return (
+          <Paper withBorder p="xs" radius="sm">
+            <Text size="sm" c="dimmed">
+              Image reference: {alt || src || 'untitled image'}
+            </Text>
+          </Paper>
+        );
+      },
+      table({ children }) {
+        return <table className="markdownTable">{children}</table>;
+      },
+    }),
+    [onPreview, preview.path],
+  );
+
+  return (
+    <Paper withBorder radius="sm" className="markdownPreview">
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        {preview.content}
+      </ReactMarkdown>
+    </Paper>
   );
 }
 
@@ -1365,8 +1450,39 @@ function previewableLocalPath(value: string): string | undefined {
     return undefined;
   }
   const cleanPath = value.split(/[?#]/, 1)[0] ?? value;
+  if (cleanPath.split('/').includes('..')) {
+    return undefined;
+  }
   const extension = cleanPath.includes('.') ? `.${cleanPath.split('.').pop()?.toLowerCase() ?? ''}` : '';
   return PREVIEWABLE_EXTENSIONS.has(extension) ? cleanPath : undefined;
+}
+
+function isMarkdownPath(value: string): boolean {
+  const cleanPath = value.split(/[?#]/, 1)[0] ?? value;
+  return cleanPath.endsWith('.md') || cleanPath.endsWith('.markdown');
+}
+
+function resolveMarkdownRelativePath(currentPath: string, href: string): string {
+  const [pathPart, suffix = ''] = href.split(/([?#].*)/, 2);
+  if (!pathPart || pathPart.startsWith('/')) {
+    return href;
+  }
+  const currentDirectory = currentPath.includes('/') ? currentPath.slice(0, currentPath.lastIndexOf('/')) : '';
+  const parts = [...currentDirectory.split('/'), ...pathPart.split('/')]
+    .filter((part) => part && part !== '.');
+  const normalized: string[] = [];
+  for (const part of parts) {
+    if (part === '..') {
+      if (normalized.length > 0) {
+        normalized.pop();
+      } else {
+        normalized.push(part);
+      }
+      continue;
+    }
+    normalized.push(part);
+  }
+  return `${normalized.join('/')}${suffix}`;
 }
 
 function isHttpUrl(value: string): boolean {

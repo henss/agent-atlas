@@ -145,12 +145,15 @@ describe('ui api serializers', () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'agent-atlas-ui-preview-'));
     await mkdir(path.join(root, 'docs'), { recursive: true });
     await writeFile(path.join(root, 'docs', 'readme.md'), '# Read me\n', 'utf8');
+    await writeFile(path.join(root, 'docs', 'guide.markdown'), '# Guide\n', 'utf8');
 
     const preview = await readPreview(root, 'docs/readme.md');
+    const markdownPreview = await readPreview(root, 'docs/guide.markdown');
 
     expect(preview.path).toBe('docs/readme.md');
     expect(preview.fileName).toBe('readme.md');
     expect(preview.content).toContain('# Read me');
+    expect(markdownPreview.content).toContain('# Guide');
   });
 
   it('rejects unsafe and unsupported preview paths', async () => {
