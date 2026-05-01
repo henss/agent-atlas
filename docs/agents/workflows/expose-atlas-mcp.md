@@ -12,6 +12,22 @@ Provides read-only MCP resources, tools, smoke tests, deployment notes, and safe
 
 - visibility: `public`
 
+## Drill Down
+
+### Components
+
+- `component:core-package`
+- `component:mcp-server-package`
+
+### Documents
+
+- `document:mcp-deployment-guide`
+- `document:mcp-spec`
+
+### Tests
+
+- `test-scope:workspace-build-and-test`
+
 ## Relations
 
 ### `documented-in`

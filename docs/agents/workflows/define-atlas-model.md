@@ -12,6 +12,24 @@ Evolves entity fields, relation types, validation behavior, and schema documenta
 
 - visibility: `public`
 
+## Drill Down
+
+### Components
+
+- `component:schema-package`
+
+### Documents
+
+- `document:authoring-guide`
+- `document:contributor-examples`
+- `document:entity-spec`
+- `document:incremental-authoring-guide`
+- `document:relation-spec`
+
+### Tests
+
+- `test-scope:workspace-build-and-test`
+
 ## Relations
 
 ### `documented-in`

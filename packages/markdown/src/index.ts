@@ -1,5 +1,11 @@
 import type { AtlasEntity, AtlasEntityId, AtlasEntityKind } from '@agent-atlas/schema';
-import type { AtlasGraph, AtlasGraphEdge } from '@agent-atlas/core';
+import {
+  createAtlasOverview,
+  createGraphIndex,
+  renderAtlasOverviewMarkdown,
+  type AtlasGraph,
+  type AtlasGraphEdge,
+} from '@agent-atlas/core';
 import type { AtlasProfile } from '@agent-atlas/core';
 
 export type MarkdownProfile = AtlasProfile;
@@ -81,6 +87,11 @@ export function renderEntityCard(
     lines.push('', '## Metadata', '', ...metadata);
   }
 
+  const drillDown = renderLocalDrillDown(entity, edges);
+  if (drillDown.length > 0) {
+    lines.push('', '## Drill Down', '', ...drillDown);
+  }
+
   if (entity.code?.paths?.length || entity.code?.entrypoints?.length) {
     lines.push('', '## Code', '');
     for (const codePath of entity.code.paths ?? []) {
@@ -143,49 +154,14 @@ function renderRootAtlasView(
   edges: AtlasGraphEdge[],
   profile: MarkdownProfile,
 ): string {
-  const domains = entities.filter((entity) => entity.kind === 'domain');
-  const workflows = entities.filter((entity) => entity.kind === 'workflow');
-  const components = entities.filter((entity) => entity.kind === 'component');
-  const systems = entities.filter((entity) => entity.kind === 'system');
-
-  return `${GENERATED_HEADER}
-
-# Agent Atlas
-
-Profile: \`${profile}\`
-
-This generated view is a compact routing map. Use the source atlas YAML files for canonical data.
-
-Public profile output excludes entities marked \`private\`, \`internal\`, or \`restricted\`.
-
-## Counts
-
-- Domains: ${domains.length}
-- Workflows: ${workflows.length}
-- Systems: ${systems.length}
-- Components: ${components.length}
-- Relations: ${edges.length}
-
-## Domains
-
-${renderEntityList(domains)}
-
-## Major Workflows
-
-${renderEntityList(workflows)}
-
-## Systems And Components
-
-${renderEntityList([...systems, ...components])}
-
-## Path Resolution
-
-Use \`atlas resolve-path <path>\` to map a source file to owning components and related workflows, domains, docs, and tests.
-
-## Context Packs
-
-Use \`atlas context-pack "<task>" --budget 4000\` to generate a task-specific context bundle from this graph.
-`;
+  const graph: AtlasGraph = {
+    rootPath: '.',
+    entities,
+    edges,
+    index: createGraphIndex(entities, edges),
+    diagnostics: [],
+  };
+  return `${GENERATED_HEADER}\n\n${renderAtlasOverviewMarkdown(createAtlasOverview(graph, profile))}`;
 }
 
 function renderVerificationView(
@@ -252,6 +228,54 @@ function renderMetadata(entity: AtlasEntity): string[] {
     metadata.push(`- owners: ${entity.owners.join(', ')}`);
   }
   return metadata;
+}
+
+function renderLocalDrillDown(entity: AtlasEntity, edges: AtlasGraphEdge[]): string[] {
+  if (entity.kind !== 'domain' && entity.kind !== 'workflow') {
+    return [];
+  }
+
+  const lines: string[] = [];
+  const workflows = relatedEntities(entity.id, 'contains', 'workflow', edges);
+  const components = relatedEntities(entity.id, ['contains', 'uses', 'implemented-by'], 'component', edges);
+  const documents = relatedEntities(entity.id, 'documented-in', 'document', edges);
+  const tests = relatedEntities(entity.id, 'tested-by', 'test-scope', edges);
+
+  if (workflows.length > 0) {
+    lines.push('### Workflows', '', ...workflows.map((id) => `- \`${id}\``), '');
+  }
+  if (components.length > 0) {
+    lines.push('### Components', '', ...components.map((id) => `- \`${id}\``), '');
+  }
+  if (documents.length > 0) {
+    lines.push('### Documents', '', ...documents.map((id) => `- \`${id}\``), '');
+  }
+  if (tests.length > 0) {
+    lines.push('### Tests', '', ...tests.map((id) => `- \`${id}\``));
+  }
+
+  return lines.filter((line, index, all) => !(line === '' && all[index - 1] === ''));
+}
+
+function relatedEntities(
+  sourceId: AtlasEntityId,
+  relationType: string | string[],
+  targetKind: AtlasEntityKind,
+  edges: AtlasGraphEdge[],
+): AtlasEntityId[] {
+  const relationTypes = Array.isArray(relationType) ? relationType : [relationType];
+  return [
+    ...new Set(
+      edges
+        .filter(
+          (edge) =>
+            edge.source === sourceId &&
+            relationTypes.includes(edge.type) &&
+            edge.target.startsWith(`${targetKind}:`),
+        )
+        .map((edge) => edge.target),
+    ),
+  ].sort();
 }
 
 function renderUri(uri: string, profile: MarkdownProfile): string {

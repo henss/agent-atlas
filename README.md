@@ -68,6 +68,7 @@ For local/private development, use a built local checkout:
 ```sh
 pnpm -r build
 node packages/cli/dist/index.js validate .
+node packages/cli/dist/index.js overview --path .
 node packages/cli/dist/index.js boundary-check --path . --profile public
 node packages/cli/dist/index.js doctor --path .
 node packages/cli/dist/index.js generate markdown --check --profile public

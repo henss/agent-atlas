@@ -30,6 +30,43 @@ Errors: 0
 `);
   });
 
+  it('prints overview Markdown and JSON', async () => {
+    const root = await makeAtlasFixture();
+    const domainDir = path.join(root, '.agent-atlas', 'public', 'domains');
+    await mkdir(domainDir, { recursive: true });
+    await writeFile(
+      path.join(domainDir, 'example.yaml'),
+      `id: domain:example
+kind: domain
+title: Example Domain
+summary: Example domain.
+relations:
+  - type: contains
+    target: workflow:example
+`,
+    );
+    const { stdout } = await execFileAsync('node', [
+      CLI_PATH,
+      'overview',
+      root,
+    ]);
+
+    expect(stdout).toContain('# Atlas overview');
+    expect(stdout).toContain('## Major capabilities');
+    expect(stdout).toContain('workflow:example');
+
+    const json = await execFileAsync('node', [
+      CLI_PATH,
+      'overview',
+      root,
+      '--json',
+    ]);
+    expect(JSON.parse(json.stdout)).toMatchObject({
+      profile: 'public',
+      counts: { domains: 1, workflows: 1 },
+    });
+  });
+
   it('prints diagnostic hints when validation fails', async () => {
     const root = await makeAtlasFixture({
       brokenRelation: true,

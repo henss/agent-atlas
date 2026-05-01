@@ -61,6 +61,7 @@ import type {
   AtlasUiEntityDetails,
   AtlasUiHealth,
   AtlasUiNeighborhood,
+  AtlasUiOverview,
   AtlasUiResolvePathResponse,
   AtlasUiSummary,
 } from '../../shared';
@@ -86,17 +87,19 @@ const KIND_COLORS: Record<string, string> = {
 
 function App(): JSX.Element {
   const [selectedId, setSelectedId] = useState<AtlasEntityId | undefined>();
-  const [view, setView] = useState('browse');
+  const [view, setView] = useState('overview');
   const atlas = useQuery({
     queryKey: ['atlas'],
     queryFn: () => fetchJson<AtlasUiSummary>('/api/atlas'),
+  });
+  const overview = useQuery({
+    queryKey: ['overview'],
+    queryFn: () => fetchJson<AtlasUiOverview>('/api/overview'),
   });
   const health = useQuery({
     queryKey: ['health'],
     queryFn: () => fetchJson<AtlasUiHealth>('/api/health'),
   });
-
-  const selectedEntityId = selectedId ?? atlas.data?.entities[0]?.id;
 
   return (
     <MantineProvider defaultColorScheme="auto">
@@ -142,17 +145,26 @@ function App(): JSX.Element {
               value={view}
               onChange={setView}
               data={[
+                { label: 'Overview', value: 'overview' },
                 { label: 'Browse', value: 'browse' },
                 { label: 'Resolve', value: 'resolve' },
                 { label: 'Pack', value: 'pack' },
               ]}
             />
             <Divider />
-            {view === 'browse' ? (
-              <EntityList
+            {view === 'overview' || view === 'browse' ? (
+              <HierarchyNav
+                overview={overview.data}
                 entities={atlas.data?.entities ?? []}
-                selectedId={selectedEntityId}
-                onSelect={setSelectedId}
+                selectedId={selectedId}
+                onOverview={() => {
+                  setView('overview');
+                  setSelectedId(undefined);
+                }}
+                onSelect={(id) => {
+                  setSelectedId(id);
+                  setView('browse');
+                }}
               />
             ) : (
               <NavLink
@@ -171,8 +183,20 @@ function App(): JSX.Element {
               {String(atlas.error)}
             </Alert>
           ) : null}
-          {view === 'browse' && selectedEntityId ? (
-            <EntityExplorer entityId={selectedEntityId} summary={atlas.data} />
+          {view === 'overview' ? (
+            <OverviewDashboard
+              overview={overview.data}
+              onSelect={(id) => {
+                setSelectedId(id);
+                setView('browse');
+              }}
+            />
+          ) : null}
+          {view === 'browse' && selectedId ? (
+            <EntityExplorer entityId={selectedId} summary={atlas.data} overview={overview.data} />
+          ) : null}
+          {view === 'browse' && !selectedId ? (
+            <Text c="dimmed">Choose a domain, workflow, or component from the navigation.</Text>
           ) : null}
           {view === 'resolve' ? <PathResolver /> : null}
           {view === 'pack' ? <ContextPackPreview /> : null}
@@ -182,13 +206,17 @@ function App(): JSX.Element {
   );
 }
 
-function EntityList({
+function HierarchyNav({
+  overview,
   entities,
   selectedId,
+  onOverview,
   onSelect,
 }: {
+  overview?: AtlasUiOverview;
   entities: AtlasEntity[];
   selectedId?: AtlasEntityId;
+  onOverview: () => void;
   onSelect: (id: AtlasEntityId) => void;
 }): JSX.Element {
   const [query, setQuery] = useState('');
@@ -203,8 +231,17 @@ function EntityList({
     );
   });
 
+  const domains = overview?.domains ?? [];
+
   return (
     <Stack gap="sm" h="100%">
+      <NavLink
+        active={!selectedId}
+        label="Atlas Overview"
+        description="Start here"
+        leftSection={<Network size={16} />}
+        onClick={onOverview}
+      />
       <TextInput
         placeholder="Search entities"
         leftSection={<Search size={16} />}
@@ -223,17 +260,163 @@ function EntityList({
         {filtered.length} of {entities.length} entities
       </Text>
       <ScrollArea flex={1}>
-        {filtered.map((entity) => (
-          <NavLink
-            key={entity.id}
-            active={entity.id === selectedId}
-            label={entity.title}
-            description={entity.id}
-            leftSection={<KindBadge kind={entity.kind} compact />}
-            onClick={() => onSelect(entity.id)}
-          />
-        ))}
+        {debouncedQuery || kind ? (
+          filtered.map((entity) => (
+            <NavLink
+              key={entity.id}
+              active={entity.id === selectedId}
+              label={entity.title}
+              description={`${entity.id} ${entityContextLabel(overview, entity.id)}`}
+              leftSection={<KindBadge kind={entity.kind} compact />}
+              onClick={() => onSelect(entity.id)}
+            />
+          ))
+        ) : (
+          <Stack gap={4}>
+            {domains.map((domain) => (
+              <NavLink
+                key={domain.entity.id}
+                active={domain.entity.id === selectedId}
+                label={domain.entity.title}
+                description={`${domain.workflows.length} workflows`}
+                leftSection={<KindBadge kind="domain" compact />}
+                onClick={() => onSelect(domain.entity.id)}
+              >
+                {domain.workflows.map((workflow) => (
+                  <NavLink
+                    key={workflow.entity.id}
+                    active={workflow.entity.id === selectedId}
+                    label={workflow.entity.title}
+                    description={`${workflow.components.length} components`}
+                    leftSection={<KindBadge kind="workflow" compact />}
+                    onClick={() => onSelect(workflow.entity.id)}
+                  >
+                    {workflow.components.map((component) => (
+                      <NavLink
+                        key={component.id}
+                        active={component.id === selectedId}
+                        label={component.title}
+                        description={component.id}
+                        leftSection={<KindBadge kind="component" compact />}
+                        onClick={() => onSelect(component.id)}
+                      />
+                    ))}
+                  </NavLink>
+                ))}
+                {domain.components.map((component) => (
+                  <NavLink
+                    key={component.id}
+                    active={component.id === selectedId}
+                    label={component.title}
+                    description={component.id}
+                    leftSection={<KindBadge kind="component" compact />}
+                    onClick={() => onSelect(component.id)}
+                  />
+                ))}
+              </NavLink>
+            ))}
+          </Stack>
+        )}
       </ScrollArea>
+    </Stack>
+  );
+}
+
+function OverviewDashboard({
+  overview,
+  onSelect,
+}: {
+  overview?: AtlasUiOverview;
+  onSelect: (id: AtlasEntityId) => void;
+}): JSX.Element {
+  if (!overview) {
+    return <Text c="dimmed">Loading overview...</Text>;
+  }
+
+  return (
+    <Stack gap="md">
+      <Box>
+        <Title order={2}>Atlas Overview</Title>
+        <Text c="dimmed">
+          Start with domains and workflows, then drill into components, documents, and tests as needed.
+        </Text>
+      </Box>
+      <StatsRow
+        stats={[
+          ['domains', overview.counts.domains],
+          ['workflows', overview.counts.workflows],
+          ['components', overview.counts.components],
+          ['documents', overview.counts.documents],
+          ['tests', overview.counts.tests],
+        ]}
+      />
+      <Stack gap="md">
+        {overview.domains.map((domain) => (
+          <Card key={domain.entity.id} withBorder radius="md">
+            <Group justify="space-between" align="flex-start">
+              <Box>
+                <Group gap="xs" mb={4}>
+                  <KindBadge kind="domain" />
+                  <Code>{domain.entity.id}</Code>
+                </Group>
+                <Title order={3}>{domain.entity.title}</Title>
+                <Text c="dimmed">{domain.entity.summary}</Text>
+              </Box>
+              <Button variant="light" onClick={() => onSelect(domain.entity.id)}>
+                Open
+              </Button>
+            </Group>
+            <Divider my="md" />
+            <Stack gap="sm">
+              {domain.workflows.map((workflow) => (
+                <Paper key={workflow.entity.id} withBorder p="sm" radius="sm">
+                  <Group justify="space-between" align="flex-start">
+                    <Box>
+                      <Group gap="xs">
+                        <KindBadge kind="workflow" />
+                        <Code>{workflow.entity.id}</Code>
+                      </Group>
+                      <Text fw={700} mt={4}>
+                        {workflow.entity.title}
+                      </Text>
+                      <Text size="sm" c="dimmed">
+                        {workflow.entity.summary}
+                      </Text>
+                      {workflow.components.length > 0 ? (
+                        <Group gap="xs" mt="xs">
+                          {workflow.components.slice(0, 5).map((component) => (
+                            <Badge key={component.id} variant="light" onClick={() => onSelect(component.id)}>
+                              {component.title}
+                            </Badge>
+                          ))}
+                        </Group>
+                      ) : null}
+                    </Box>
+                    <Button size="xs" variant="subtle" onClick={() => onSelect(workflow.entity.id)}>
+                      Drill down
+                    </Button>
+                  </Group>
+                </Paper>
+              ))}
+            </Stack>
+          </Card>
+        ))}
+      </Stack>
+      {overview.otherEntities.length > 0 ? (
+        <Card withBorder radius="md">
+          <Title order={4}>Other entities</Title>
+          <Text size="sm" c="dimmed" mb="sm">
+            These entities are valid but are not placed under a domain/workflow hierarchy yet.
+          </Text>
+          <Group gap="xs">
+            {overview.otherEntities.slice(0, 20).map((entity) => (
+              <Badge key={entity.id} variant="outline" onClick={() => onSelect(entity.id)}>
+                {entity.title}
+              </Badge>
+            ))}
+          </Group>
+        </Card>
+      ) : null}
     </Stack>
   );
 }
@@ -241,9 +424,11 @@ function EntityList({
 function EntityExplorer({
   entityId,
   summary,
+  overview,
 }: {
   entityId: AtlasEntityId;
   summary?: AtlasUiSummary;
+  overview?: AtlasUiOverview;
 }): JSX.Element {
   const [depth, setDepth] = useState(1);
   const [relation, setRelation] = useState('all');
@@ -266,9 +451,15 @@ function EntityExplorer({
   if (!entity.data) {
     return <Text c="dimmed">Loading entity...</Text>;
   }
+  const drillDown = entityDrillDown(overview, entityId);
 
   return (
     <Stack gap="md">
+      {drillDown.breadcrumb.length > 0 ? (
+        <Text size="sm" c="dimmed">
+          {drillDown.breadcrumb.join(' / ')}
+        </Text>
+      ) : null}
       <Group justify="space-between" align="flex-start">
         <Box>
           <Group gap="xs" mb={4}>
@@ -281,6 +472,7 @@ function EntityExplorer({
         </Box>
       </Group>
       <Text>{entity.data.entity.summary}</Text>
+      <DrillDownPanel drillDown={drillDown} />
 
       <Tabs defaultValue="graph">
         <Tabs.List>
@@ -342,6 +534,47 @@ function EntityExplorer({
         </Tabs.Panel>
       </Tabs>
     </Stack>
+  );
+}
+
+function DrillDownPanel({
+  drillDown,
+}: {
+  drillDown: ReturnType<typeof entityDrillDown>;
+}): JSX.Element | null {
+  const sections = [
+    ['Workflows', drillDown.workflows],
+    ['Components', drillDown.components],
+    ['Documents', drillDown.documents],
+    ['Tests', drillDown.tests],
+  ] as const;
+  if (sections.every(([, items]) => items.length === 0)) {
+    return null;
+  }
+
+  return (
+    <Card withBorder radius="md">
+      <Title order={4} mb="sm">
+        Drill down
+      </Title>
+      <Group align="flex-start" grow>
+        {sections.map(([title, items]) => (
+          <Box key={title}>
+            <Text size="xs" c="dimmed" fw={700} mb={4}>
+              {title}
+            </Text>
+            <Stack gap={4}>
+              {items.length === 0 ? <Text size="sm" c="dimmed">None</Text> : null}
+              {items.slice(0, 8).map((item) => (
+                <Code key={item.id} block>
+                  {item.id}
+                </Code>
+              ))}
+            </Stack>
+          </Box>
+        ))}
+      </Group>
+    </Card>
   );
 }
 
@@ -648,6 +881,76 @@ function KindBadge({ kind, compact = false }: { kind: string; compact?: boolean 
       {kind}
     </Badge>
   );
+}
+
+function entityContextLabel(overview: AtlasUiOverview | undefined, entityId: AtlasEntityId): string {
+  const drillDown = entityDrillDown(overview, entityId);
+  return drillDown.breadcrumb.length > 0 ? `- ${drillDown.breadcrumb.join(' / ')}` : '';
+}
+
+function entityDrillDown(
+  overview: AtlasUiOverview | undefined,
+  entityId: AtlasEntityId,
+): {
+  breadcrumb: string[];
+  workflows: Array<{ id: AtlasEntityId; title: string }>;
+  components: Array<{ id: AtlasEntityId; title: string }>;
+  documents: Array<{ id: AtlasEntityId; title: string }>;
+  tests: Array<{ id: AtlasEntityId; title: string }>;
+} {
+  const empty = {
+    breadcrumb: [],
+    workflows: [],
+    components: [],
+    documents: [],
+    tests: [],
+  };
+  if (!overview) {
+    return empty;
+  }
+
+  for (const domain of overview.domains) {
+    if (domain.entity.id === entityId) {
+      return {
+        breadcrumb: [domain.entity.title],
+        workflows: domain.workflows.map((workflow) => workflow.entity),
+        components: domain.components,
+        documents: domain.documents,
+        tests: domain.tests,
+      };
+    }
+    for (const workflow of domain.workflows) {
+      if (workflow.entity.id === entityId) {
+        return {
+          breadcrumb: [domain.entity.title, workflow.entity.title],
+          workflows: [],
+          components: workflow.components,
+          documents: workflow.documents,
+          tests: workflow.tests,
+        };
+      }
+      if (workflow.components.some((component) => component.id === entityId)) {
+        return {
+          breadcrumb: [domain.entity.title, workflow.entity.title],
+          workflows: [],
+          components: workflow.components,
+          documents: workflow.documents,
+          tests: workflow.tests,
+        };
+      }
+    }
+    if (domain.components.some((component) => component.id === entityId)) {
+      return {
+        breadcrumb: [domain.entity.title],
+        workflows: domain.workflows.map((workflow) => workflow.entity),
+        components: domain.components,
+        documents: domain.documents,
+        tests: domain.tests,
+      };
+    }
+  }
+
+  return empty;
 }
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {

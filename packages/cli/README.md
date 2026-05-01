@@ -6,6 +6,7 @@ Implemented commands:
 
 ```sh
 atlas validate [path]
+atlas overview [path]
 atlas show <entity-id>
 atlas neighbors <entity-id> --depth 2
 atlas resolve-path <path>
@@ -72,6 +73,20 @@ Use JSON for machine-readable diagnostics:
 ```sh
 atlas validate examples/personal-ops-sanitized --json
 ```
+
+## `atlas overview [path]`
+
+Prints an overview-first map of domains, workflows, implementation surfaces,
+supporting docs, tests, and drill-down commands.
+
+```sh
+atlas overview --path . --profile public
+atlas overview examples/personal-ops-sanitized --json
+```
+
+Use this when starting from a repository or atlas root and deciding where to
+drill down next. Use `list_entities`, `show`, or `neighbors` for exact lookup
+and debugging after the broad shape is clear.
 
 ## `atlas show <entity-id> [path]`
 

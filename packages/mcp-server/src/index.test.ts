@@ -18,6 +18,10 @@ describe('Agent Atlas MCP handlers', () => {
     const list = await handlers.listEntities({ query: 'context pack' });
     expect(list).toContain('workflow:create-context-pack');
 
+    const overview = await handlers.overview();
+    expect(overview).toContain('# Atlas overview');
+    expect(overview).toContain('## Major capabilities');
+
     const description = await handlers.describeEntity({
       id: 'workflow:create-context-pack',
       depth: 1,
@@ -69,6 +73,9 @@ describe('Agent Atlas MCP handlers', () => {
     const entity = await handlers.readResource('atlas://entity/document%3Aweekly-planning-system');
     expect(entity).toContain('notion://page/sanitized-weekly-planning');
 
+    const root = await handlers.readResource('atlas://root');
+    expect(root).toContain('# Atlas overview');
+
     const pathResource = await handlers.readResource('atlas://path/packages/planning/src/weeklyPlanner.ts');
     expect(pathResource).toContain('component:weekly-planner');
   });
@@ -88,6 +95,7 @@ describe('Agent Atlas MCP handlers', () => {
       expect(tools.tools.map((tool) => tool.name)).toEqual(
         expect.arrayContaining([
           'list_entities',
+          'atlas_overview',
           'describe_entity',
           'resolve_path',
           'find_related',

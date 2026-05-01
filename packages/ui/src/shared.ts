@@ -1,6 +1,7 @@
 import type {
   AtlasDiagnostic,
   AtlasGraphEdge,
+  AtlasOverview,
   AtlasProfile,
   ContextPack,
   PathResolutionResult,
@@ -30,6 +31,8 @@ export interface AtlasUiSummary {
   entities: AtlasEntity[];
   edges: AtlasGraphEdge[];
 }
+
+export type AtlasUiOverview = AtlasOverview;
 
 export interface AtlasUiEntityDetails {
   entity: AtlasEntity;

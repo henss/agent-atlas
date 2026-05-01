@@ -4,6 +4,7 @@ import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
   analyzeAtlasMaintenance,
+  createAtlasOverview,
   applyAtlasProposal,
   benchmarkAtlas,
   checkAtlasBoundary,
@@ -19,6 +20,7 @@ import {
   parseAtlasProfile,
   proposeAtlasCards,
   renderContextPackMarkdown,
+  renderAtlasOverviewMarkdown,
   resolvePathInGraph,
   applyAtlasMaintenanceMetadataFixes,
   suggestAtlasCard,
@@ -79,6 +81,7 @@ Status: implemented toolkit
 Implemented commands:
 
 - atlas validate [path]
+- atlas overview [path]
 - atlas show <entity-id>
 - atlas neighbors <entity-id> --depth 2
 - atlas resolve-path <path>
@@ -2620,6 +2623,20 @@ switch (command) {
       printValidationMarkdown(result);
     }
     process.exitCode = result.status === 'failed' ? 1 : 0;
+    break;
+  }
+  case 'overview': {
+    const options = parseValidateArgs(args);
+    const graph = await loadAtlasGraph(options.rootPath, {
+      profile: options.profile,
+    });
+    const overview = createAtlasOverview(graph, options.profile);
+
+    if (options.json) {
+      console.log(JSON.stringify(overview, null, 2));
+    } else {
+      console.log(renderAtlasOverviewMarkdown(overview));
+    }
     break;
   }
   case 'show': {

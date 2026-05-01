@@ -27,6 +27,16 @@ Inputs:
 
 Returns compact entity summaries.
 
+### `atlas_overview`
+
+Inputs:
+
+- `profile?`
+
+Returns an overview-first map of domains, workflows, implementation surfaces,
+documents, tests, and drill-down commands. `atlas://root` returns this same
+orientation view.
+
 ### `describe_entity`
 
 Inputs:

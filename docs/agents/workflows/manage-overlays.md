@@ -12,6 +12,23 @@ Applies profile-specific atlas overlays while keeping public-safe base metadata 
 
 - visibility: `public`
 
+## Drill Down
+
+### Components
+
+- `component:cli-package`
+- `component:core-package`
+- `component:markdown-package`
+
+### Documents
+
+- `document:cli-readme`
+- `document:overlay-spec`
+
+### Tests
+
+- `test-scope:workspace-build-and-test`
+
 ## Relations
 
 ### `documented-in`

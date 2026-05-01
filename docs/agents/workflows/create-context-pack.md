@@ -12,6 +12,22 @@ Selects task-relevant atlas entities, source reads, external references, verific
 
 - visibility: `public`
 
+## Drill Down
+
+### Components
+
+- `component:cli-package`
+- `component:core-package`
+
+### Documents
+
+- `document:cli-readme`
+- `document:context-pack-spec`
+
+### Tests
+
+- `test-scope:workspace-build-and-test`
+
 ## Relations
 
 ### `documented-in`

@@ -12,6 +12,21 @@ Produces compact generated Markdown views under docs/agents from canonical atlas
 
 - visibility: `public`
 
+## Drill Down
+
+### Components
+
+- `component:cli-package`
+- `component:markdown-package`
+
+### Documents
+
+- `document:generated-markdown-spec`
+
+### Tests
+
+- `test-scope:workspace-build-and-test`
+
 ## Relations
 
 ### `documented-in`

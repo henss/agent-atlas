@@ -5,6 +5,7 @@ import {
   createEntityDetails,
   createHealth,
   createNeighborhood,
+  createOverview,
   createSummary,
   extractMetadataDebug,
 } from './api.js';
@@ -94,6 +95,13 @@ describe('ui api serializers', () => {
     expect(summary.generatedEdgeCount).toBe(1);
     expect(summary.diagnosticCounts.warning).toBe(1);
     expect(summary.metadataKeyCounts.agent_atlas).toBe(1);
+  });
+
+  it('creates overview data for the UI start screen', () => {
+    const overview = createOverview(graph, 'public');
+
+    expect(overview.counts.entities).toBe(2);
+    expect(overview.otherEntities.map((entity) => entity.id)).toContain('component:core');
   });
 
   it('extracts namespaced debug metadata while preserving raw metadata', () => {

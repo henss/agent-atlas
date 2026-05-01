@@ -13,6 +13,13 @@ Repo-local architecture, docs, and verification surfaces for agent-atlas.
 - status: `active`
 - visibility: `public`
 
+## Drill Down
+
+### Components
+
+- `component:agent-atlas-source`
+
+
 ## Relations
 
 ### `contains`

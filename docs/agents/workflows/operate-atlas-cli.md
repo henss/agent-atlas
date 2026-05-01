@@ -12,6 +12,23 @@ Exposes validation, graph navigation, path resolution, context packs, Markdown g
 
 - visibility: `public`
 
+## Drill Down
+
+### Components
+
+- `component:cli-package`
+- `component:core-package`
+- `component:ui-package`
+
+### Documents
+
+- `document:cli-readme`
+- `document:incremental-authoring-guide`
+
+### Tests
+
+- `test-scope:workspace-build-and-test`
+
 ## Relations
 
 ### `documented-in`

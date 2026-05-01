@@ -12,6 +12,35 @@ Typed context graph framework for helping coding agents navigate repositories an
 
 - visibility: `public`
 
+## Drill Down
+
+### Workflows
+
+- `workflow:create-context-pack`
+- `workflow:define-atlas-model`
+- `workflow:expose-atlas-mcp`
+- `workflow:generate-agent-docs`
+- `workflow:manage-overlays`
+- `workflow:navigate-atlas-graph`
+- `workflow:operate-atlas-cli`
+
+### Components
+
+- `component:adapters-package`
+- `component:cli-package`
+- `component:core-package`
+- `component:markdown-package`
+- `component:mcp-server-package`
+- `component:schema-package`
+- `component:ui-package`
+
+### Documents
+
+- `document:generated-agent-docs`
+- `document:readme`
+- `document:roadmap`
+
+
 ## Relations
 
 ### `contains`

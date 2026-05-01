@@ -9,9 +9,11 @@ import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import * as z from "zod/v4";
 import {
+  createAtlasOverview,
   createContextPack,
   findNeighbors,
   loadAtlasGraph,
+  renderAtlasOverviewMarkdown,
   renderContextPackMarkdown,
   resolvePathInGraph,
 } from "@agent-atlas/core";
@@ -85,6 +87,7 @@ export interface ContextPackArgs {
 }
 
 export interface AtlasMcpHandlers {
+  overview(args?: { profile?: AtlasProfile }): Promise<string>;
   listEntities(args?: ListEntitiesArgs): Promise<string>;
   describeEntity(args: DescribeEntityArgs): Promise<string>;
   resolvePath(args: ResolvePathArgs): Promise<string>;
@@ -111,6 +114,12 @@ export function createAtlasMcpHandlers(
   }
 
   return {
+    async overview(args = {}) {
+      const profile = parseMcpProfile(args.profile, defaultProfile);
+      const graph = await graphFor(profile);
+      return renderAtlasOverviewMarkdown(createAtlasOverview(graph, profile));
+    },
+
     async listEntities(args = {}) {
       const profile = parseMcpProfile(args.profile, defaultProfile);
       const graph = await graphFor(profile);
@@ -214,6 +223,7 @@ export function createAtlasMcpHandlers(
     async readResource(uri) {
       return readAtlasResource(uri, {
         defaultProfile,
+        overview: this.overview,
         listEntities: this.listEntities,
         describeEntity: this.describeEntity,
         resolvePath: this.resolvePath,
@@ -246,7 +256,7 @@ export function createAtlasMcpServer(
       description: "Compact root summary of the selected atlas profile.",
       mimeType: "text/markdown",
     },
-    async (uri) => resourceText(uri.href, await handlers.listEntities()),
+    async (uri) => resourceText(uri.href, await handlers.overview()),
   );
 
   server.registerResource(
@@ -305,6 +315,21 @@ export function createAtlasMcpServer(
         await handlers.contextPack({ task, budget, profile }),
       );
     },
+  );
+
+  server.registerTool(
+    "atlas_overview",
+    {
+      title: "Atlas Overview",
+      description:
+        "Return an overview-first map of domains, workflows, implementation surfaces, documents, and tests.",
+      inputSchema: {
+        profile: z.enum(["public", "private", "company"]).optional(),
+      },
+      annotations: { readOnlyHint: true },
+    },
+    async (args) =>
+      toolText(await handlers.overview(args as { profile?: AtlasProfile })),
   );
 
   server.registerTool(
@@ -487,6 +512,7 @@ export async function runAtlasMcpSmokeTest(
 
 interface ReadResourceHandlers {
   defaultProfile: AtlasProfile;
+  overview(args?: { profile?: AtlasProfile }): Promise<string>;
   listEntities(args?: ListEntitiesArgs): Promise<string>;
   describeEntity(args: DescribeEntityArgs): Promise<string>;
   resolvePath(args: ResolvePathArgs): Promise<string>;
@@ -503,7 +529,7 @@ async function readAtlasResource(
   }
 
   if (parsed.hostname === "root") {
-    return handlers.listEntities({ profile: handlers.defaultProfile });
+    return handlers.overview({ profile: handlers.defaultProfile });
   }
 
   if (parsed.hostname === "entity") {

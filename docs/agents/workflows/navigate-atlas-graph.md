@@ -12,6 +12,21 @@ Loads atlas files, normalizes graph edges, traverses related entities, and resol
 
 - visibility: `public`
 
+## Drill Down
+
+### Components
+
+- `component:core-package`
+- `component:schema-package`
+
+### Documents
+
+- `document:typed-context-graph`
+
+### Tests
+
+- `test-scope:workspace-build-and-test`
+
 ## Relations
 
 ### `documented-in`

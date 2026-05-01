@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
+  createAtlasOverview,
   createContextPack,
   loadAtlasGraph,
   resolvePathInGraph,
@@ -18,6 +19,7 @@ import type {
   AtlasUiEntityDetails,
   AtlasUiHealth,
   AtlasUiNeighborhood,
+  AtlasUiOverview,
   AtlasUiResolvePathResponse,
   AtlasUiSummary,
 } from '../shared.js';
@@ -53,6 +55,12 @@ export async function handleAtlasUiApiRequest(
     if (request.method === 'GET' && url.pathname === '/api/atlas') {
       const graph = await loadAtlasGraph(context.rootPath, { profile: context.profile });
       sendJson(response, createSummary(graph, context));
+      return true;
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/overview') {
+      const graph = await loadAtlasGraph(context.rootPath, { profile: context.profile });
+      sendJson(response, createOverview(graph, context.profile));
       return true;
     }
 
@@ -147,6 +155,10 @@ export function createSummary(graph: AtlasGraph, context: AtlasUiApiContext): At
     entities: graph.entities,
     edges: graph.edges,
   };
+}
+
+export function createOverview(graph: AtlasGraph, profile: AtlasProfile): AtlasUiOverview {
+  return createAtlasOverview(graph, profile);
 }
 
 export function createEntityDetails(
