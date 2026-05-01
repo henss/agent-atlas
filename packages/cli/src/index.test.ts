@@ -268,6 +268,64 @@ misleading_cards: []
     expect(applied.stdout).toContain('# Atlas proposal apply');
   });
 
+  it('runs policy-driven maintenance fixes and checks', async () => {
+    const root = await makeAtlasFixture();
+    await execFileAsync('git', ['init'], { cwd: root });
+    await writeFile(
+      path.join(root, 'agent-atlas.maintenance.yaml'),
+      `version: 1
+mode: agent-maintained
+profile: public
+generated_docs:
+  output: docs/agents
+  auto_regenerate: true
+metadata:
+  auto_apply: true
+  allow_add: true
+  allow_update: true
+  allow_archive: true
+  allow_delete: false
+safety:
+  require_validate: true
+  require_boundary_check: true
+`,
+    );
+    await mkdir(path.join(root, 'packages', 'billing', 'src'), { recursive: true });
+    await writeFile(path.join(root, 'packages', 'billing', 'src', 'sync.ts'), 'export {};\n');
+
+    const fixed = await execFileAsync('node', [
+      CLI_PATH,
+      'maintain',
+      'fix',
+      '--path',
+      root,
+    ]);
+
+    expect(fixed.stdout).toContain('# Atlas maintenance fix');
+    expect(fixed.stdout).toContain('Status: passed');
+    expect(fixed.stdout).toContain('.agent-atlas/public/components/billing-sync.yaml');
+
+    const check = await execFileAsync('node', [
+      CLI_PATH,
+      'maintain',
+      'check',
+      '--path',
+      root,
+    ]);
+
+    expect(check.stdout).toContain('# Atlas maintenance check');
+    expect(check.stdout).toContain('Status: passed');
+
+    const instructions = await execFileAsync('node', [
+      CLI_PATH,
+      'maintain',
+      'agent-instructions',
+      '--path',
+      root,
+    ]);
+    expect(instructions.stdout).toContain('Mode: `agent-maintained`');
+  });
+
   it('prints global manifests and generates registry markdown', async () => {
     const registryRoot = path.resolve(
       '..',

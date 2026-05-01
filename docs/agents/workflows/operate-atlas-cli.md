@@ -6,7 +6,7 @@ ID: `workflow:operate-atlas-cli`
 Kind: `workflow`
 Profile: `public`
 
-Exposes validation, graph navigation, path resolution, context packs, Markdown generation, migrations, benchmarks, global registry manifests, and global registry workflows through concise CLI commands.
+Exposes validation, graph navigation, path resolution, context packs, Markdown generation, policy-driven maintenance, migrations, benchmarks, global registry manifests, and global registry workflows through concise CLI commands.
 
 ## Metadata
 

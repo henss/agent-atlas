@@ -14,11 +14,13 @@ import {
   findNeighbors,
   loadGlobalAtlasGraph,
   loadAtlasGraph,
+  loadAtlasMaintenancePolicy,
   migrateAtlas,
   parseAtlasProfile,
   proposeAtlasCards,
   renderContextPackMarkdown,
   resolvePathInGraph,
+  applyAtlasMaintenanceMetadataFixes,
   suggestAtlasCard,
   validateAtlasProposal,
   validateAtlas,
@@ -46,6 +48,8 @@ import type {
   AtlasCardProposal,
   GlobalAtlasGraph,
   AtlasGapReport,
+  AtlasMaintenanceMetadataFixResult,
+  AtlasMaintenancePolicy,
   AtlasProposalValidationResult,
   SuggestedAtlasCard,
   UsageEvidenceEvaluation,
@@ -86,6 +90,7 @@ Implemented commands:
 - atlas propose-cards --report <file>
 - atlas proposal validate <proposal>
 - atlas proposal apply <proposal> --select <entity-id>
+- atlas maintain check|fix|agent-instructions [path]
 - atlas diff
 - atlas migrate [path] --to 1 [--write]
 - atlas benchmark [path]
@@ -268,6 +273,29 @@ interface DiffArgs {
   rootPath: string;
   profile: AtlasProfile;
   json: boolean;
+}
+
+interface MaintainArgs {
+  subcommand?: string;
+  rootPath: string;
+  profile?: AtlasProfile;
+  policyPath?: string;
+  json: boolean;
+  changedOnly: boolean;
+}
+
+interface CliMaintainCheckReport {
+  rootPath: string;
+  policy: AtlasMaintenancePolicy;
+  validation: AtlasValidationResult;
+  boundary?: BoundaryCheckResult;
+  diff: CliDiffReport;
+  status: 'passed' | 'failed';
+}
+
+interface CliMaintainFixReport extends CliMaintainCheckReport {
+  metadataFix: AtlasMaintenanceMetadataFixResult;
+  regeneratedFiles: string[];
 }
 
 interface DiscoverGapsArgs {
@@ -1024,6 +1052,61 @@ function parseDiffArgs(args: string[]): DiffArgs {
   return { rootPath, profile, json };
 }
 
+function parseMaintainArgs(args: string[]): MaintainArgs {
+  let subcommand: string | undefined;
+  let rootPath = process.cwd();
+  let profile: AtlasProfile | undefined;
+  let policyPath: string | undefined;
+  let json = false;
+  let changedOnly = false;
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--json') {
+      json = true;
+      continue;
+    }
+
+    if (arg === '--changed-only') {
+      changedOnly = true;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--policy') {
+      policyPath = readOptionValue(args, index, '--policy');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    if (!subcommand) {
+      subcommand = arg;
+      continue;
+    }
+
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return { subcommand, rootPath, profile, policyPath, json, changedOnly };
+}
+
 function parseDiscoverGapsArgs(args: string[]): DiscoverGapsArgs {
   let rootPath = process.cwd();
   let profile: AtlasProfile = 'public';
@@ -1730,6 +1813,73 @@ Errors: ${errors.length}`);
   printDiagnosticSection('Warnings', warnings);
 }
 
+function printMaintainCheckMarkdown(result: CliMaintainCheckReport): void {
+  console.log(`# Atlas maintenance check
+
+Status: ${result.status}
+Root: \`${result.rootPath}\`
+Mode: \`${result.policy.mode}\`
+Profile: \`${result.policy.profile}\`
+Policy: ${result.policy.sourcePath ? `\`${result.policy.sourcePath}\`` : 'default'}
+
+Validation: ${result.validation.status}
+Boundary: ${result.boundary ? result.boundary.status : 'skipped'}
+Diff: ${result.diff.status}`);
+
+  printDiagnosticSection('Validation Diagnostics', result.validation.diagnostics);
+  if (result.boundary) {
+    printDiagnosticSection('Boundary Diagnostics', result.boundary.diagnostics);
+  }
+  printDiagnosticSection('Maintenance Diagnostics', result.diff.diagnostics);
+  printFileList('Stale Generated Files', result.diff.staleGeneratedFiles);
+  printFileList('Missing Generated Files', result.diff.missingGeneratedFiles);
+  printFileList('Extra Generated Files', result.diff.extraGeneratedFiles);
+}
+
+function printMaintainFixMarkdown(result: CliMaintainFixReport): void {
+  console.log(`# Atlas maintenance fix
+
+Status: ${result.status}
+Root: \`${result.rootPath}\`
+Mode: \`${result.policy.mode}\`
+Profile: \`${result.policy.profile}\`
+
+Applied metadata files: ${result.metadataFix.appliedFiles.length}
+Regenerated docs: ${result.regeneratedFiles.length}`);
+
+  printFileList('Applied Metadata Files', result.metadataFix.appliedFiles);
+  printFileList('Regenerated Docs', result.regeneratedFiles);
+  if (result.metadataFix.skippedFiles.length > 0) {
+    console.log('\n## Skipped Files\n');
+    for (const skipped of result.metadataFix.skippedFiles) {
+      console.log(`- \`${skipped.path}\`: ${skipped.reason}`);
+    }
+  }
+  printDiagnosticSection('Diagnostics', [
+    ...result.metadataFix.diagnostics,
+    ...result.validation.diagnostics,
+    ...(result.boundary?.diagnostics ?? []),
+    ...result.diff.diagnostics,
+  ]);
+}
+
+function printMaintainAgentInstructions(policy: AtlasMaintenancePolicy): void {
+  console.log(`# Agent Atlas Maintenance Instructions
+
+Mode: \`${policy.mode}\`
+Profile: \`${policy.profile}\`
+Generated docs: \`${policy.generated_docs.output}\`
+
+Before broad repository search, run \`atlas resolve-path <changed-file>\` for file-specific work or \`atlas context-pack "<task>" --profile ${policy.profile}\` for broader work.
+
+When Atlas metadata is missing or stale, follow the repo policy:
+- \`review-only\`: record gaps or create proposals; do not apply metadata automatically.
+- \`generated-docs-only\`: regenerate \`${policy.generated_docs.output}\` when stale; keep metadata changes review-gated.
+- \`agent-maintained\`: update canonical \`.agent-atlas/**\` cards and regenerate \`${policy.generated_docs.output}\` when Atlas is wrong or incomplete.
+
+Before finishing, run \`atlas maintain fix --profile ${policy.profile}\`, then \`atlas maintain check --profile ${policy.profile}\`. Boundary and secret-safety failures are blockers.`);
+}
+
 function printGapReportMarkdown(result: AtlasGapReport): void {
   console.log(`# Atlas gap discovery
 
@@ -2187,6 +2337,12 @@ function diffUsage(): void {
   );
 }
 
+function maintainUsage(): void {
+  console.error(
+    'Usage: atlas maintain check|fix|agent-instructions [path] [--path <root>] [--policy agent-atlas.maintenance.yaml] [--profile public|private|company] [--changed-only] [--json]',
+  );
+}
+
 function discoverGapsUsage(): void {
   console.error(
     'Usage: atlas discover-gaps [path] [--path <root>] [--receipts .agent-atlas/usage] [--budget tokens] [--profile public|private|company] [--resolve-path-miss <file>] [--out file] [--json]',
@@ -2333,6 +2489,72 @@ async function checkGeneratedMarkdownOutput(
     missingFiles,
     extraFiles,
   };
+}
+
+async function runMaintainCheck(
+  options: MaintainArgs,
+  policy: AtlasMaintenancePolicy,
+): Promise<CliMaintainCheckReport> {
+  const profile = options.profile ?? policy.profile;
+  const effectivePolicy = { ...policy, profile };
+  const validation = await validateAtlas(options.rootPath, { profile });
+  const boundary = effectivePolicy.safety.require_boundary_check
+    ? await checkAtlasBoundary(options.rootPath, { profile })
+    : undefined;
+  const graph = await loadAtlasGraph(options.rootPath, { profile });
+  const maintenance = await analyzeAtlasMaintenance(graph);
+  const generated = await checkGeneratedMarkdownOutput(
+    path.resolve(options.rootPath, effectivePolicy.generated_docs.output),
+    profile,
+    generateMarkdownViews(graph, { profile }),
+  );
+  const generatedHasDrift =
+    generated.staleFiles.length > 0 ||
+    generated.missingFiles.length > 0 ||
+    generated.extraFiles.length > 0;
+  const diff: CliDiffReport = {
+    ...maintenance,
+    generatedOutputPath: generated.outputPath,
+    staleGeneratedFiles: generated.staleFiles,
+    missingGeneratedFiles: generated.missingFiles,
+    extraGeneratedFiles: generated.extraFiles,
+    status:
+      maintenance.status === 'failed' || generatedHasDrift
+        ? 'failed'
+        : 'passed',
+  };
+  const status =
+    validation.status === 'failed' ||
+    boundary?.status === 'failed' ||
+    diff.status === 'failed'
+      ? 'failed'
+      : 'passed';
+
+  return {
+    rootPath: path.resolve(options.rootPath),
+    policy: effectivePolicy,
+    validation,
+    boundary,
+    diff,
+    status,
+  };
+}
+
+async function writeGeneratedMarkdownOutput(
+  rootPath: string,
+  outputPath: string,
+  profile: AtlasProfile,
+): Promise<string[]> {
+  const graph = await loadAtlasGraph(rootPath, { profile });
+  const files = generateMarkdownViews(graph, { profile });
+  const absoluteOutputPath = path.resolve(rootPath, outputPath);
+  await cleanGeneratedMarkdownOutput(absoluteOutputPath);
+  for (const file of files) {
+    const absoluteFilePath = path.join(absoluteOutputPath, file.path);
+    await mkdir(path.dirname(absoluteFilePath), { recursive: true });
+    await writeFile(absoluteFilePath, file.content, 'utf8');
+  }
+  return files.map((file) => file.path);
 }
 
 async function collectExistingGeneratedMarkdownFiles(
@@ -2640,6 +2862,79 @@ switch (command) {
       printDiffMarkdown(result);
     }
     process.exitCode = result.status === 'failed' ? 1 : 0;
+    break;
+  }
+  case 'maintain': {
+    const options = parseMaintainArgs(args);
+    if (!options.subcommand) {
+      maintainUsage();
+      process.exitCode = 1;
+      break;
+    }
+
+    const loadedPolicy = await loadAtlasMaintenancePolicy(
+      options.rootPath,
+      options.policyPath,
+    );
+    const policy = options.profile
+      ? { ...loadedPolicy, profile: options.profile }
+      : loadedPolicy;
+
+    if (options.subcommand === 'agent-instructions') {
+      if (options.json) {
+        console.log(JSON.stringify({ policy }, null, 2));
+      } else {
+        printMaintainAgentInstructions(policy);
+      }
+      break;
+    }
+
+    if (options.subcommand === 'check') {
+      const result = await runMaintainCheck(options, policy);
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        printMaintainCheckMarkdown(result);
+      }
+      process.exitCode = result.status === 'failed' ? 1 : 0;
+      break;
+    }
+
+    if (options.subcommand === 'fix') {
+      const metadataFix = await applyAtlasMaintenanceMetadataFixes(
+        options.rootPath,
+        policy,
+      );
+      const regeneratedFiles =
+        policy.mode !== 'review-only' &&
+        policy.generated_docs.auto_regenerate
+          ? await writeGeneratedMarkdownOutput(
+              options.rootPath,
+              policy.generated_docs.output,
+              policy.profile,
+            )
+          : [];
+      const check = await runMaintainCheck(options, policy);
+      const result: CliMaintainFixReport = {
+        ...check,
+        metadataFix,
+        regeneratedFiles,
+        status:
+          metadataFix.status === 'failed' || check.status === 'failed'
+            ? 'failed'
+            : 'passed',
+      };
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+      } else {
+        printMaintainFixMarkdown(result);
+      }
+      process.exitCode = result.status === 'failed' ? 1 : 0;
+      break;
+    }
+
+    maintainUsage();
+    process.exitCode = 1;
     break;
   }
   case 'discover-gaps': {

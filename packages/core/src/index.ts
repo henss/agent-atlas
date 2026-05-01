@@ -14,3 +14,4 @@ export * from './usage-evidence.js';
 export * from './boundary.js';
 export * from './authoring.js';
 export * from './proposals.js';
+export * from './maintenance.js';

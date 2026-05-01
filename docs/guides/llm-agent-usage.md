@@ -41,6 +41,17 @@ Do not fetch live resources unless the task depends on current state.
 
 Use `test-scope` entities and generated verification guidance before inventing test commands.
 
+## Atlas maintenance
+
+If the repo has `agent-atlas.maintenance.yaml`, follow it before finishing work:
+
+```sh
+atlas maintain fix --path .
+atlas maintain check --path .
+```
+
+In `agent-maintained` mode, update missing or stale `.agent-atlas/**` cards when you notice them and regenerate generated docs through `atlas maintain fix`. In `review-only` mode, record gaps or create proposals instead of applying metadata changes.
+
 ## Security
 
 Respect profile boundaries:

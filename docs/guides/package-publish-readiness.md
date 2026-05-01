@@ -104,6 +104,7 @@ After publish, public repos should pin the preview version instead of using `lat
     "atlas:validate": "pnpm dlx @agent-atlas/cli@0.x validate . --profile public",
     "atlas:boundary-check": "pnpm dlx @agent-atlas/cli@0.x boundary-check . --profile public",
     "atlas:docs:check": "pnpm dlx @agent-atlas/cli@0.x generate markdown . --output docs/agents --profile public --check",
+    "atlas:maintain": "pnpm dlx @agent-atlas/cli@0.x maintain check . --profile public",
     "atlas:discover-gaps": "pnpm dlx @agent-atlas/cli@0.x discover-gaps . --profile public",
     "atlas:propose-cards": "pnpm dlx @agent-atlas/cli@0.x propose-cards"
   }

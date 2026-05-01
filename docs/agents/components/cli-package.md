@@ -6,7 +6,7 @@ ID: `component:cli-package`
 Kind: `component`
 Profile: `public`
 
-Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown checks, incremental card suggestions, stale-reference diffing, cross-repo registry validation, manifests, global generated Markdown, migrations, benchmarks, setup doctor checks, usage evidence, and the local review UI launcher.
+Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown checks, incremental card suggestions, policy-driven maintenance, stale-reference diffing, cross-repo registry validation, manifests, global generated Markdown, migrations, benchmarks, setup doctor checks, usage evidence, and the local review UI launcher.
 
 ## Metadata
 

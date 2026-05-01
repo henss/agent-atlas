@@ -17,6 +17,9 @@ atlas discover-gaps
 atlas propose-cards --report <file>
 atlas proposal validate <proposal>
 atlas proposal apply <proposal> --select <entity-id>
+atlas maintain check
+atlas maintain fix
+atlas maintain agent-instructions
 atlas diff
 atlas migrate
 atlas benchmark
@@ -216,6 +219,48 @@ atlas proposal apply .runtime/agent-atlas/proposals/example.yaml --select compon
 ```
 
 `apply` refuses invalid proposals and only writes selected cards into `.agent-atlas/<profile>/`. It does not commit, push, or regenerate generated docs.
+
+## `atlas maintain check|fix|agent-instructions [path]`
+
+Loads `agent-atlas.maintenance.yaml` or `.agent-atlas/maintenance.yaml` and applies the repo's Atlas maintenance policy. If no policy exists, the default mode is `review-only`.
+
+```sh
+atlas maintain check --path .
+atlas maintain fix --path .
+atlas maintain agent-instructions --path .
+```
+
+Supported policy modes:
+
+- `review-only`: report drift and gaps, but do not update atlas metadata automatically.
+- `generated-docs-only`: allow generated `docs/agents/*` refreshes while keeping `.agent-atlas/**` metadata review-gated.
+- `agent-maintained`: allow agents to update canonical atlas cards and regenerate generated docs, subject to validation and boundary checks.
+
+Example policy:
+
+```yaml
+version: 1
+mode: agent-maintained
+profile: public
+generated_docs:
+  output: docs/agents
+  auto_regenerate: true
+metadata:
+  auto_apply: true
+  allow_add: true
+  allow_update: true
+  allow_archive: true
+  allow_delete: false
+safety:
+  require_validate: true
+  require_boundary_check: true
+  block_secret_like_values: true
+  block_profile_leaks: true
+```
+
+`maintain check` runs validation, boundary checks when required by policy, generated Markdown drift checks, and stale-reference diagnostics. `maintain fix` applies policy-allowed fixes: in `agent-maintained` mode it may add missing cards for changed source files with no atlas owner, and when `generated_docs.auto_regenerate` is enabled it refreshes generated docs. It still fails if validation or boundary checks fail after fixes.
+
+`maintain agent-instructions` emits a compact AGENTS.md-ready block that tells coding agents how to keep Atlas current in the current repo.
 
 ## `atlas diff [path]`
 

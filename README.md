@@ -57,6 +57,7 @@ packages/adapters/         # integration interfaces and reusable adapters
 - Audit profile boundaries with `atlas boundary-check`.
 - Suggest starter cards with `atlas suggest-card`.
 - Diagnose stale references with `atlas diff`.
+- Run policy-driven Atlas maintenance checks and autonomous fixes with `atlas maintain`.
 - Record local adoption receipts with `atlas usage-note`.
 - Evaluate context-pack selection against receipts with `atlas evaluate`.
 
@@ -71,6 +72,8 @@ node packages/cli/dist/index.js boundary-check --path . --profile public
 node packages/cli/dist/index.js doctor --path .
 node packages/cli/dist/index.js generate markdown --check --profile public
 node packages/cli/dist/index.js diff --path .
+node packages/cli/dist/index.js maintain check --path .
+node packages/cli/dist/index.js maintain fix --path .
 node packages/cli/dist/index.js resolve-path packages/core/src/index.ts --path .
 node packages/cli/dist/index.js context-pack "change CLI path handling" --path . --budget 4000
 node packages/cli/dist/index.js usage-note "change CLI path handling" --path . --command context-pack --entity component:cli-package
