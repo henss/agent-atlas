@@ -16,6 +16,8 @@ relations:
     target: component:mcp-server-package
   - type: contains
     target: component:adapters-package
+  - type: contains
+    target: component:ui-package
   - type: documented-in
     target: document:readme
   - type: documented-in

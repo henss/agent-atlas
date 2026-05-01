@@ -46,6 +46,7 @@ Verifies:
 - `component:markdown-package`
 - `component:mcp-server-package`
 - `component:schema-package`
+- `component:ui-package`
 - `workflow:create-context-pack`
 - `workflow:define-atlas-model`
 - `workflow:expose-atlas-mcp`

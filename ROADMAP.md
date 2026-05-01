@@ -2,7 +2,7 @@
 
 This roadmap is intentionally staged. Building everything at once is how frameworks become haunted furniture.
 
-Status: M0-M16 are complete. The original roadmap and hardening extension are implemented.
+Status: M0-M17 are complete. The original roadmap, hardening extension, and local human review UI are implemented.
 
 ## M0: Foundations
 
@@ -188,3 +188,12 @@ Goal: make read-only Atlas MCP practical for everyday agent use.
 - [x] Improve MCP resource and tool errors for bad profiles, missing graphs, stale builds, and invalid path inputs.
 - [x] Add read-only security assertions so MCP tests prove no file mutation or downstream command execution occurs.
 - [x] Add portfolio and company deployment notes that keep private topology out of public examples.
+
+## M17: Human review UI
+
+Goal: make atlas graphs easier for humans to browse, review, and debug without turning the UI into a source of truth.
+
+- [x] Add `atlas ui` to serve a local loopback-only read-only web app.
+- [x] Add a Vite + React + TypeScript UI package using Mantine, React Flow, TanStack Query, and lucide icons.
+- [x] Browse entities, relations, diagnostics, focused neighborhoods, path resolution, and context-pack previews.
+- [x] Display namespaced debug metadata such as provenance, confidence, and last-updated fields without rendering it into generated Markdown.

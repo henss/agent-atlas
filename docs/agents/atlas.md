@@ -13,8 +13,8 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 - Domains: 2
 - Workflows: 7
 - Systems: 0
-- Components: 7
-- Relations: 250
+- Components: 8
+- Relations: 264
 
 ## Domains
 
@@ -35,11 +35,12 @@ Public profile output excludes entities marked `private`, `internal`, or `restri
 
 - `component:adapters-package` - Adapters Package: Defines adapter interfaces and generic adapters for Backstage, Sourcegraph, local docs, and external resource references.
 - `component:agent-atlas-source` - agent-atlas Source Surface: Main source, configuration, scripts, docs, and tests agents should inspect before broad repository search.
-- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown checks, incremental card suggestions, stale-reference diffing, cross-repo registry validation, manifests, global generated Markdown, migrations, benchmarks, setup doctor checks, and usage evidence.
+- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown checks, incremental card suggestions, stale-reference diffing, cross-repo registry validation, manifests, global generated Markdown, migrations, benchmarks, setup doctor checks, usage evidence, and the local review UI launcher.
 - `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, suggests starter cards, diagnoses stale references, merges and diagnoses cross-repo registries, supports registry manifests, runs migrations, benchmarks load performance, evaluates local usage evidence, and checks profile boundaries.
 - `component:markdown-package` - Markdown Package: Renders generated agent-facing Markdown views from loaded atlas graphs.
 - `component:mcp-server-package` - MCP Server Package: Read-only MCP server exposing atlas resources and traversal tools over stdio, with smoke tests, clearer input errors, and read-only assertions.
 - `component:schema-package` - Schema Package: Defines atlas entity types, relation vocabulary, and JSON Schema validation assets.
+- `component:ui-package` - UI Package: Serves the local read-only human review UI for browsing atlas entities, relations, focused graph neighborhoods, diagnostics, path resolution, context-pack previews, and debug metadata.
 
 ## Path Resolution
 

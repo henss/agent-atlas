@@ -9,7 +9,7 @@ It helps agents answer four questions before they spend tokens searching blindly
 3. **What should be loaded next?** Token-aware context packs, generated docs, and MCP resources.
 4. **How should changes be verified?** Scope-aware test and validation guidance.
 
-The M0-M16 roadmap is implemented. The project now provides a working schema, validator, graph loader, traversal engine, path resolver, Markdown generator, context-pack builder, overlay support, hardened read-only MCP server, adapter interfaces, hardened cross-repo registry support, migration tooling, diagnostics, CLI tests, benchmarks, setup doctor checks, local usage receipts, context-pack evaluation, boundary checks, and incremental authoring tools for sibling-checkout consumers.
+The M0-M17 roadmap is implemented. The project now provides a working schema, validator, graph loader, traversal engine, path resolver, Markdown generator, context-pack builder, overlay support, hardened read-only MCP server, adapter interfaces, hardened cross-repo registry support, migration tooling, diagnostics, CLI tests, benchmarks, setup doctor checks, local usage receipts, context-pack evaluation, boundary checks, incremental authoring tools for sibling-checkout consumers, and a local human review UI.
 
 ## Core idea
 
@@ -47,6 +47,7 @@ packages/adapters/         # integration interfaces and reusable adapters
 - Check generated docs without rewriting with `atlas generate markdown --check`.
 - Expose read-only MCP resources and tools.
 - Smoke-test read-only MCP resolution and context-pack behavior with `atlas mcp smoke-test`.
+- Serve a local read-only human review UI with focused graph browsing and debug metadata.
 - Define adapters for code indexes, developer portals, local docs, and external references.
 - Merge central registries and per-repo atlases for cross-repo context packs.
 - Generate central registry manifests and global Markdown summaries.
@@ -75,6 +76,7 @@ node packages/cli/dist/index.js context-pack "change CLI path handling" --path .
 node packages/cli/dist/index.js usage-note "change CLI path handling" --path . --command context-pack --entity component:cli-package
 node packages/cli/dist/index.js evaluate --path .
 node packages/cli/dist/index.js mcp smoke-test --path . --resolve-path packages/cli/src/index.ts
+node packages/cli/dist/index.js ui --path . --profile public
 node packages/cli/dist/index.js generate markdown --profile public
 node packages/cli/dist/index.js global validate examples/company-cross-repo-sanitized
 node packages/cli/dist/index.js global manifest examples/company-cross-repo-sanitized
@@ -87,7 +89,7 @@ For sibling-checkout consumers, the current local compatibility contract is work
 
 ## Roadmap status
 
-M0-M16 are complete.
+M0-M17 are complete.
 
 See [`ROADMAP.md`](./ROADMAP.md).
 

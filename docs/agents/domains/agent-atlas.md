@@ -22,6 +22,7 @@ Typed context graph framework for helping coding agents navigate repositories an
 - `component:markdown-package`
 - `component:mcp-server-package`
 - `component:schema-package`
+- `component:ui-package`
 - `document:adapter-spec` _(generated)_
 - `document:authoring-guide` _(generated)_
 - `document:boundary-checks-guide` _(generated)_

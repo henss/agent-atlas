@@ -21,6 +21,7 @@ Package README documenting Atlas CLI commands, path argument rules, doctor check
 ### `documents`
 
 - `component:cli-package`
+- `component:ui-package` _(generated)_
 - `workflow:create-context-pack` _(generated)_
 - `workflow:manage-overlays` _(generated)_
 - `workflow:operate-atlas-cli`

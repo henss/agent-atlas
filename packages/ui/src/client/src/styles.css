@@ -1,0 +1,18 @@
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
+}
+
+.graphPanel {
+  overflow: hidden;
+}
+
+.react-flow__node-default {
+  font-size: 12px;
+}

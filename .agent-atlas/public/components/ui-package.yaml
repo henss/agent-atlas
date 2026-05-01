@@ -1,0 +1,29 @@
+id: component:ui-package
+kind: component
+title: UI Package
+summary: Serves the local read-only human review UI for browsing atlas entities, relations, focused graph neighborhoods, diagnostics, path resolution, context-pack previews, and debug metadata.
+visibility: public
+code:
+  paths:
+    - packages/ui/**
+  entrypoints:
+    - packages/ui/src/index.ts
+relations:
+  - type: part-of
+    target: domain:agent-atlas
+  - type: implements
+    target: workflow:operate-atlas-cli
+  - type: uses
+    target: component:core-package
+  - type: documented-in
+    target: document:cli-readme
+  - type: documented-in
+    target: document:entity-spec
+  - type: tested-by
+    target: test-scope:workspace-build-and-test
+metadata:
+  agent_atlas:
+    provenance: manual
+    confidence: 1
+    source: local-repo
+    review_status: reviewed

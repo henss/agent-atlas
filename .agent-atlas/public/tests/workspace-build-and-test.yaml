@@ -23,3 +23,5 @@ relations:
     target: component:mcp-server-package
   - type: verifies
     target: component:adapters-package
+  - type: verifies
+    target: component:ui-package

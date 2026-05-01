@@ -22,6 +22,7 @@ Exposes validation, graph navigation, path resolution, context packs, Markdown g
 ### `implemented-by`
 
 - `component:cli-package` _(generated)_
+- `component:ui-package` _(generated)_
 
 ### `part-of`
 

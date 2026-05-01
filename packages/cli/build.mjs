@@ -14,6 +14,7 @@ await build({
   external: [
     '@modelcontextprotocol/sdk',
     '@modelcontextprotocol/sdk/*',
+    '@agent-atlas/ui',
     'yaml',
     'zod',
     'zod/*',

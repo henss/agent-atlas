@@ -21,4 +21,5 @@ Specification for atlas entity identity, common fields, kinds, agent hints, sche
 ### `documents`
 
 - `component:schema-package`
+- `component:ui-package` _(generated)_
 - `workflow:define-atlas-model`

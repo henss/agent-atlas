@@ -338,6 +338,27 @@ misleading_cards: []
     expect(smoke.stdout).toContain('Status: passed');
     expect(smoke.stdout).toContain('read-only: passed');
   });
+
+  it('prints UI usage and validates UI arguments', async () => {
+    const root = await makeAtlasFixture();
+    const usage = await execFileAsync('node', [CLI_PATH, 'ui', '--help']);
+
+    expect(usage.stderr).toContain('Usage: atlas ui');
+
+    await expect(
+      execFileAsync('node', [CLI_PATH, 'ui', root, '--path', root]),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining(
+        'Use either one positional path or --path <root>, not both.',
+      ),
+    });
+
+    await expect(
+      execFileAsync('node', [CLI_PATH, 'ui', '--profile', 'external']),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('Unsupported atlas profile'),
+    });
+  });
 });
 
 async function makeAtlasFixture(

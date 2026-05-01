@@ -65,6 +65,27 @@ M1 does not define additional required fields for specific entity kinds. Kind-sp
 - `agent`: agent-specific loading hints
 - `metadata`: extension field for adapters
 
+## Debug metadata convention
+
+The `metadata` field remains an open extension field. Tools that auto-discover
+or enrich atlas definitions may optionally put lightweight review/debug details
+under `metadata.agent_atlas`:
+
+```yaml
+metadata:
+  agent_atlas:
+    last_updated: 2026-05-01
+    provenance: adapter
+    confidence: 0.86
+    discovered_by: sourcegraph-adapter
+    source: local-index
+    review_status: needs-review
+```
+
+These fields are intended for human review surfaces such as `atlas ui`, adapter
+debugging, and provenance inspection. Generated Markdown views should omit this
+debug metadata by default to keep agent-facing context compact.
+
 ## Entity kinds
 
 ### `domain`

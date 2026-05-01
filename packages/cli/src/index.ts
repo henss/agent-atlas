@@ -28,6 +28,7 @@ import {
 import { generateMarkdownViews } from '@agent-atlas/markdown';
 import { parseMcpProfile, runAtlasMcpSmokeTest } from '@agent-atlas/mcp-server';
 import type { AtlasMcpSmokeTestResult } from '@agent-atlas/mcp-server';
+import { startAtlasUiServer } from '@agent-atlas/ui';
 import type {
   AtlasDiagnostic,
   AtlasGraph,
@@ -93,6 +94,7 @@ Implemented commands:
 - atlas usage-note "<task>" --command <command>
 - atlas evaluate [path]
 - atlas mcp smoke-test [path]
+- atlas ui [path]
 - atlas global validate [path]
 - atlas global list [path]
 - atlas global context-pack "<task>" --budget 8000
@@ -333,6 +335,13 @@ interface McpSmokeTestArgs {
   task?: string;
   budget: number;
   json: boolean;
+}
+
+interface UiArgs {
+  rootPath: string;
+  profile: AtlasProfile;
+  host: string;
+  port: number;
 }
 
 function parseShowArgs(args: string[]): ShowArgs {
@@ -1397,6 +1406,50 @@ function parseMcpSmokeTestArgs(args: string[]): McpSmokeTestArgs {
   return { rootPath, profile, pathToResolve, task, budget, json };
 }
 
+function parseUiArgs(args: string[]): UiArgs {
+  let rootPath = process.cwd();
+  let profile: AtlasProfile = 'public';
+  let host = '127.0.0.1';
+  let port = 4388;
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--profile') {
+      profile = parseStrictAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--host') {
+      host = readOptionValue(args, index, '--host');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--port') {
+      port = parsePositiveInteger(readOptionValue(args, index, '--port'), port);
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return { rootPath, profile, host, port };
+}
+
 function printValidationMarkdown(result: AtlasValidationResult): void {
   const errors = result.diagnostics.filter(
     (diagnostic) => diagnostic.level === 'error',
@@ -2170,6 +2223,12 @@ function mcpUsage(): void {
   );
 }
 
+function uiUsage(): void {
+  console.error(
+    'Usage: atlas ui [path] [--path <root>] [--profile public|private|company] [--host 127.0.0.1] [--port 4388]',
+  );
+}
+
 function globalUsage(): void {
   console.error(
     'Usage: atlas global validate|list|manifest|context-pack|generate markdown [path] [--path <registry-root>] [--profile public|private|company] [--json]',
@@ -2193,6 +2252,13 @@ function parseRelationTypes(value: string): AtlasRelationType[] {
     .split(',')
     .map((type) => type.trim())
     .filter(isAtlasRelationType);
+}
+
+function parseStrictAtlasProfile(value: string): AtlasProfile {
+  if (value === 'public' || value === 'private' || value === 'company') {
+    return value;
+  }
+  throw new CliUsageError(`Unsupported atlas profile: ${value}`);
 }
 
 function isAtlasRelationType(value: string): value is AtlasRelationType {
@@ -2790,6 +2856,30 @@ switch (command) {
       printMcpSmokeTestMarkdown(result);
     }
     process.exitCode = result.status === 'passed' ? 0 : 1;
+    break;
+  }
+  case 'ui': {
+    if (args.includes('--help') || args.includes('-h')) {
+      uiUsage();
+      break;
+    }
+
+    const options = parseUiArgs(args);
+    const handle = await startAtlasUiServer({
+      rootPath: options.rootPath,
+      profile: options.profile,
+      host: options.host,
+      port: options.port,
+    });
+
+    console.log(`# Atlas UI
+
+Status: running
+Profile: \`${options.profile}\`
+Root: \`${path.resolve(options.rootPath)}\`
+URL: ${handle.url}
+
+Press Ctrl+C to stop.`);
     break;
   }
   case 'global': {

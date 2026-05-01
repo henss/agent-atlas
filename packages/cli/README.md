@@ -25,6 +25,7 @@ atlas boundary-check
 atlas usage-note "<task>" --command context-pack
 atlas evaluate
 atlas mcp smoke-test
+atlas ui
 atlas global validate
 atlas global list
 atlas global manifest
@@ -145,7 +146,7 @@ node ../agent-atlas/packages/cli/dist/index.js diff --path .
 node ../agent-atlas/packages/cli/dist/index.js context-pack "change packages/core/src/example.ts" --path . --budget 4000 --profile private
 ```
 
-Keep rollout adoption limited to implemented commands. Downstream repos may use `validate`, `boundary-check`, `show`, `neighbors`, `resolve-path`, `generate markdown`, `generate markdown --check`, `suggest-card`, `diff`, `context-pack`, `usage-note`, `evaluate`, `mcp smoke-test`, and read-only MCP resources. Company registry repos may use `atlas global ...`, including registry manifests and central generated Markdown.
+Keep rollout adoption limited to implemented commands. Downstream repos may use `validate`, `boundary-check`, `show`, `neighbors`, `resolve-path`, `generate markdown`, `generate markdown --check`, `suggest-card`, `diff`, `context-pack`, `usage-note`, `evaluate`, `mcp smoke-test`, `ui`, and read-only MCP resources. Company registry repos may use `atlas global ...`, including registry manifests and central generated Markdown.
 
 ## `atlas generate markdown [path]`
 
@@ -322,6 +323,21 @@ atlas mcp smoke-test --path . --profile company --resolve-path services/api/src/
 ```
 
 Use this before adding MCP host config to a downstream repo.
+
+## `atlas ui [path]`
+
+Starts a local read-only human review UI for browsing and debugging an atlas.
+
+```sh
+atlas ui --path . --profile public
+atlas ui examples/personal-ops-sanitized --port 4390
+```
+
+The server binds to `127.0.0.1` by default and chooses the next available port
+when the requested port is busy. The UI shows entities, focused graph
+neighborhoods, relation provenance, diagnostics, path resolution, context-pack
+previews, and optional `metadata.agent_atlas` debug fields. It does not edit
+atlas YAML, apply proposals, or regenerate Markdown.
 
 ## Sibling-checkout compatibility contract
 
