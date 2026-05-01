@@ -10,6 +10,7 @@
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "atlas:help": "pnpm --filter @agent-atlas/cli build && node packages/cli/dist/index.js --help",
+    "atlas:ui": "pnpm --filter @agent-atlas/ui build && pnpm --filter @agent-atlas/cli build && node packages/cli/dist/index.js ui --path . --profile public",
     "format": "prettier --write .",
     "release:package": "node scripts/release-package.mjs",
     "release:cli:preview": "node scripts/release-package.mjs --package packages/cli --tag preview"
