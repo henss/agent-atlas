@@ -369,9 +369,10 @@ Compares local usage receipts with deterministic context-pack output.
 
 ```sh
 atlas evaluate --path . --receipts .agent-atlas/usage --budget 4000
+atlas evaluate --path . --evaluation-version atlas-m18-evidence-v1 --out .runtime/atlas-evaluate.json --json
 ```
 
-Markdown output reports receipt count, broad-search fallback count, missing/misleading card mentions, and average recall for entities, files, and tests. Use `--json` for control-plane analysis.
+Markdown output reports receipt count, broad-search fallback count, missing/misleading card mentions, and average recall for entities, files, and tests. Use `--json` for control-plane analysis. Use `--evaluation-version <id>` to stamp a cut-over or experiment key onto the evaluation, and `--out <file>` to write the JSON result without relying on terminal capture.
 
 ## `atlas mcp smoke-test [path]`
 

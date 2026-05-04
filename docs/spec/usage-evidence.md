@@ -45,6 +45,15 @@ Metrics:
 
 Null recall means the receipt did not record expected items for that category.
 
+Evaluation output includes run metadata for downstream control planes:
+
+- `evaluationVersion`: optional caller-supplied cut-over or experiment key
+- `generatedAt`: evaluation timestamp
+- `atlasPackageVersion`: Agent Atlas package version used for the evaluation
+- `receiptVersion`: receipt schema version being read, currently `1`
+
+Use `--evaluation-version <id>` to keep before/after evaluations separate, and `--out <file>` to write the JSON result while still printing normal CLI output.
+
 ## Success Signals
 
 Atlas adoption should improve when:

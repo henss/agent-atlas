@@ -357,6 +357,8 @@ interface EvaluateArgs {
   profile: AtlasProfile;
   receiptsPath?: string;
   budget: number;
+  evaluationVersion?: string;
+  outputPath?: string;
   json: boolean;
 }
 
@@ -1394,10 +1396,16 @@ function parseEvaluateArgs(args: string[]): EvaluateArgs {
   let json = false;
   let receiptsPath: string | undefined;
   let budget = 4000;
+  let evaluationVersion: string | undefined;
+  let outputPath: string | undefined;
   let rootPathWasSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
+
+    if (arg === '--') {
+      continue;
+    }
 
     if (arg === '--json') {
       json = true;
@@ -1431,11 +1439,23 @@ function parseEvaluateArgs(args: string[]): EvaluateArgs {
       continue;
     }
 
+    if (arg === '--evaluation-version') {
+      evaluationVersion = readOptionValue(args, index, '--evaluation-version');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--out') {
+      outputPath = readOptionValue(args, index, '--out');
+      index += 1;
+      continue;
+    }
+
     rejectUnknownOption(arg);
     [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
   }
 
-  return { rootPath, profile, receiptsPath, budget, json };
+  return { rootPath, profile, receiptsPath, budget, evaluationVersion, outputPath, json };
 }
 
 function parseMcpSmokeTestArgs(args: string[]): McpSmokeTestArgs {
@@ -2023,6 +2043,7 @@ Status: ${result.receiptCount > 0 ? 'evaluated' : 'no receipts'}
 Root: \`${result.rootPath}\`
 Receipts: \`${result.receiptsPath}\`
 Profile: \`${result.profile}\`
+${result.evaluationVersion ? `Evaluation version: \`${result.evaluationVersion}\`\n` : ''}
 
 Receipt count: ${result.receiptCount}
 Broad-search fallbacks: ${result.broadSearchFallbacks}
@@ -2379,7 +2400,7 @@ function usageNoteUsage(): void {
 
 function evaluateUsage(): void {
   console.error(
-    'Usage: atlas evaluate [path] [--path <root>] [--receipts .agent-atlas/usage] [--budget tokens] [--profile public|private|company] [--json]',
+    'Usage: atlas evaluate [path] [--path <root>] [--receipts .agent-atlas/usage] [--budget tokens] [--profile public|private|company] [--evaluation-version id] [--out file] [--json]',
   );
 }
 
@@ -3145,7 +3166,14 @@ switch (command) {
       profile: options.profile,
       receiptsPath: options.receiptsPath,
       budget: options.budget,
+      evaluationVersion: options.evaluationVersion,
     });
+
+    if (options.outputPath) {
+      const outputPath = path.resolve(options.rootPath, options.outputPath);
+      await mkdir(path.dirname(outputPath), { recursive: true });
+      await writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`, 'utf8');
+    }
 
     if (options.json) {
       console.log(JSON.stringify(result, null, 2));

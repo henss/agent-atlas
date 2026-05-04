@@ -48,6 +48,8 @@ export interface EvaluateUsageEvidenceOptions {
   profile?: AtlasProfile;
   receiptsPath?: string;
   budget?: number;
+  evaluationVersion?: string;
+  now?: Date;
 }
 
 export interface UsageEvidenceReceiptResult {
@@ -69,6 +71,10 @@ export interface UsageEvidenceReceiptResult {
 }
 
 export interface UsageEvidenceEvaluation {
+  evaluationVersion?: string;
+  generatedAt: string;
+  atlasPackageVersion: string;
+  receiptVersion: 1;
   rootPath: string;
   receiptsPath: string;
   profile: AtlasProfile;
@@ -84,6 +90,9 @@ export interface UsageEvidenceEvaluation {
   receipts: UsageEvidenceReceiptResult[];
   notes: string[];
 }
+
+const ATLAS_PACKAGE_VERSION = '0.17.0';
+const USAGE_RECEIPT_VERSION = 1;
 
 export async function writeUsageNote(
   input: AtlasUsageNoteInput,
@@ -155,6 +164,10 @@ export async function evaluateUsageEvidence(
   }
 
   return {
+    evaluationVersion: options.evaluationVersion,
+    generatedAt: (options.now ?? new Date()).toISOString(),
+    atlasPackageVersion: ATLAS_PACKAGE_VERSION,
+    receiptVersion: USAGE_RECEIPT_VERSION,
     rootPath: absoluteRoot,
     receiptsPath,
     profile,

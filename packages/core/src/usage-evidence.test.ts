@@ -26,8 +26,16 @@ describe('usage evidence', () => {
 
     const evaluation = await evaluateUsageEvidence(rootPath, {
       budget: 1200,
+      evaluationVersion: 'atlas-m18-evidence-v1',
+      now: new Date('2026-05-04T12:00:00.000Z'),
     });
 
+    expect(evaluation).toMatchObject({
+      evaluationVersion: 'atlas-m18-evidence-v1',
+      generatedAt: '2026-05-04T12:00:00.000Z',
+      atlasPackageVersion: '0.17.0',
+      receiptVersion: 1,
+    });
     expect(evaluation.receiptCount).toBe(1);
     expect(evaluation.missingCardMentions).toBe(1);
     expect(evaluation.broadSearchFallbacks).toBe(0);

@@ -32,6 +32,8 @@ The current local contract is:
 
 Generated Markdown should be refreshed with the same checkout version used for validation. `atlas doctor --path <repo>` reports the package versions, supported commands, schema version, registry version, build state, and MCP availability for the current checkout.
 
+`atlas evaluate` also accepts an optional evaluation version. This is a caller-owned run or cut-over key used to compare evidence before and after Atlas metadata or routing changes. It does not change receipt `version: 1` and does not require a migration.
+
 Public repos may use the preview npm CLI package when they need self-contained scripts. Pin exact versions such as `@agent-atlas/cli@0.17.0`; do not rely on `latest` while the release line uses the `preview` dist-tag.
 
 ## Migration principles

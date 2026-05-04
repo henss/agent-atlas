@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -160,6 +160,26 @@ Status: passed
     expect(evaluation.stdout).toContain('# Atlas usage evidence');
     expect(evaluation.stdout).toContain('Receipt count: 1');
     expect(evaluation.stdout).toContain('Missing-card mentions: 1');
+
+    const outputPath = path.join(root, '.runtime', 'atlas-evaluate.json');
+    const versionedEvaluation = await execFileAsync('node', [
+      CLI_PATH,
+      'evaluate',
+      '--path',
+      root,
+      '--evaluation-version',
+      'atlas-m18-evidence-v1',
+      '--out',
+      outputPath,
+      '--json',
+    ]);
+    const stdoutJson = JSON.parse(versionedEvaluation.stdout) as Record<string, unknown>;
+    const outputJson = JSON.parse(await readFile(outputPath, 'utf8')) as Record<string, unknown>;
+
+    expect(stdoutJson.evaluationVersion).toBe('atlas-m18-evidence-v1');
+    expect(stdoutJson.receiptVersion).toBe(1);
+    expect(stdoutJson.atlasPackageVersion).toBe('0.17.0');
+    expect(outputJson.evaluationVersion).toBe('atlas-m18-evidence-v1');
   });
 
   it('checks atlas boundary leaks', async () => {
