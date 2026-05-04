@@ -32,7 +32,6 @@ import {
 import { generateMarkdownViews } from '@agent-atlas/markdown';
 import { parseMcpProfile, runAtlasMcpSmokeTest } from '@agent-atlas/mcp-server';
 import type { AtlasMcpSmokeTestResult } from '@agent-atlas/mcp-server';
-import { startAtlasUiServer } from '@agent-atlas/ui';
 import type {
   AtlasDiagnostic,
   AtlasGraph,
@@ -3213,6 +3212,7 @@ switch (command) {
     }
 
     const options = parseUiArgs(args);
+    const { startAtlasUiServer } = await import('@agent-atlas/ui');
     const handle = await startAtlasUiServer({
       rootPath: options.rootPath,
       profile: options.profile,

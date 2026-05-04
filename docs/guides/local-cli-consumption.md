@@ -38,7 +38,7 @@ node ../agent-atlas/packages/cli/dist/index.js global context-pack "change onboa
 node ../agent-atlas/packages/mcp-server/dist/stdio.js --path . --profile private
 ```
 
-Repos may wrap these commands in local package scripts. Public repos can alternatively use `pnpm dlx @agent-atlas/cli@0.17.0 ...` for commands that only need the published CLI.
+Repos may wrap these commands in local package scripts. Public repos can alternatively use `pnpm dlx @agent-atlas/cli@0.18.0 ...` for commands that only need the published CLI.
 
 All atlas-loading commands accept one positional root path or `--path <root>`. Do not pass both. Prefer explicit `--path <root>` in scripts because it stays readable when commands also include free-form task text or additional flags.
 
@@ -46,7 +46,7 @@ All atlas-loading commands accept one positional root path or `--path <root>`. D
 
 Use one built Agent Atlas sibling checkout as the unit of compatibility:
 
-- Workspace package version: `0.17.0`.
+- Workspace package version: `0.18.0`.
 - Entity schema version: `schema_version: 1`.
 - Usage receipt version: `version: 1`.
 - Registry config version: `version: 1`.

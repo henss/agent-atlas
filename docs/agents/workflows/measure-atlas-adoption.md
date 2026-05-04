@@ -21,6 +21,7 @@ Records local usage receipts and evaluates context-pack selection against comple
 
 ### Documents
 
+- `document:release-0-18-guide`
 - `document:rollout-evidence-guide`
 - `document:usage-evidence-spec`
 
@@ -32,6 +33,7 @@ Records local usage receipts and evaluates context-pack selection against comple
 
 ### `documented-in`
 
+- `document:release-0-18-guide` _(generated)_
 - `document:rollout-evidence-guide`
 - `document:usage-evidence-spec`
 

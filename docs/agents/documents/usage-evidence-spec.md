@@ -20,6 +20,7 @@ Specification for local usage receipts, context-pack recall evaluation, rollout 
 
 ### `documented-in`
 
+- `document:release-0-18-guide` _(generated)_
 - `document:rollout-evidence-guide` _(generated)_
 
 ### `documents`

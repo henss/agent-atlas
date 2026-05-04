@@ -81,6 +81,7 @@ Typed context graph framework, CLI, MCP server, review UI, and adapter layer for
 - `document:registry-spec` _(generated)_
 - `document:release-0-16-guide` _(generated)_
 - `document:release-0-17-guide` _(generated)_
+- `document:release-0-18-guide` _(generated)_
 - `document:rollout-evidence-guide` _(generated)_
 - `document:schema-readme` _(generated)_
 - `document:ui-readme` _(generated)_

@@ -1,6 +1,6 @@
 {
   "name": "@agent-atlas/cli",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Command-line interface for Agent Atlas.",
   "license": "Apache-2.0",
   "type": "module",
@@ -21,10 +21,12 @@
     "dist/index.js"
   ],
   "dependencies": {
-    "@agent-atlas/ui": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "yaml": "^2.6.0",
     "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@agent-atlas/ui": "workspace:*"
   },
   "scripts": {
     "build": "node build.mjs",

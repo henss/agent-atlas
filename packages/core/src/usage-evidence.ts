@@ -91,7 +91,7 @@ export interface UsageEvidenceEvaluation {
   notes: string[];
 }
 
-const ATLAS_PACKAGE_VERSION = '0.17.0';
+const ATLAS_PACKAGE_VERSION = '0.18.0';
 const USAGE_RECEIPT_VERSION = 1;
 
 export async function writeUsageNote(

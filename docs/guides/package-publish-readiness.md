@@ -5,8 +5,8 @@ Agent Atlas is still consumed from sibling checkouts by default. Public repos ca
 Use this checklist before publishing any Agent Atlas npm artifact. Prefer the reproducible release script over hand-running the individual commands:
 
 ```sh
-pnpm release:package -- --package packages/cli --version 0.17.0 --tag preview
-pnpm release:package -- --package packages/cli --version 0.17.0 --tag preview --publish
+pnpm release:package -- --package packages/cli --version 0.18.0 --tag preview
+pnpm release:package -- --package packages/cli --version 0.18.0 --tag preview --publish
 ```
 
 ## Intended First Artifact
@@ -65,7 +65,7 @@ npm pack
 mkdir %TEMP%\agent-atlas-pack-smoke
 cd %TEMP%\agent-atlas-pack-smoke
 npm init -y
-npm install D:\workspace\agent-atlas\packages\cli\agent-atlas-cli-0.17.0.tgz
+npm install D:\workspace\agent-atlas\packages\cli\agent-atlas-cli-0.18.0.tgz
 npx atlas --help
 mkdir .agent-atlas\public\repositories
 ```
@@ -111,7 +111,7 @@ After publish, public repos should pin the preview version instead of using `lat
 }
 ```
 
-Use a concrete version before committing scripts, for example `@agent-atlas/cli@0.17.0`.
+Use a concrete version before committing scripts, for example `@agent-atlas/cli@0.18.0`.
 
 ## Hook Guidance
 

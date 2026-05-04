@@ -1,6 +1,6 @@
 {
   "name": "@agent-atlas/adapters",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Adapter interfaces and generic adapters for Agent Atlas.",
   "type": "module",
   "exports": {

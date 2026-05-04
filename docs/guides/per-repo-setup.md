@@ -2,7 +2,7 @@
 
 This guide describes the current adoption paths for Agent Atlas.
 
-Private and company repos should use the sibling-checkout path when they need the latest development version. Public repos that need self-contained scripts may use exact pinned preview CLI packages such as `@agent-atlas/cli@0.17.0`.
+Private and company repos should use the sibling-checkout path when they need the latest development version. Public repos that need self-contained scripts may use exact pinned preview CLI packages such as `@agent-atlas/cli@0.18.0`.
 
 ## Prepare the Agent Atlas checkout
 
@@ -44,13 +44,13 @@ Public repos that need self-contained scripts should pin the preview CLI package
 ```json
 {
   "scripts": {
-    "atlas": "pnpm dlx @agent-atlas/cli@0.17.0",
-    "atlas:doctor": "pnpm dlx @agent-atlas/cli@0.17.0 doctor --path . --profile public",
-    "atlas:validate": "pnpm dlx @agent-atlas/cli@0.17.0 validate . --profile public",
-    "atlas:boundary-check": "pnpm dlx @agent-atlas/cli@0.17.0 boundary-check . --profile public",
-    "atlas:docs:check": "pnpm dlx @agent-atlas/cli@0.17.0 generate markdown . --output docs/agents --profile public --check",
-    "atlas:context-pack": "pnpm dlx @agent-atlas/cli@0.17.0 context-pack --path . --profile public",
-    "atlas:resolve-path": "pnpm dlx @agent-atlas/cli@0.17.0 resolve-path --path . --profile public"
+    "atlas": "pnpm dlx @agent-atlas/cli@0.18.0",
+    "atlas:doctor": "pnpm dlx @agent-atlas/cli@0.18.0 doctor --path . --profile public",
+    "atlas:validate": "pnpm dlx @agent-atlas/cli@0.18.0 validate . --profile public",
+    "atlas:boundary-check": "pnpm dlx @agent-atlas/cli@0.18.0 boundary-check . --profile public",
+    "atlas:docs:check": "pnpm dlx @agent-atlas/cli@0.18.0 generate markdown . --output docs/agents --profile public --check",
+    "atlas:context-pack": "pnpm dlx @agent-atlas/cli@0.18.0 context-pack --path . --profile public",
+    "atlas:resolve-path": "pnpm dlx @agent-atlas/cli@0.18.0 resolve-path --path . --profile public"
   }
 }
 ```
@@ -84,7 +84,7 @@ Root `AGENTS.md` should tell agents:
 Before broad search, use the atlas:
 
 - Root view: `docs/agents/atlas.md`
-- Public repo npm check: `pnpm dlx @agent-atlas/cli@0.17.0 doctor --path . --profile public`
+- Public repo npm check: `pnpm dlx @agent-atlas/cli@0.18.0 doctor --path . --profile public`
 - Check setup: `node ../agent-atlas/packages/cli/dist/index.js doctor --path .`
 - Resolve a file: `node ../agent-atlas/packages/cli/dist/index.js resolve-path <path> --path .`
 - Suggest a card: `node ../agent-atlas/packages/cli/dist/index.js suggest-card --path <path> --root .`
@@ -101,9 +101,9 @@ Use the template in `docs/ci/github-actions-agent-atlas.yml` as a starting point
 For public repos using the npm preview package, run:
 
 ```sh
-pnpm dlx @agent-atlas/cli@0.17.0 validate . --profile public
-pnpm dlx @agent-atlas/cli@0.17.0 boundary-check . --profile public
-pnpm dlx @agent-atlas/cli@0.17.0 generate markdown . --output docs/agents --profile public --check
+pnpm dlx @agent-atlas/cli@0.18.0 validate . --profile public
+pnpm dlx @agent-atlas/cli@0.18.0 boundary-check . --profile public
+pnpm dlx @agent-atlas/cli@0.18.0 generate markdown . --output docs/agents --profile public --check
 ```
 
 For local-checkout consumers, adapt the checkout path or build Agent Atlas as a sibling repo before running:
@@ -126,6 +126,6 @@ Copy-paste script starters live under `templates/scripts/`:
 - `company-repo.sh`: company profile validation, benchmark, MCP smoke test, and MCP stdio pointer
 - `central-registry-repo.sh`: global registry validation, manifest output, generated Markdown checks, listing, and context-pack smoke test
 
-Sibling-checkout templates use `ATLAS_CHECKOUT=../agent-atlas` by default and can be adapted to the downstream repo layout. The npm public template uses `ATLAS_CLI_VERSION=0.17.0` by default and should stay exact-pinned in committed public-repo scripts.
+Sibling-checkout templates use `ATLAS_CHECKOUT=../agent-atlas` by default and can be adapted to the downstream repo layout. The npm public template uses `ATLAS_CLI_VERSION=0.18.0` by default and should stay exact-pinned in committed public-repo scripts.
 
 Use `docs/guides/rollout-evidence.md` when deciding whether a repo should move from guidance-only to pilot or active Atlas adoption.

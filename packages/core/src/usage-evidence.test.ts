@@ -33,7 +33,7 @@ describe('usage evidence', () => {
     expect(evaluation).toMatchObject({
       evaluationVersion: 'atlas-m18-evidence-v1',
       generatedAt: '2026-05-04T12:00:00.000Z',
-      atlasPackageVersion: '0.17.0',
+      atlasPackageVersion: '0.18.0',
       receiptVersion: 1,
     });
     expect(evaluation.receiptCount).toBe(1);

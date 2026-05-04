@@ -95,7 +95,7 @@ pnpm atlas:ui
 
 See [`packages/cli/README.md`](./packages/cli/README.md) for the full command reference.
 
-For sibling-checkout consumers, the current local compatibility contract is workspace package version `0.17.0`, entity `schema_version: 1`, usage receipt `version: 1`, boundary policy `version: 1`, and registry `version: 1`. Public repos may use exact pinned preview CLI releases such as `@agent-atlas/cli@0.17.0` after the [package publish readiness checklist](./docs/guides/package-publish-readiness.md) passes.
+For sibling-checkout consumers, the current local compatibility contract is workspace package version `0.18.0`, entity `schema_version: 1`, usage receipt `version: 1`, boundary policy `version: 1`, and registry `version: 1`. Public repos may use exact pinned preview CLI releases such as `@agent-atlas/cli@0.18.0` after the [package publish readiness checklist](./docs/guides/package-publish-readiness.md) passes.
 
 ## Roadmap status
 

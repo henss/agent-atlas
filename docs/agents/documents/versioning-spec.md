@@ -18,6 +18,10 @@ Specification for schema_version, usage receipt version, migration behavior, and
 
 ## Relations
 
+### `documented-in`
+
+- `document:release-0-18-guide` _(generated)_
+
 ### `documents`
 
 - `component:cli-package`

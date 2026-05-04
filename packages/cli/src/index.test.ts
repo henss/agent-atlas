@@ -178,7 +178,7 @@ Status: passed
 
     expect(stdoutJson.evaluationVersion).toBe('atlas-m18-evidence-v1');
     expect(stdoutJson.receiptVersion).toBe(1);
-    expect(stdoutJson.atlasPackageVersion).toBe('0.17.0');
+    expect(stdoutJson.atlasPackageVersion).toBe('0.18.0');
     expect(outputJson.evaluationVersion).toBe('atlas-m18-evidence-v1');
   });
 

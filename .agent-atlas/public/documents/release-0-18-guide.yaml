@@ -1,0 +1,15 @@
+id: document:release-0-18-guide
+kind: document
+title: Release 0.18 Guide
+summary: Release notes for version-stamped usage-evidence evaluation output and cut-over tracking support.
+visibility: public
+uri: docs/guides/release-0.18.0.md
+relations:
+  - type: documents
+    target: workflow:measure-atlas-adoption
+  - type: documents
+    target: document:usage-evidence-spec
+  - type: documents
+    target: document:versioning-spec
+  - type: part-of
+    target: domain:agent-atlas
