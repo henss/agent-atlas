@@ -25,4 +25,5 @@ Repository configuration file at packages/markdown/tsconfig.json.
 
 ### `part-of`
 
+- `component:package.agent-atlas-markdown`
 - `repository:agent-atlas`

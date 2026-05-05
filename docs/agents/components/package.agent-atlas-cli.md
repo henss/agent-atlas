@@ -13,6 +13,48 @@ Command-line interface for Agent Atlas.
 - visibility: `public`
 - tags: `generated-source`, `workspace_packages`
 
+## Drill Down
+
+### Package Facts
+
+- root: `packages/cli`
+- manifest: `packages/cli/package.json`
+- exports: `.`
+
+### Scripts
+
+- `build`
+- `test`
+- `lint`
+- `prepack`
+- `atlas`
+
+### Interfaces
+
+- `interface:package-script.agent-atlas-cli.atlas`
+- `interface:package-script.agent-atlas-cli.build`
+- `interface:package-script.agent-atlas-cli.lint`
+- `interface:package-script.agent-atlas-cli.prepack`
+- `interface:package-script.agent-atlas-cli.test`
+
+### Components
+
+- `component:package.agent-atlas-cli.dependencies`
+
+### Documents
+
+- `document:generated.packages-cli-readme`
+
+### Config
+
+- `resource:config.packages-cli-package`
+- `resource:config.packages-cli-tsconfig`
+
+### Tests
+
+- `test-scope:generated.package.agent-atlas-cli`
+
+
 ## Code
 
 - path: `packages/cli/**`
@@ -27,11 +69,15 @@ Command-line interface for Agent Atlas.
 ### `contains`
 
 - `component:package.agent-atlas-cli.dependencies` _(generated)_
+- `document:generated.packages-cli-readme` _(generated)_
 - `interface:package-script.agent-atlas-cli.atlas` _(generated)_
 - `interface:package-script.agent-atlas-cli.build` _(generated)_
 - `interface:package-script.agent-atlas-cli.lint` _(generated)_
 - `interface:package-script.agent-atlas-cli.prepack` _(generated)_
 - `interface:package-script.agent-atlas-cli.test` _(generated)_
+- `resource:config.packages-cli-package` _(generated)_
+- `resource:config.packages-cli-tsconfig` _(generated)_
+- `test-scope:generated.package.agent-atlas-cli` _(generated)_
 
 ### `part-of`
 

@@ -13,6 +13,44 @@ Read-only MCP server for Agent Atlas.
 - visibility: `public`
 - tags: `generated-source`, `workspace_packages`
 
+## Drill Down
+
+### Package Facts
+
+- root: `packages/mcp-server`
+- manifest: `packages/mcp-server/package.json`
+- exports: `.`
+
+### Scripts
+
+- `build`
+- `test`
+- `lint`
+
+### Interfaces
+
+- `interface:package-script.agent-atlas-mcp-server.build`
+- `interface:package-script.agent-atlas-mcp-server.lint`
+- `interface:package-script.agent-atlas-mcp-server.test`
+
+### Components
+
+- `component:package.agent-atlas-mcp-server.dependencies`
+
+### Documents
+
+- `document:generated.packages-mcp-server-readme`
+
+### Config
+
+- `resource:config.packages-mcp-server-package`
+- `resource:config.packages-mcp-server-tsconfig`
+
+### Tests
+
+- `test-scope:generated.package.agent-atlas-mcp-server`
+
+
 ## Code
 
 - path: `packages/mcp-server/**`
@@ -27,9 +65,13 @@ Read-only MCP server for Agent Atlas.
 ### `contains`
 
 - `component:package.agent-atlas-mcp-server.dependencies` _(generated)_
+- `document:generated.packages-mcp-server-readme` _(generated)_
 - `interface:package-script.agent-atlas-mcp-server.build` _(generated)_
 - `interface:package-script.agent-atlas-mcp-server.lint` _(generated)_
 - `interface:package-script.agent-atlas-mcp-server.test` _(generated)_
+- `resource:config.packages-mcp-server-package` _(generated)_
+- `resource:config.packages-mcp-server-tsconfig` _(generated)_
+- `test-scope:generated.package.agent-atlas-mcp-server` _(generated)_
 
 ### `part-of`
 

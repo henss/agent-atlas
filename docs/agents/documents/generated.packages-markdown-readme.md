@@ -25,4 +25,5 @@ Markdown document at packages/markdown/README.md.
 
 ### `part-of`
 
+- `component:package.agent-atlas-markdown`
 - `repository:agent-atlas`

@@ -13,6 +13,44 @@ Generated Markdown views for Agent Atlas.
 - visibility: `public`
 - tags: `generated-source`, `workspace_packages`
 
+## Drill Down
+
+### Package Facts
+
+- root: `packages/markdown`
+- manifest: `packages/markdown/package.json`
+- exports: `.`
+
+### Scripts
+
+- `build`
+- `test`
+- `lint`
+
+### Interfaces
+
+- `interface:package-script.agent-atlas-markdown.build`
+- `interface:package-script.agent-atlas-markdown.lint`
+- `interface:package-script.agent-atlas-markdown.test`
+
+### Components
+
+- `component:package.agent-atlas-markdown.dependencies`
+
+### Documents
+
+- `document:generated.packages-markdown-readme`
+
+### Config
+
+- `resource:config.packages-markdown-package`
+- `resource:config.packages-markdown-tsconfig`
+
+### Tests
+
+- `test-scope:generated.package.agent-atlas-markdown`
+
+
 ## Code
 
 - path: `packages/markdown/**`
@@ -27,9 +65,13 @@ Generated Markdown views for Agent Atlas.
 ### `contains`
 
 - `component:package.agent-atlas-markdown.dependencies` _(generated)_
+- `document:generated.packages-markdown-readme` _(generated)_
 - `interface:package-script.agent-atlas-markdown.build` _(generated)_
 - `interface:package-script.agent-atlas-markdown.lint` _(generated)_
 - `interface:package-script.agent-atlas-markdown.test` _(generated)_
+- `resource:config.packages-markdown-package` _(generated)_
+- `resource:config.packages-markdown-tsconfig` _(generated)_
+- `test-scope:generated.package.agent-atlas-markdown` _(generated)_
 
 ### `part-of`
 

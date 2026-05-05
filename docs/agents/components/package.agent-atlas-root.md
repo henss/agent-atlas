@@ -13,6 +13,40 @@ Typed context graph and traversal toolkit for AI coding agents.
 - visibility: `public`
 - tags: `generated-source`, `workspace_packages`
 
+## Drill Down
+
+### Package Facts
+
+- root: `.`
+- manifest: `package.json`
+
+### Scripts
+
+- `build`
+- `test`
+- `lint`
+- `atlas:help`
+- `atlas:ui`
+- `format`
+- `release:package`
+- `release:cli:preview`
+
+### Interfaces
+
+- `interface:package-script.agent-atlas-root.atlas-help`
+- `interface:package-script.agent-atlas-root.atlas-ui`
+- `interface:package-script.agent-atlas-root.build`
+- `interface:package-script.agent-atlas-root.format`
+- `interface:package-script.agent-atlas-root.lint`
+- `interface:package-script.agent-atlas-root.release-cli-preview`
+- `interface:package-script.agent-atlas-root.release-package`
+- `interface:package-script.agent-atlas-root.test`
+
+### Config
+
+- `resource:config.package`
+
+
 ## Code
 
 - path: `package.json`
@@ -34,6 +68,7 @@ Typed context graph and traversal toolkit for AI coding agents.
 - `interface:package-script.agent-atlas-root.release-cli-preview` _(generated)_
 - `interface:package-script.agent-atlas-root.release-package` _(generated)_
 - `interface:package-script.agent-atlas-root.test` _(generated)_
+- `resource:config.package` _(generated)_
 
 ### `part-of`
 

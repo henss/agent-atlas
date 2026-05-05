@@ -25,4 +25,5 @@ Repository configuration file at package.json.
 
 ### `part-of`
 
+- `component:package.agent-atlas-root`
 - `repository:agent-atlas`

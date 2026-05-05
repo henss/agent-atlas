@@ -25,4 +25,5 @@ Repository configuration file at packages/schema/schema/atlas.entity.schema.json
 
 ### `part-of`
 
+- `component:package.agent-atlas-schema`
 - `repository:agent-atlas`

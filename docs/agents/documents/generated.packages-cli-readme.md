@@ -25,4 +25,5 @@ Markdown document at packages/cli/README.md.
 
 ### `part-of`
 
+- `component:package.agent-atlas-cli`
 - `repository:agent-atlas`

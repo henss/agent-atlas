@@ -13,6 +13,45 @@ Core graph loading, validation, traversal, and context pack logic for Agent Atla
 - visibility: `public`
 - tags: `generated-source`, `workspace_packages`
 
+## Drill Down
+
+### Package Facts
+
+- root: `packages/core`
+- manifest: `packages/core/package.json`
+- exports: `.`
+
+### Scripts
+
+- `build`
+- `test`
+- `lint`
+
+### Interfaces
+
+- `interface:package-script.agent-atlas-core.build`
+- `interface:package-script.agent-atlas-core.lint`
+- `interface:package-script.agent-atlas-core.test`
+- `interface:route.get.health`
+
+### Components
+
+- `component:package.agent-atlas-core.dependencies`
+
+### Documents
+
+- `document:generated.packages-core-readme`
+
+### Config
+
+- `resource:config.packages-core-package`
+- `resource:config.packages-core-tsconfig`
+
+### Tests
+
+- `test-scope:generated.package.agent-atlas-core`
+
+
 ## Code
 
 - path: `packages/core/**`
@@ -27,9 +66,14 @@ Core graph loading, validation, traversal, and context pack logic for Agent Atla
 ### `contains`
 
 - `component:package.agent-atlas-core.dependencies` _(generated)_
+- `document:generated.packages-core-readme` _(generated)_
 - `interface:package-script.agent-atlas-core.build` _(generated)_
 - `interface:package-script.agent-atlas-core.lint` _(generated)_
 - `interface:package-script.agent-atlas-core.test` _(generated)_
+- `interface:route.get.health` _(generated)_
+- `resource:config.packages-core-package` _(generated)_
+- `resource:config.packages-core-tsconfig` _(generated)_
+- `test-scope:generated.package.agent-atlas-core` _(generated)_
 
 ### `dependency-of`
 

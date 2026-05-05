@@ -31,11 +31,13 @@ describe('generated source entities', () => {
       JSON.stringify({
         name: '@fixture/core',
         description: 'Core package.',
+        exports: { '.': './src/index.ts', './server': './src/server.ts' },
         scripts: { lint: 'tsc --noEmit' },
       }),
       'utf8',
     );
     await writeFile(path.join(root, 'packages/core/src/index.test.ts'), 'describe("core", () => {});\n', 'utf8');
+    await writeFile(path.join(root, 'packages/core/README.md'), '# Core Package\n', 'utf8');
     await writeFile(path.join(root, 'README.md'), '# Fixture Repo\n', 'utf8');
     await mkdir(path.join(root, '.agents/skills/review-code'), { recursive: true });
     await writeFile(
@@ -52,12 +54,30 @@ describe('generated source entities', () => {
     expect(ids).toContain('component:package.fixture-root');
     expect(ids).toContain('component:package.fixture-core');
     expect(ids).toContain('interface:package-script.fixture-root.build');
-    expect(ids).toContain('test-scope:generated.packages');
+    expect(ids).toContain('test-scope:generated.package.fixture-core');
     expect(ids).toContain('capability:agent-skill.review-code');
     expect(ids).toContain('document:generated.readme');
+    expect(ids).toContain('document:generated.packages-core-readme');
     expect(ids).toContain('resource:config.tsconfig');
     expect(ids).toContain('interface:route.get.health');
     expect(ids).toContain('component:package.fixture-root.dependencies');
+    expect(result.entities.find((entity) => entity.id === 'component:package.fixture-core')?.metadata?.package).toMatchObject({
+      root: 'packages/core',
+      scripts: ['lint'],
+      exports: ['.', './server'],
+    });
+    expect(result.entities.find((entity) => entity.id === 'document:generated.packages-core-readme')?.relations).toContainEqual({
+      type: 'part-of',
+      target: 'component:package.fixture-core',
+    });
+    expect(result.entities.find((entity) => entity.id === 'test-scope:generated.package.fixture-core')?.relations).toContainEqual({
+      type: 'part-of',
+      target: 'component:package.fixture-core',
+    });
+    expect(result.entities.find((entity) => entity.id === 'interface:route.get.health')?.relations).toContainEqual({
+      type: 'part-of',
+      target: 'component:package.fixture-core',
+    });
     expect(result.entities.find((entity) => entity.id === 'capability:agent-skill.review-code')?.relations).toContainEqual({
       type: 'documented-in',
       target: 'document:generated.agents-skills-review-code-skill',

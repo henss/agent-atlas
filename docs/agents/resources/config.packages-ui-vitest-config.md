@@ -25,4 +25,5 @@ Repository configuration file at packages/ui/vitest.config.ts.
 
 ### `part-of`
 
+- `component:package.agent-atlas-ui`
 - `repository:agent-atlas`

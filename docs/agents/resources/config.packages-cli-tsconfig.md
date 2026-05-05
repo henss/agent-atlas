@@ -25,4 +25,5 @@ Repository configuration file at packages/cli/tsconfig.json.
 
 ### `part-of`
 
+- `component:package.agent-atlas-cli`
 - `repository:agent-atlas`

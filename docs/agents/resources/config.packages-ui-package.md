@@ -25,4 +25,5 @@ Repository configuration file at packages/ui/package.json.
 
 ### `part-of`
 
+- `component:package.agent-atlas-ui`
 - `repository:agent-atlas`

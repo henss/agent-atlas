@@ -121,7 +121,12 @@ export function renderRepositoryReadme(
   const summary = repository?.summary ?? 'Atlas-generated repository orientation.';
   const domains = collectReadmeEntities(undefined, 'domain', entities, edges).slice(0, 6);
   const workflows = collectReadmeEntities(repository?.id, 'workflow', entities, edges).slice(0, 8);
-  const components = collectReadmeEntities(repository?.id, 'component', entities, edges).slice(0, 10);
+  const packageComponents = collectReadmeEntities(repository?.id, 'component', entities, edges)
+    .filter(isPackageComponent)
+    .slice(0, 12);
+  const components = collectReadmeEntities(repository?.id, 'component', entities, edges)
+    .filter((entity) => !isPackageComponent(entity))
+    .slice(0, 10);
   const capabilities = collectReadmeEntities(repository?.id, 'capability', entities, edges).slice(0, 10);
   const documents = collectReadmeEntities(repository?.id, 'document', entities, edges)
     .filter((entity) => !isAgentSkillDocument(entity))
@@ -174,6 +179,7 @@ export function renderRepositoryReadme(
   appendReadmeSection(lines, 'Domains', domains);
   appendReadmeSection(lines, 'Common Workflows', workflows);
   appendReadmeSection(lines, 'Agent Capabilities', capabilities);
+  appendPackageSection(lines, packageComponents);
   appendReadmeSection(lines, 'Key Implementation Surfaces', components);
   appendReadmeSection(lines, 'Documentation', documents);
   appendReadmeSection(lines, 'Verification', tests);
@@ -419,6 +425,10 @@ function renderMetadata(entity: AtlasEntity): string[] {
 }
 
 function renderLocalDrillDown(entity: AtlasEntity, edges: AtlasGraphEdge[]): string[] {
+  if (isPackageComponent(entity)) {
+    return renderPackageDrillDown(entity, edges);
+  }
+
   if (entity.kind !== 'domain' && entity.kind !== 'workflow') {
     return [];
   }
@@ -447,6 +457,36 @@ function renderLocalDrillDown(entity: AtlasEntity, edges: AtlasGraphEdge[]): str
   }
 
   return lines.filter((line, index, all) => !(line === '' && all[index - 1] === ''));
+}
+
+function renderPackageDrillDown(entity: AtlasEntity, edges: AtlasGraphEdge[]): string[] {
+  const lines: string[] = [];
+  const metadata = readPackageMetadata(entity);
+  const packageFacts = [
+    metadata.root ? `root: \`${metadata.root}\`` : undefined,
+    metadata.path ? `manifest: \`${metadata.path}\`` : undefined,
+    metadata.exports?.length ? `exports: ${metadata.exports.map((item) => `\`${item}\``).join(', ')}` : undefined,
+  ].filter((item): item is string => Boolean(item));
+
+  if (packageFacts.length > 0) {
+    lines.push('### Package Facts', '', ...packageFacts.map((item) => `- ${item}`), '');
+  }
+  if (metadata.scripts?.length) {
+    lines.push('### Scripts', '', ...metadata.scripts.map((script) => `- \`${script}\``), '');
+  }
+  appendPackageDrillDownGroup(lines, 'Interfaces', relatedEntities(entity.id, 'contains', 'interface', edges));
+  appendPackageDrillDownGroup(lines, 'Components', relatedEntities(entity.id, 'contains', 'component', edges));
+  appendPackageDrillDownGroup(lines, 'Documents', relatedEntities(entity.id, 'contains', 'document', edges));
+  appendPackageDrillDownGroup(lines, 'Config', relatedEntities(entity.id, 'contains', 'resource', edges));
+  appendPackageDrillDownGroup(lines, 'Tests', relatedEntities(entity.id, 'contains', 'test-scope', edges));
+  return lines.filter((line, index, all) => !(line === '' && all[index - 1] === ''));
+}
+
+function appendPackageDrillDownGroup(lines: string[], title: string, ids: AtlasEntityId[]): void {
+  if (ids.length === 0) {
+    return;
+  }
+  lines.push(`### ${title}`, '', ...ids.map((id) => `- \`${id}\``), '');
 }
 
 function relatedEntities(
@@ -508,6 +548,21 @@ function appendReadmeSection(lines: string[], title: string, entities: AtlasEnti
   for (const entity of entities) {
     const target = entity.uri && !isPrivateUri(entity.uri) ? ` ([source](${entity.uri}))` : '';
     lines.push(`- \`${entity.id}\` - ${entity.title}: ${entity.summary}${target}`);
+  }
+}
+
+function appendPackageSection(lines: string[], packages: AtlasEntity[]): void {
+  if (packages.length === 0) {
+    return;
+  }
+
+  lines.push('', '## Packages', '');
+  for (const entity of packages) {
+    const packageMetadata = readPackageMetadata(entity);
+    const root = packageMetadata.root ?? packageMetadata.path ?? entity.uri;
+    const scripts = packageMetadata.scripts?.length ? ` Scripts: ${packageMetadata.scripts.slice(0, 6).map((script) => `\`${script}\``).join(', ')}.` : '';
+    const target = `docs/agents/components/${entitySlug(entity.id)}.md`;
+    lines.push(`- [${entity.title}](${target}) - ${entity.summary}${root ? ` Root: \`${root}\`.` : ''}${scripts}`);
   }
 }
 
@@ -808,6 +863,33 @@ function compareCliInterfaces(left: AtlasEntity, right: AtlasEntity): number {
 
 function readString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length > 0 ? value : undefined;
+}
+
+function readStringList(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+  const strings = value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+  return strings.length > 0 ? strings : undefined;
+}
+
+function isPackageComponent(entity: AtlasEntity): boolean {
+  return entity.kind === 'component' && isRecord(entity.metadata?.package);
+}
+
+function readPackageMetadata(entity: AtlasEntity): {
+  path?: string;
+  root?: string;
+  scripts?: string[];
+  exports?: string[];
+} {
+  const packageMetadata = isRecord(entity.metadata?.package) ? entity.metadata.package : {};
+  return {
+    path: readString(packageMetadata.path),
+    root: readString(packageMetadata.root),
+    scripts: readStringList(packageMetadata.scripts),
+    exports: readStringList(packageMetadata.exports),
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -2,7 +2,7 @@
 
 > Generated from repository source surfaces. Edit source files or Atlas overlays, then rerun `atlas maintain fix`.
 
-Generated entities: 165
+Generated entities: 170
 
 ## Commander
 
@@ -87,7 +87,12 @@ Generated entities: 165
 
 ## Tests
 
-- `test-scope:generated.packages` - packages tests: 22 discovered test files under packages.
+- `test-scope:generated.package.agent-atlas-adapters` - @agent-atlas/adapters tests: 1 discovered test file under packages/adapters.
+- `test-scope:generated.package.agent-atlas-cli` - @agent-atlas/cli tests: 2 discovered test files under packages/cli.
+- `test-scope:generated.package.agent-atlas-core` - @agent-atlas/core tests: 16 discovered test files under packages/core.
+- `test-scope:generated.package.agent-atlas-markdown` - @agent-atlas/markdown tests: 2 discovered test files under packages/markdown.
+- `test-scope:generated.package.agent-atlas-mcp-server` - @agent-atlas/mcp-server tests: 1 discovered test file under packages/mcp-server.
+- `test-scope:generated.package.agent-atlas-ui` - @agent-atlas/ui tests: 1 discovered test file under packages/ui.
 
 ## Agent Skills
 

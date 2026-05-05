@@ -73,7 +73,7 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 - Docs: 58
 - Package Scripts: 31
 - Routes: 1
-- Tests: 1
+- Tests: 6
 - Workspace Packages: 8
 - Full generated reference: `docs/generated/source-derived-reference.md`.
 
@@ -129,16 +129,16 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 - `capability:agent-skill.implement-cli-command` - Implement CLI Command Skill: CLI output should be concise Markdown by default and JSON only with `--json`. ([source](.agents/skills/implement-cli-command/SKILL.md))
 - `capability:agent-skill.update-schema` - Update Schema Skill: Schema changes must keep docs, TypeScript types, JSON Schema, and examples aligned. ([source](.agents/skills/update-schema/SKILL.md))
 
-## Key Implementation Surfaces
+## Packages
 
-- `component:package.agent-atlas-adapters` - @agent-atlas/adapters: Adapter interfaces and generic adapters for Agent Atlas. ([source](packages/adapters/package.json))
-- `component:package.agent-atlas-cli` - @agent-atlas/cli: Command-line interface for Agent Atlas. ([source](packages/cli/package.json))
-- `component:package.agent-atlas-core` - @agent-atlas/core: Core graph loading, validation, traversal, and context pack logic for Agent Atlas. ([source](packages/core/package.json))
-- `component:package.agent-atlas-markdown` - @agent-atlas/markdown: Generated Markdown views for Agent Atlas. ([source](packages/markdown/package.json))
-- `component:package.agent-atlas-mcp-server` - @agent-atlas/mcp-server: Read-only MCP server for Agent Atlas. ([source](packages/mcp-server/package.json))
-- `component:package.agent-atlas-root` - agent-atlas-root: Typed context graph and traversal toolkit for AI coding agents. ([source](package.json))
-- `component:package.agent-atlas-schema` - @agent-atlas/schema: Types and JSON Schema for Agent Atlas entities. ([source](packages/schema/package.json))
-- `component:package.agent-atlas-ui` - @agent-atlas/ui: Local read-only review UI for Agent Atlas graphs. ([source](packages/ui/package.json))
+- [@agent-atlas/adapters](docs/agents/components/package.agent-atlas-adapters.md) - Adapter interfaces and generic adapters for Agent Atlas. Root: `packages/adapters`. Scripts: `build`, `test`, `lint`.
+- [@agent-atlas/cli](docs/agents/components/package.agent-atlas-cli.md) - Command-line interface for Agent Atlas. Root: `packages/cli`. Scripts: `build`, `test`, `lint`, `prepack`, `atlas`.
+- [@agent-atlas/core](docs/agents/components/package.agent-atlas-core.md) - Core graph loading, validation, traversal, and context pack logic for Agent Atlas. Root: `packages/core`. Scripts: `build`, `test`, `lint`.
+- [@agent-atlas/markdown](docs/agents/components/package.agent-atlas-markdown.md) - Generated Markdown views for Agent Atlas. Root: `packages/markdown`. Scripts: `build`, `test`, `lint`.
+- [@agent-atlas/mcp-server](docs/agents/components/package.agent-atlas-mcp-server.md) - Read-only MCP server for Agent Atlas. Root: `packages/mcp-server`. Scripts: `build`, `test`, `lint`.
+- [agent-atlas-root](docs/agents/components/package.agent-atlas-root.md) - Typed context graph and traversal toolkit for AI coding agents. Root: `.`. Scripts: `build`, `test`, `lint`, `atlas:help`, `atlas:ui`, `format`.
+- [@agent-atlas/schema](docs/agents/components/package.agent-atlas-schema.md) - Types and JSON Schema for Agent Atlas entities. Root: `packages/schema`. Scripts: `build`, `test`, `lint`.
+- [@agent-atlas/ui](docs/agents/components/package.agent-atlas-ui.md) - Local read-only review UI for Agent Atlas graphs. Root: `packages/ui`. Scripts: `build`, `test`, `lint`.
 
 ## Documentation
 
@@ -154,7 +154,12 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 ## Verification
 
 - `test-scope:agent-atlas-verification` - agent-atlas Verification: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
-- `test-scope:generated.packages` - packages tests: 22 discovered test files under packages.
+- `test-scope:generated.package.agent-atlas-adapters` - @agent-atlas/adapters tests: 1 discovered test file under packages/adapters.
+- `test-scope:generated.package.agent-atlas-cli` - @agent-atlas/cli tests: 2 discovered test files under packages/cli.
+- `test-scope:generated.package.agent-atlas-core` - @agent-atlas/core tests: 16 discovered test files under packages/core.
+- `test-scope:generated.package.agent-atlas-markdown` - @agent-atlas/markdown tests: 2 discovered test files under packages/markdown.
+- `test-scope:generated.package.agent-atlas-mcp-server` - @agent-atlas/mcp-server tests: 1 discovered test file under packages/mcp-server.
+- `test-scope:generated.package.agent-atlas-ui` - @agent-atlas/ui tests: 1 discovered test file under packages/ui.
 
 ## Commands
 

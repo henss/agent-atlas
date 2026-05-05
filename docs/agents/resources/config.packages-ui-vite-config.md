@@ -25,4 +25,5 @@ Repository configuration file at packages/ui/vite.config.ts.
 
 ### `part-of`
 
+- `component:package.agent-atlas-ui`
 - `repository:agent-atlas`

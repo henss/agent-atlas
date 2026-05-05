@@ -13,6 +13,37 @@ Types and JSON Schema for Agent Atlas entities.
 - visibility: `public`
 - tags: `generated-source`, `workspace_packages`
 
+## Drill Down
+
+### Package Facts
+
+- root: `packages/schema`
+- manifest: `packages/schema/package.json`
+- exports: `.`, `./schema/atlas.entity.schema.json`
+
+### Scripts
+
+- `build`
+- `test`
+- `lint`
+
+### Interfaces
+
+- `interface:package-script.agent-atlas-schema.build`
+- `interface:package-script.agent-atlas-schema.lint`
+- `interface:package-script.agent-atlas-schema.test`
+
+### Documents
+
+- `document:generated.packages-schema-readme`
+
+### Config
+
+- `resource:config.packages-schema-package`
+- `resource:config.packages-schema-schema-atlas-entity-schema`
+- `resource:config.packages-schema-tsconfig`
+
+
 ## Code
 
 - path: `packages/schema/**`
@@ -26,9 +57,13 @@ Types and JSON Schema for Agent Atlas entities.
 
 ### `contains`
 
+- `document:generated.packages-schema-readme` _(generated)_
 - `interface:package-script.agent-atlas-schema.build` _(generated)_
 - `interface:package-script.agent-atlas-schema.lint` _(generated)_
 - `interface:package-script.agent-atlas-schema.test` _(generated)_
+- `resource:config.packages-schema-package` _(generated)_
+- `resource:config.packages-schema-schema-atlas-entity-schema` _(generated)_
+- `resource:config.packages-schema-tsconfig` _(generated)_
 
 ### `dependency-of`
 

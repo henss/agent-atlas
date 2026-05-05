@@ -79,10 +79,24 @@ interface PackageManifest {
   version?: string;
   description?: string;
   private?: boolean;
+  exports?: unknown;
   scripts?: Record<string, string>;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
+}
+
+interface PackageManifestEntry {
+  path: string;
+  dir: string;
+  manifest: PackageManifest;
+}
+
+interface PackageBoundary {
+  entityId: AtlasEntityId;
+  name: string;
+  dir: string;
+  manifestPath: string;
 }
 
 const execFileAsync = promisify(execFile);
@@ -171,7 +185,7 @@ export async function loadGeneratedSourceEntities(
   }
 
   if (isFamilyEnabled(policy, 'tests')) {
-    const generated = generateTestScopes(policy, allFiles);
+    const generated = generateTestScopes(policy, allFiles, manifests);
     entities.push(...generated.entities);
     records.push(...generated.records);
   }
@@ -183,19 +197,19 @@ export async function loadGeneratedSourceEntities(
   }
 
   if (isFamilyEnabled(policy, 'docs')) {
-    const generated = await generateDocumentEntities(absoluteRoot, policy, allFiles);
+    const generated = await generateDocumentEntities(absoluteRoot, policy, allFiles, manifests);
     entities.push(...generated.entities);
     records.push(...generated.records);
   }
 
   if (isFamilyEnabled(policy, 'config')) {
-    const generated = generateConfigEntities(policy, allFiles);
+    const generated = generateConfigEntities(policy, allFiles, manifests);
     entities.push(...generated.entities);
     records.push(...generated.records);
   }
 
   if (isFamilyEnabled(policy, 'routes')) {
-    const generated = await generateRouteInterfaces(absoluteRoot, policy, allFiles);
+    const generated = await generateRouteInterfaces(absoluteRoot, policy, allFiles, manifests);
     entities.push(...generated.entities);
     records.push(...generated.records);
   }
@@ -494,8 +508,8 @@ async function listGitIndexedFiles(rootPath: string): Promise<string[]> {
   }
 }
 
-async function readPackageManifests(rootPath: string, files: string[]): Promise<Array<{ path: string; dir: string; manifest: PackageManifest }>> {
-  const manifests = [];
+async function readPackageManifests(rootPath: string, files: string[]): Promise<PackageManifestEntry[]> {
+  const manifests: PackageManifestEntry[] = [];
   for (const file of files.filter((candidate) => candidate.endsWith('package.json'))) {
     try {
       const manifest = JSON.parse(await readFile(path.join(rootPath, file), 'utf8')) as PackageManifest;
@@ -507,14 +521,18 @@ async function readPackageManifests(rootPath: string, files: string[]): Promise<
   return manifests.sort((left, right) => left.path.localeCompare(right.path));
 }
 
-function generatePackageComponents(policy: GeneratedSourcesPolicy, manifests: Array<{ path: string; dir: string; manifest: PackageManifest }>): GeneratedEntities {
+function generatePackageComponents(policy: GeneratedSourcesPolicy, manifests: PackageManifestEntry[]): GeneratedEntities {
   const entities: AtlasEntity[] = [];
   const records: GeneratedSourceRecord[] = [];
   const family = policy.workspace_packages;
-  const prefix = family.package_component_prefix ?? 'package';
   for (const item of manifests) {
-    const name = item.manifest.name ?? (item.dir || 'root');
-    const id = `component:${prefix}.${slugify(name)}` as AtlasEntityId;
+    const name = packageDisplayName(item);
+    const id = getPackageEntityId(policy, item);
+    const dependencyNames = Object.keys(item.manifest.dependencies ?? {});
+    const devDependencyNames = Object.keys(item.manifest.devDependencies ?? {});
+    const peerDependencyNames = Object.keys(item.manifest.peerDependencies ?? {});
+    const scriptNames = Object.keys(item.manifest.scripts ?? {});
+    const exportNames = summarizePackageExports(item.manifest.exports);
     const entity = markGeneratedEntity({
       id,
       kind: 'component',
@@ -537,6 +555,12 @@ function generatePackageComponents(policy: GeneratedSourcesPolicy, manifests: Ar
           version: item.manifest.version,
           private: item.manifest.private,
           path: item.path,
+          root: item.dir || '.',
+          scripts: scriptNames,
+          exports: exportNames,
+          dependencies: dependencyNames,
+          dev_dependencies: devDependencyNames,
+          peer_dependencies: peerDependencyNames,
         },
       },
     }, 'workspace_packages', [item.path]);
@@ -546,17 +570,17 @@ function generatePackageComponents(policy: GeneratedSourcesPolicy, manifests: Ar
   return { entities, records };
 }
 
-function generatePackageScriptInterfaces(policy: GeneratedSourcesPolicy, manifests: Array<{ path: string; dir: string; manifest: PackageManifest }>): GeneratedEntities {
+function generatePackageScriptInterfaces(policy: GeneratedSourcesPolicy, manifests: PackageManifestEntry[]): GeneratedEntities {
   const entities: AtlasEntity[] = [];
   const records: GeneratedSourceRecord[] = [];
   const family = policy.package_scripts;
   const prefix = family.script_id_prefix ?? 'package-script';
   for (const item of manifests) {
-    const packageName = item.manifest.name ?? (item.dir || 'root');
-    const packageEntityId = `component:${policy.workspace_packages.package_component_prefix ?? 'package'}.${slugify(packageName)}` as AtlasEntityId;
+    const packageName = packageDisplayName(item);
+    const packageComponentId = getPackageEntityId(policy, item);
     for (const [scriptName, command] of Object.entries(item.manifest.scripts ?? {})) {
       const id = `interface:${prefix}.${slugify(packageName)}.${slugify(scriptName)}` as AtlasEntityId;
-      const relations: AtlasRelation[] = [{ type: 'part-of', target: packageEntityId }];
+      const relations: AtlasRelation[] = [{ type: 'part-of', target: packageComponentId }];
       const workflow = family.workflow_relations?.[scriptName] ?? family.workflow_relations?.[`${packageName} ${scriptName}`];
       if (workflow) {
         relations.push({ type: 'implements', target: workflow });
@@ -582,30 +606,40 @@ function generatePackageScriptInterfaces(policy: GeneratedSourcesPolicy, manifes
   return { entities, records };
 }
 
-function generateTestScopes(policy: GeneratedSourcesPolicy, files: string[]): GeneratedEntities {
+function generateTestScopes(policy: GeneratedSourcesPolicy, files: string[], manifests: PackageManifestEntry[]): GeneratedEntities {
   const family = policy.tests;
   const testFiles = applyIncludeExclude(files.filter((file) => TEST_FILE_RE.test(file)), family);
-  const groups = new Map<string, string[]>();
+  const packageBoundaries = createPackageBoundaries(policy, manifests);
+  const groups = new Map<string, { title: string; summaryRoot: string; packageId?: AtlasEntityId; paths: string[] }>();
   for (const file of testFiles) {
-    const group = firstPathSegment(file);
-    groups.set(group, [...(groups.get(group) ?? []), file]);
+    const owner = findOwningPackage(file, packageBoundaries);
+    const group = owner ? `package:${owner.entityId}` : `path:${firstPathSegment(file)}`;
+    const existing = groups.get(group) ?? {
+      title: owner ? `${owner.name} tests` : `${firstPathSegment(file)} tests`,
+      summaryRoot: owner ? owner.dir || 'repository root package' : firstPathSegment(file),
+      packageId: owner?.entityId,
+      paths: [],
+    };
+    existing.paths.push(file);
+    groups.set(group, existing);
   }
   const entities: AtlasEntity[] = [];
   const records: GeneratedSourceRecord[] = [];
-  for (const [group, paths] of [...groups.entries()].sort()) {
-    const id = `test-scope:generated.${slugify(group)}` as AtlasEntityId;
+  for (const [group, testGroup] of [...groups.entries()].sort()) {
+    const id = group.startsWith('package:')
+      ? `test-scope:generated.package.${slugify(testGroup.title.replace(/\s+tests$/i, ''))}` as AtlasEntityId
+      : `test-scope:generated.${slugify(group.replace(/^path:/, ''))}` as AtlasEntityId;
+    const paths = testGroup.paths.sort();
     const entity = markGeneratedEntity({
       id,
       kind: 'test-scope',
-      title: `${group} tests`,
-      summary: `${paths.length} discovered test file${paths.length === 1 ? '' : 's'} under ${group}.`,
+      title: testGroup.title,
+      summary: `${paths.length} discovered test file${paths.length === 1 ? '' : 's'} under ${testGroup.summaryRoot}.`,
       visibility: family.default_visibility ?? policy.default_visibility,
       code: { paths },
       commands: [{ command: 'pnpm test', purpose: 'Run repository test suite.' }],
-      relations: [
-        ...(family.owner_repository ? [{ type: 'part-of' as const, target: family.owner_repository }] : []),
-      ],
-      metadata: { tests: { files: paths } },
+      relations: relationsForPathOwnership(family.owner_repository, testGroup.packageId),
+      metadata: { tests: { files: paths, package_id: testGroup.packageId } },
     }, 'tests', paths);
     entities.push(entity);
     records.push({ family: 'tests', entityId: id, title: entity.title, summary: entity.summary, inputs: paths });
@@ -649,9 +683,10 @@ async function generateAgentSkillCapabilities(rootPath: string, policy: Generate
   return { entities, records };
 }
 
-async function generateDocumentEntities(rootPath: string, policy: GeneratedSourcesPolicy, files: string[]): Promise<GeneratedEntities> {
+async function generateDocumentEntities(rootPath: string, policy: GeneratedSourcesPolicy, files: string[], manifests: PackageManifestEntry[]): Promise<GeneratedEntities> {
   const family = policy.docs;
   const docFiles = applyIncludeExclude(files.filter((file) => DOC_FILE_RE.test(file)), family);
+  const packageBoundaries = createPackageBoundaries(policy, manifests);
   const entities: AtlasEntity[] = [];
   const records: GeneratedSourceRecord[] = [];
   for (const file of docFiles) {
@@ -668,10 +703,14 @@ async function generateDocumentEntities(rootPath: string, policy: GeneratedSourc
       visibility: family.default_visibility ?? policy.default_visibility,
       uri: file,
       code: { paths: [file] },
-      relations: [
-        ...(family.owner_repository ? [{ type: 'part-of' as const, target: family.owner_repository }] : []),
-      ],
-      metadata: { document: { path: file, generated_from_markdown: true } },
+      relations: relationsForPathOwnership(family.owner_repository, findOwningPackage(file, packageBoundaries)?.entityId),
+      metadata: {
+        document: {
+          path: file,
+          generated_from_markdown: true,
+          package_id: findOwningPackage(file, packageBoundaries)?.entityId,
+        },
+      },
     }, 'docs', [file]);
     entities.push(entity);
     records.push({ family: 'docs', entityId: id, title: entity.title, summary: entity.summary, inputs: [file] });
@@ -688,12 +727,14 @@ async function isGeneratedAtlasMarkdown(rootPath: string, file: string): Promise
   }
 }
 
-function generateConfigEntities(policy: GeneratedSourcesPolicy, files: string[]): GeneratedEntities {
+function generateConfigEntities(policy: GeneratedSourcesPolicy, files: string[], manifests: PackageManifestEntry[]): GeneratedEntities {
   const family = policy.config;
   const configFiles = applyIncludeExclude(files.filter((file) => CONFIG_FILE_RE.test(file)), family);
+  const packageBoundaries = createPackageBoundaries(policy, manifests);
   const entities: AtlasEntity[] = [];
   const records: GeneratedSourceRecord[] = [];
   for (const file of configFiles) {
+    const owner = findOwningPackage(file, packageBoundaries);
     const id = `resource:config.${slugify(stripExtension(file))}` as AtlasEntityId;
     const entity = markGeneratedEntity({
       id,
@@ -703,10 +744,8 @@ function generateConfigEntities(policy: GeneratedSourcesPolicy, files: string[])
       visibility: family.default_visibility ?? policy.default_visibility,
       uri: file,
       code: { paths: [file] },
-      relations: [
-        ...(family.owner_repository ? [{ type: 'part-of' as const, target: family.owner_repository }] : []),
-      ],
-      metadata: { config: { path: file } },
+      relations: relationsForPathOwnership(family.owner_repository, owner?.entityId),
+      metadata: { config: { path: file, package_id: owner?.entityId } },
     }, 'config', [file]);
     entities.push(entity);
     records.push({ family: 'config', entityId: id, title: entity.title, summary: entity.summary, inputs: [file] });
@@ -714,9 +753,10 @@ function generateConfigEntities(policy: GeneratedSourcesPolicy, files: string[])
   return { entities, records };
 }
 
-async function generateRouteInterfaces(rootPath: string, policy: GeneratedSourcesPolicy, files: string[]): Promise<GeneratedEntities> {
+async function generateRouteInterfaces(rootPath: string, policy: GeneratedSourcesPolicy, files: string[], manifests: PackageManifestEntry[]): Promise<GeneratedEntities> {
   const family = policy.routes;
   const sourceFiles = applyIncludeExclude(files.filter((file) => SOURCE_FILE_RE.test(file)), family);
+  const packageBoundaries = createPackageBoundaries(policy, manifests);
   const entities: AtlasEntity[] = [];
   const records: GeneratedSourceRecord[] = [];
   const seen = new Set<string>();
@@ -728,6 +768,7 @@ async function generateRouteInterfaces(rootPath: string, policy: GeneratedSource
       continue;
     }
     const routes = extractRoutesFromSource(file, content);
+    const owner = findOwningPackage(file, packageBoundaries);
     for (const route of routes) {
       const key = `${route.method}:${route.path}`;
       if (seen.has(key)) {
@@ -743,10 +784,8 @@ async function generateRouteInterfaces(rootPath: string, policy: GeneratedSource
         visibility: family.default_visibility ?? policy.default_visibility,
         uri: `${route.method.toUpperCase()} ${route.path}`,
         code: { paths: [file] },
-        relations: [
-          ...(family.owner_repository ? [{ type: 'part-of' as const, target: family.owner_repository }] : []),
-        ],
-        metadata: { route: { method: route.method, path: route.path, source: file } },
+        relations: relationsForPathOwnership(family.owner_repository, owner?.entityId),
+        metadata: { route: { method: route.method, path: route.path, source: file, package_id: owner?.entityId } },
       }, 'routes', [file]);
       entities.push(entity);
       records.push({ family: 'routes', entityId: id, title: entity.title, summary: entity.summary, inputs: [file] });
@@ -755,7 +794,7 @@ async function generateRouteInterfaces(rootPath: string, policy: GeneratedSource
   return { entities, records };
 }
 
-function generateDependencyRelations(policy: GeneratedSourcesPolicy, manifests: Array<{ path: string; dir: string; manifest: PackageManifest }>): GeneratedEntities {
+function generateDependencyRelations(policy: GeneratedSourcesPolicy, manifests: PackageManifestEntry[]): GeneratedEntities {
   const family = policy.dependencies;
   const entities: AtlasEntity[] = [];
   const records: GeneratedSourceRecord[] = [];
@@ -798,6 +837,67 @@ function generateDependencyRelations(policy: GeneratedSourcesPolicy, manifests: 
     records.push({ family: 'dependencies', entityId: id, title: entity.title, summary: entity.summary, inputs: [item.path] });
   }
   return { entities, records };
+}
+
+function packageDisplayName(item: PackageManifestEntry): string {
+  return item.manifest.name ?? (item.dir || 'root');
+}
+
+function getPackageEntityId(policy: GeneratedSourcesPolicy, item: PackageManifestEntry): AtlasEntityId {
+  const prefix = policy.workspace_packages.package_component_prefix ?? 'package';
+  return `component:${prefix}.${slugify(packageDisplayName(item))}` as AtlasEntityId;
+}
+
+function createPackageBoundaries(policy: GeneratedSourcesPolicy, manifests: PackageManifestEntry[]): PackageBoundary[] {
+  return manifests
+    .map((item) => ({
+      entityId: getPackageEntityId(policy, item),
+      name: packageDisplayName(item),
+      dir: item.dir,
+      manifestPath: item.path,
+    }))
+    .sort((left, right) => right.dir.length - left.dir.length || left.name.localeCompare(right.name));
+}
+
+function findOwningPackage(file: string, boundaries: PackageBoundary[]): PackageBoundary | undefined {
+  const normalizedFile = normalizePath(file);
+  const rootBoundary = boundaries.find((boundary) => boundary.dir === '');
+  for (const boundary of boundaries) {
+    if (boundary.dir === '') {
+      continue;
+    }
+    if (normalizedFile === boundary.manifestPath || normalizedFile.startsWith(`${boundary.dir}/`)) {
+      return boundary;
+    }
+  }
+  return rootBoundary && normalizedFile === rootBoundary.manifestPath ? rootBoundary : undefined;
+}
+
+function relationsForPathOwnership(
+  ownerRepository: AtlasEntityId | undefined,
+  packageId: AtlasEntityId | undefined,
+): AtlasRelation[] {
+  const relations: AtlasRelation[] = [];
+  if (ownerRepository) {
+    relations.push({ type: 'part-of', target: ownerRepository });
+  }
+  if (packageId && packageId !== ownerRepository) {
+    relations.push({ type: 'part-of', target: packageId });
+  }
+  return relations;
+}
+
+function summarizePackageExports(exportsValue: unknown): string[] {
+  if (typeof exportsValue === 'string') {
+    return ['.'];
+  }
+  if (Array.isArray(exportsValue)) {
+    return exportsValue.map((entry) => String(entry)).slice(0, 20);
+  }
+  if (isRecord(exportsValue)) {
+    return Object.keys(exportsValue).sort().slice(0, 20);
+  }
+  return [];
 }
 
 function markGeneratedEntity(entity: AtlasEntity, family: GeneratedSourceFamily, inputs: string[]): AtlasEntity {

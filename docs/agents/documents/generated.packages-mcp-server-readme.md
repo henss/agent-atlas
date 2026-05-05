@@ -25,4 +25,5 @@ Markdown document at packages/mcp-server/README.md.
 
 ### `part-of`
 
+- `component:package.agent-atlas-mcp-server`
 - `repository:agent-atlas`

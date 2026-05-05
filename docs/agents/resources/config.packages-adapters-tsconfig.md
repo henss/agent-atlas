@@ -25,4 +25,5 @@ Repository configuration file at packages/adapters/tsconfig.json.
 
 ### `part-of`
 
+- `component:package.agent-atlas-adapters`
 - `repository:agent-atlas`

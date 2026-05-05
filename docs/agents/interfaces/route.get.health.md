@@ -25,4 +25,5 @@ Discovered GET route in packages/core/src/generated-sources.test.ts.
 
 ### `part-of`
 
+- `component:package.agent-atlas-core`
 - `repository:agent-atlas`

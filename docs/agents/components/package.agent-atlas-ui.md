@@ -13,6 +13,47 @@ Local read-only review UI for Agent Atlas graphs.
 - visibility: `public`
 - tags: `generated-source`, `workspace_packages`
 
+## Drill Down
+
+### Package Facts
+
+- root: `packages/ui`
+- manifest: `packages/ui/package.json`
+- exports: `.`
+
+### Scripts
+
+- `build`
+- `test`
+- `lint`
+
+### Interfaces
+
+- `interface:package-script.agent-atlas-ui.build`
+- `interface:package-script.agent-atlas-ui.lint`
+- `interface:package-script.agent-atlas-ui.test`
+
+### Components
+
+- `component:package.agent-atlas-ui.dependencies`
+
+### Documents
+
+- `document:generated.packages-ui-readme`
+
+### Config
+
+- `resource:config.packages-ui-package`
+- `resource:config.packages-ui-tsconfig`
+- `resource:config.packages-ui-tsconfig-server`
+- `resource:config.packages-ui-vite-config`
+- `resource:config.packages-ui-vitest-config`
+
+### Tests
+
+- `test-scope:generated.package.agent-atlas-ui`
+
+
 ## Code
 
 - path: `packages/ui/**`
@@ -27,9 +68,16 @@ Local read-only review UI for Agent Atlas graphs.
 ### `contains`
 
 - `component:package.agent-atlas-ui.dependencies` _(generated)_
+- `document:generated.packages-ui-readme` _(generated)_
 - `interface:package-script.agent-atlas-ui.build` _(generated)_
 - `interface:package-script.agent-atlas-ui.lint` _(generated)_
 - `interface:package-script.agent-atlas-ui.test` _(generated)_
+- `resource:config.packages-ui-package` _(generated)_
+- `resource:config.packages-ui-tsconfig` _(generated)_
+- `resource:config.packages-ui-tsconfig-server` _(generated)_
+- `resource:config.packages-ui-vite-config` _(generated)_
+- `resource:config.packages-ui-vitest-config` _(generated)_
+- `test-scope:generated.package.agent-atlas-ui` _(generated)_
 
 ### `dependency-of`
 

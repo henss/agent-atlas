@@ -25,4 +25,5 @@ Repository configuration file at packages/mcp-server/package.json.
 
 ### `part-of`
 
+- `component:package.agent-atlas-mcp-server`
 - `repository:agent-atlas`

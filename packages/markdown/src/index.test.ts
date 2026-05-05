@@ -57,6 +57,48 @@ describe('generateMarkdownViews', () => {
     expect(markdown).not.toContain('notion://page/sanitized-release-process');
   });
 
+  it('renders package component cards as package entrypoints', () => {
+    const markdown = renderEntityCard(
+      {
+        id: 'component:package.example-core',
+        kind: 'component',
+        title: '@example/core',
+        summary: 'Core package.',
+        visibility: 'public',
+        metadata: {
+          package: {
+            root: 'packages/core',
+            path: 'packages/core/package.json',
+            scripts: ['build'],
+            exports: ['.', './cli'],
+          },
+        },
+      },
+      [
+        {
+          source: 'component:package.example-core',
+          target: 'interface:package-script.example-core.build',
+          type: 'contains',
+          provenance: 'generated',
+        },
+        {
+          source: 'component:package.example-core',
+          target: 'test-scope:generated.package.example-core',
+          type: 'contains',
+          provenance: 'generated',
+        },
+      ],
+      'public',
+    );
+
+    expect(markdown).toContain('## Drill Down');
+    expect(markdown).toContain('### Package Facts');
+    expect(markdown).toContain('- root: `packages/core`');
+    expect(markdown).toContain('### Interfaces');
+    expect(markdown).toContain('`interface:package-script.example-core.build`');
+    expect(markdown).toContain('### Tests');
+  });
+
   it('renders a compact repository README from visible atlas entities', () => {
     const markdown = renderRepositoryReadme(
       {
@@ -129,6 +171,23 @@ describe('generateMarkdownViews', () => {
             uri: '.agents/skills/ship/SKILL.md',
           },
           {
+            id: 'component:package.example-core',
+            kind: 'component',
+            title: '@example/core',
+            summary: 'Core package.',
+            visibility: 'public',
+            uri: 'packages/core/package.json',
+            metadata: {
+              package: {
+                name: '@example/core',
+                root: 'packages/core',
+                path: 'packages/core/package.json',
+                scripts: ['build', 'test'],
+                exports: ['.', './cli'],
+              },
+            },
+          },
+          {
             id: 'document:generated.agents-skills-ship-skill',
             kind: 'document',
             title: 'Ship skill',
@@ -166,6 +225,7 @@ describe('generateMarkdownViews', () => {
           { source: 'repository:example', target: 'workflow:ship', type: 'contains', provenance: 'explicit' },
           { source: 'repository:example', target: 'capability:agent-skill.ship', type: 'contains', provenance: 'explicit' },
           { source: 'repository:example', target: 'document:docs-index', type: 'contains', provenance: 'explicit' },
+          { source: 'repository:example', target: 'component:package.example-core', type: 'contains', provenance: 'generated' },
         ],
       },
       { profile: 'public' },
@@ -193,6 +253,8 @@ describe('generateMarkdownViews', () => {
     expect(markdown).toContain('`domain:example-domain` - Example Domain: Top-level domain context.');
     expect(markdown).toContain('## Agent Capabilities');
     expect(markdown).toContain('`capability:agent-skill.ship` - Ship skill: Use when releasing the package.');
+    expect(markdown).toContain('## Packages');
+    expect(markdown).toContain('[@example/core](docs/agents/components/package.example-core.md) - Core package. Root: `packages/core`. Scripts: `build`, `test`.');
     expect(markdown).not.toContain('document:generated.agents-skills-ship-skill');
     expect(markdown).toContain('Documentation entrypoint: [Docs Index](docs/index.md).');
     expect(markdown).toContain('`workflow:ship`');

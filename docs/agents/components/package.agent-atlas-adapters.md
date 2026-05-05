@@ -13,6 +13,44 @@ Adapter interfaces and generic adapters for Agent Atlas.
 - visibility: `public`
 - tags: `generated-source`, `workspace_packages`
 
+## Drill Down
+
+### Package Facts
+
+- root: `packages/adapters`
+- manifest: `packages/adapters/package.json`
+- exports: `.`
+
+### Scripts
+
+- `build`
+- `test`
+- `lint`
+
+### Interfaces
+
+- `interface:package-script.agent-atlas-adapters.build`
+- `interface:package-script.agent-atlas-adapters.lint`
+- `interface:package-script.agent-atlas-adapters.test`
+
+### Components
+
+- `component:package.agent-atlas-adapters.dependencies`
+
+### Documents
+
+- `document:generated.packages-adapters-readme`
+
+### Config
+
+- `resource:config.packages-adapters-package`
+- `resource:config.packages-adapters-tsconfig`
+
+### Tests
+
+- `test-scope:generated.package.agent-atlas-adapters`
+
+
 ## Code
 
 - path: `packages/adapters/**`
@@ -27,9 +65,13 @@ Adapter interfaces and generic adapters for Agent Atlas.
 ### `contains`
 
 - `component:package.agent-atlas-adapters.dependencies` _(generated)_
+- `document:generated.packages-adapters-readme` _(generated)_
 - `interface:package-script.agent-atlas-adapters.build` _(generated)_
 - `interface:package-script.agent-atlas-adapters.lint` _(generated)_
 - `interface:package-script.agent-atlas-adapters.test` _(generated)_
+- `resource:config.packages-adapters-package` _(generated)_
+- `resource:config.packages-adapters-tsconfig` _(generated)_
+- `test-scope:generated.package.agent-atlas-adapters` _(generated)_
 
 ### `part-of`
 
