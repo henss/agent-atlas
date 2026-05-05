@@ -26,6 +26,7 @@ Narrow default verification commands for repo-local changes; prefer more specifi
 
 Verifies:
 - `component:agent-atlas-source`
+- `repository:agent-atlas`
 
 ## Workspace Build And Test
 

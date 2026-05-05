@@ -21,6 +21,7 @@ Generated Commander-derived Markdown reference for Atlas CLI command syntax, opt
 ### `documents`
 
 - `component:cli-package`
+- `repository:agent-atlas` _(generated)_
 - `workflow:operate-atlas-cli`
 
 ## Agent Hints

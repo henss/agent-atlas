@@ -18,3 +18,4 @@ Primary repo entrypoint for setup, usage, architecture, and maintenance notes.
 ### `documents`
 
 - `component:agent-atlas-source`
+- `repository:agent-atlas` _(generated)_

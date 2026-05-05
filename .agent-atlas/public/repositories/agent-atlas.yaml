@@ -1,13 +1,110 @@
 id: repository:agent-atlas
 kind: repository
-title: agent-atlas
+title: Agent Atlas
 summary: Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 status: active
 visibility: public
 uri: repo://agent-atlas
+metadata:
+  readme:
+    start_here:
+      - Read `docs/agents/atlas.md` for the generated graph overview.
+      - Use `atlas resolve-path <path> --path .` when starting from a source file.
+      - Use `atlas context-pack "<task>" --path . --budget 4000` before broad repository search.
+      - Use `docs/generated/cli-command-reference.md` for exact CLI command syntax and options.
+      - Update `.agent-atlas/**` or canonical docs when this README is missing or misleading; do not hand-edit generated output.
+    key_docs:
+      - label: Generated Atlas Overview
+        path: docs/agents/atlas.md
+        note: Compact generated graph entrypoint for agents.
+      - label: CLI Command Reference
+        path: docs/generated/cli-command-reference.md
+        note: Commander-derived command syntax, options, arguments, and descriptions.
+      - label: Authoring Guide
+        path: docs/guides/authoring-atlas-files.md
+        note: How to author Atlas metadata.
+      - label: Local CLI Consumption
+        path: docs/guides/local-cli-consumption.md
+        note: How downstream repos consume a sibling checkout or packaged CLI.
+      - label: Package Publish Readiness
+        path: docs/guides/package-publish-readiness.md
+        note: Preview release gates and compatibility checks.
+      - label: Typed Context Graph
+        path: docs/concepts/typed-context-graph.md
+        note: Core graph model and routing concept.
+      - label: Entity Specification
+        path: docs/spec/entities.md
+        note: Entity kinds and field contract.
+      - label: Generated Markdown Spec
+        path: docs/spec/generated-markdown.md
+        note: Generated docs, README, and CLI reference contract.
+    durable_state:
+      - path: .agent-atlas/
+        note: Canonical entity cards, overlays, and generated surface policy.
+      - path: docs/agents/
+        note: Generated LLM-facing Markdown views.
+      - path: docs/generated/
+        note: Generated references such as the CLI command reference.
+      - path: packages/schema/
+        note: Entity types, relation vocabulary, and JSON Schema assets.
+      - path: packages/core/
+        note: Graph loading, validation, traversal, context packs, maintenance, and diagnostics.
+      - path: packages/cli/
+        note: Atlas command-line interface and Commander program metadata.
+      - path: packages/mcp-server/
+        note: Read-only MCP resources and traversal tools.
+      - path: packages/markdown/
+        note: Generated Markdown and README renderers.
+      - path: packages/adapters/
+        note: Integration interfaces and reusable adapters.
+    operational_notes:
+      - Generated Markdown and README output should route to authoritative metadata and docs instead of becoming a hand-maintained wiki.
+      - Public metadata must not contain secrets, private URLs, customer data, or sensitive internal topology; use overlays for private context.
+      - Keep command syntax in Commander definitions and regenerate the CLI reference instead of copying command flags into README.
+    sections:
+      - title: Core Idea
+        items:
+          - The atlas is a navigation layer, not a knowledge dump.
+          - Start from a task or file, resolve an atlas entity, follow related domains/workflows/components/docs/tests, and load only task-relevant context.
+          - Canonical source lives in `.agent-atlas/**`; hierarchical files such as `docs/agents/**`, `docs/generated/**`, and this README are generated views.
+      - title: What This Project Should Not Become
+        items:
+          - A vector database pretending to be a source of truth.
+          - A giant manually maintained wiki.
+          - A replacement for Backstage, Port, Sourcegraph, DataHub, Notion, Confluence, Jira, or Google Workspace.
+          - A dumping ground for secrets, private URLs, customer data, or operational live data.
+      - title: Public Private Boundary
+        items:
+          - Open-source core includes schema, validators, traversal logic, generated docs, CLI/MCP interfaces, generic adapters, and sanitized examples.
+          - Real deployments should keep actual company or personal atlas contents, sensitive repo topology, private page IDs, customer data, credentials, and sensitive secret names out of public metadata.
+          - Use profile overlays for private context instead of contaminating public files.
+      - title: Release And Compatibility
+        items:
+          - "Current local compatibility contract is workspace package version `0.18.0`, entity `schema_version: 1`, usage receipt `version: 1`, boundary policy `version: 1`, and registry `version: 1`."
+          - Public repos should pin exact preview CLI releases such as `@agent-atlas/cli@0.18.0` after the package publish readiness checklist passes.
+      - title: License
+        items:
+          - Apache-2.0; see `LICENSE`.
+commands:
+  - command: pnpm build
+    purpose: Build all workspace packages.
+  - command: pnpm test
+    purpose: Run package test suites.
+  - command: pnpm lint
+    purpose: Typecheck all packages without emitting build output.
+  - command: node packages/cli/dist/index.js maintain fix --path . --profile public
+    purpose: Regenerate Atlas docs, README, and CLI reference for this repository.
+  - command: node packages/cli/dist/index.js maintain check --path . --profile public
+    purpose: Check Atlas metadata, generated docs, README, and CLI reference for drift.
 relations:
   - type: related-to
     target: domain:agent-atlas-local
+  - type: documented-in
+    target: document:agent-atlas-readme
+  - type: documented-in
+    target: document:cli-command-reference
+  - type: tested-by
+    target: test-scope:agent-atlas-verification
 agent:
   load_when:
     - Orienting in this repository or building a repo-local context pack.

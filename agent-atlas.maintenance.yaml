@@ -4,6 +4,9 @@ profile: public
 generated_docs:
   output: docs/agents
   auto_regenerate: true
+generated_readme:
+  path: README.md
+  auto_regenerate: true
 generated_cli:
   commander:
     - id: atlas-cli
