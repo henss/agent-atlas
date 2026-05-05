@@ -49,6 +49,16 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 - Public metadata must not contain secrets, private URLs, customer data, or sensitive internal topology; use overlays for private context.
 - Keep command syntax in Commander definitions and regenerate the CLI reference instead of copying command flags into README.
 
+## CLI
+
+- Full command reference: [CLI Command Reference](docs/generated/cli-command-reference.md) - Generated Commander-derived Markdown reference for Atlas CLI command syntax, options, arguments, and descriptions.
+- Evaluation Commands (5): `atlas benchmark`, `atlas boundary-check`, `atlas doctor`, `atlas evaluate`, `atlas usage-note`
+- Generated Artifact Commands (3): `atlas cli docs check`, `atlas cli docs generate`, `atlas generate markdown`
+- Global Registry Commands (5): `atlas global context-pack`, `atlas global generate markdown`, `atlas global list`, `atlas global manifest`, `atlas global validate`
+- Graph Commands (6): `atlas context-pack`, `atlas neighbors`, `atlas overview`, `atlas resolve-path`, `atlas show`, `atlas validate`
+- Integration Commands (2): `atlas mcp smoke-test`, `atlas ui`
+- Maintenance Commands (10): `atlas diff`, `atlas discover-gaps`, `atlas maintain agent-instructions`, `atlas maintain check`, `atlas maintain fix`, `atlas migrate`, `atlas proposal apply`, `atlas proposal validate`, and 2 more in the command reference
+
 ## Core Idea
 
 - The atlas is a navigation layer, not a knowledge dump.
