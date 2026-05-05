@@ -183,8 +183,10 @@ describe('generateMarkdownViews', () => {
     expect(markdown).toContain(
       '- Full command reference: [CLI Reference](docs/generated/cli-command-reference.md) - Generated command details.',
     );
+    expect(markdown).toContain('### Command Groups');
+    expect(markdown).toContain('| Group | Purpose | Example |');
     expect(markdown).toContain(
-      '- Validation Commands (1): Commands for validating repository metadata and generated artifacts. `example validate`',
+      '| [Validation Commands](docs/generated/cli-command-reference.md#validation-commands) (1) | Commands for validating repository metadata and generated artifacts. | `example validate` |',
     );
     expect(markdown).toContain('## Custom Section');
     expect(markdown).toContain('## Domains');

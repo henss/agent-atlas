@@ -52,12 +52,17 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 ## CLI
 
 - Full command reference: [CLI Command Reference](docs/generated/cli-command-reference.md) - Generated Commander-derived Markdown reference for Atlas CLI command syntax, options, arguments, and descriptions.
-- Evaluation Commands (5): `atlas benchmark`, `atlas boundary-check`, `atlas doctor`, `atlas evaluate`, `atlas usage-note`
-- Generated Artifact Commands (5): `atlas cli docs check`, `atlas cli docs generate`, `atlas generate markdown`, `atlas sources docs check`, `atlas sources docs generate`
-- Global Registry Commands (5): `atlas global context-pack`, `atlas global generate markdown`, `atlas global list`, `atlas global manifest`, `atlas global validate`
-- Graph Commands (6): `atlas context-pack`, `atlas neighbors`, `atlas overview`, `atlas resolve-path`, `atlas show`, `atlas validate`
-- Integration Commands (2): `atlas mcp smoke-test`, `atlas ui`
-- Maintenance Commands (10): `atlas diff`, `atlas discover-gaps`, `atlas maintain agent-instructions`, `atlas maintain check`, `atlas maintain fix`, `atlas migrate`, `atlas proposal apply`, `atlas proposal validate`, and 2 more in the command reference
+
+### Command Groups
+
+| Group | Purpose | Example |
+| --- | --- | --- |
+| [Evaluation Commands](docs/generated/cli-command-reference.md#evaluation-commands) (5) | See the command reference for details. | `atlas benchmark` +4 more |
+| [Generated Artifact Commands](docs/generated/cli-command-reference.md#generated-artifact-commands) (5) | See the command reference for details. | `atlas cli docs check` +4 more |
+| [Global Registry Commands](docs/generated/cli-command-reference.md#global-registry-commands) (5) | See the command reference for details. | `atlas global context-pack` +4 more |
+| [Graph Commands](docs/generated/cli-command-reference.md#graph-commands) (6) | See the command reference for details. | `atlas context-pack` +5 more |
+| [Integration Commands](docs/generated/cli-command-reference.md#integration-commands) (2) | See the command reference for details. | `atlas mcp smoke-test` +1 more |
+| [Maintenance Commands](docs/generated/cli-command-reference.md#maintenance-commands) (10) | See the command reference for details. | `atlas diff` +9 more |
 
 ## Source-Derived Surfaces
 
@@ -149,7 +154,7 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 ## Verification
 
 - `test-scope:agent-atlas-verification` - agent-atlas Verification: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
-- `test-scope:generated.packages` - packages tests: 23 discovered test files under packages.
+- `test-scope:generated.packages` - packages tests: 22 discovered test files under packages.
 
 ## Commands
 
