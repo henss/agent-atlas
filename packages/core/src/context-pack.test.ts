@@ -9,14 +9,14 @@ describe('createContextPack', () => {
   it('selects entities from task text, paths, and graph context', async () => {
     const graph = await loadAtlasGraph(path.resolve('../..'));
     const pack = createContextPack(graph, {
-      task: 'Change CLI path resolution in packages/cli/src/index.ts',
-      budget: 3000,
+      task: 'Change CLI path resolution in packages/cli/src/index.ts and verify workspace',
+      budget: 6000,
       deterministic: true,
     });
 
     const entityIds = pack.entities.map((candidate) => candidate.entity.id);
     expect(entityIds).toContain('component:cli-package');
-    expect(entityIds).toContain('component:core-package');
+    expect(entityIds).toContain('interface:atlas-cli.resolve-path');
     expect(entityIds).toContain('workflow:operate-atlas-cli');
     expect(pack.recommendedReads.map((read) => read.value)).toContain('packages/cli/src/index.ts');
     expect(pack.verification.map((item) => item.entity.id)).toContain(

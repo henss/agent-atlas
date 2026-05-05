@@ -36,6 +36,8 @@ relations:
   - type: documented-in
     target: document:cli-readme
   - type: documented-in
+    target: document:cli-command-reference
+  - type: documented-in
     target: document:registry-spec
   - type: documented-in
     target: document:versioning-spec

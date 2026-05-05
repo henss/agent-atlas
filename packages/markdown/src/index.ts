@@ -50,6 +50,7 @@ const CARD_KIND_DIRECTORIES: Partial<Record<AtlasEntityKind, string>> = {
   domain: 'domains',
   workflow: 'workflows',
   component: 'components',
+  interface: 'interfaces',
   resource: 'resources',
   document: 'documents',
 };

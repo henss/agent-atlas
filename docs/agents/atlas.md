@@ -91,5 +91,12 @@ Profile: `public`
 - `document:ui-readme` (document) - UI README: Package README for the local read-only review UI, hash routes, API previews, and non-editing boundaries.
 - `document:validation-spec` (document) - Validation Specification: Specification for validation diagnostics, severity levels, and actionable fix hints.
 - `document:versioning-spec` (document) - Versioning Specification: Specification for schema_version, usage receipt version, migration behavior, and sibling-checkout compatibility versions.
-- `repository:agent-atlas` (repository) - agent-atlas: Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
-- `test-scope:agent-atlas-verification` (test-scope) - agent-atlas Verification: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
+- `interface:atlas-cli.benchmark` (interface) - atlas benchmark: Benchmark Atlas context-pack selection.
+- `interface:atlas-cli.boundary-check` (interface) - atlas boundary-check: Check profile boundary safety.
+- `interface:atlas-cli.cli-docs-check` (interface) - atlas cli docs check: Check the CLI command reference.
+- `interface:atlas-cli.cli-docs-generate` (interface) - atlas cli docs generate: Generate the CLI command reference.
+- `interface:atlas-cli.context-pack` (interface) - atlas context-pack: Build a task-focused context pack.
+- `interface:atlas-cli.diff` (interface) - atlas diff: Report stale Atlas metadata and generated artifacts.
+- `interface:atlas-cli.discover-gaps` (interface) - atlas discover-gaps: Discover Atlas coverage gaps.
+- `interface:atlas-cli.doctor` (interface) - atlas doctor: Check local Agent Atlas setup.
+- `interface:atlas-cli.evaluate` (interface) - atlas evaluate: Evaluate Atlas usage evidence.

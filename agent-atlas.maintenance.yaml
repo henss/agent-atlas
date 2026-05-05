@@ -4,6 +4,44 @@ profile: public
 generated_docs:
   output: docs/agents
   auto_regenerate: true
+generated_cli:
+  commander:
+    - id: atlas-cli
+      module: packages/cli/dist/program.js
+      export: createAtlasCliProgram
+      owner_component: component:cli-package
+      command_id_prefix: atlas-cli
+      cli_name: atlas
+      default_visibility: public
+      workflow_relations:
+        validate: workflow:review-atlas-graph
+        overview: workflow:navigate-atlas-graph
+        show: workflow:navigate-atlas-graph
+        neighbors: workflow:navigate-atlas-graph
+        resolve-path: workflow:navigate-atlas-graph
+        context-pack: workflow:create-context-pack
+        generate markdown: workflow:generate-agent-docs
+        cli docs generate: workflow:operate-atlas-cli
+        cli docs check: workflow:operate-atlas-cli
+        maintain check: workflow:maintain-atlas-metadata
+        maintain fix: workflow:maintain-atlas-metadata
+        maintain agent-instructions: workflow:maintain-atlas-metadata
+        diff: workflow:maintain-atlas-metadata
+        suggest-card: workflow:maintain-atlas-metadata
+        discover-gaps: workflow:maintain-atlas-metadata
+        propose-cards: workflow:maintain-atlas-metadata
+        proposal validate: workflow:maintain-atlas-metadata
+        proposal apply: workflow:maintain-atlas-metadata
+        mcp smoke-test: workflow:expose-atlas-mcp
+        ui: workflow:review-atlas-graph
+        global validate: workflow:operate-cross-repo-registry
+        global list: workflow:operate-cross-repo-registry
+        global manifest: workflow:operate-cross-repo-registry
+        global context-pack: workflow:operate-cross-repo-registry
+        global generate markdown: workflow:operate-cross-repo-registry
+  reference:
+    path: docs/generated/cli-command-reference.md
+    auto_regenerate: true
 metadata:
   auto_apply: true
   allow_add: true

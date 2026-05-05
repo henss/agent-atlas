@@ -2,6 +2,7 @@ import type { AtlasEntity, AtlasEntityId, AtlasRelation, AtlasRelationType } fro
 import { getInverseRelationType } from '@agent-atlas/schema';
 import type { AtlasDiagnostic } from './diagnostics.js';
 import type { AtlasProfile } from './profile.js';
+import { loadGeneratedCliEntities } from './generated-cli.js';
 import { validateAtlas } from './validation.js';
 
 export interface AtlasGraphIndex {
@@ -38,10 +39,19 @@ export async function loadAtlasGraph(
   options: LoadAtlasGraphOptions = {},
 ): Promise<AtlasGraph> {
   const validation = await validateAtlas(rootPath, { profile: options.profile });
-  const graphEntities = keepFirstEntityById(validation.entities);
+  const generatedCli = await loadGeneratedCliEntities(validation.rootPath);
+  const graphEntities = keepFirstEntityById([...validation.entities, ...generatedCli.entities]);
   const edges = normalizeGraphEdges(graphEntities);
   const index = createGraphIndex(graphEntities, edges);
-  const diagnostics = [...validation.diagnostics, ...createGraphDiagnostics(graphEntities, edges)];
+  const diagnostics = [
+    ...validation.diagnostics,
+    ...generatedCli.diagnostics.map((diagnostic): AtlasDiagnostic => ({
+      level: diagnostic.level,
+      code: 'GENERATED_CLI',
+      message: diagnostic.message,
+    })),
+    ...createGraphDiagnostics(graphEntities, edges),
+  ];
 
   return {
     rootPath: validation.rootPath,

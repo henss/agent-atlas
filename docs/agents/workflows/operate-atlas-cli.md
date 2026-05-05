@@ -22,6 +22,7 @@ Exposes validation, graph navigation, path resolution, context packs, Markdown g
 
 ### Documents
 
+- `document:cli-command-reference`
 - `document:cli-readme`
 - `document:incremental-authoring-guide`
 
@@ -33,6 +34,7 @@ Exposes validation, graph navigation, path resolution, context packs, Markdown g
 
 ### `documented-in`
 
+- `document:cli-command-reference` _(generated)_
 - `document:cli-readme`
 - `document:incremental-authoring-guide` _(generated)_
 
@@ -40,6 +42,8 @@ Exposes validation, graph navigation, path resolution, context packs, Markdown g
 
 - `component:cli-package` _(generated)_
 - `component:ui-package` _(generated)_
+- `interface:atlas-cli.cli-docs-check` _(generated)_
+- `interface:atlas-cli.cli-docs-generate` _(generated)_
 
 ### `part-of`
 

@@ -9,7 +9,7 @@ It helps agents answer four questions before they spend tokens searching blindly
 3. **What should be loaded next?** Token-aware context packs, generated docs, and MCP resources.
 4. **How should changes be verified?** Scope-aware test and validation guidance.
 
-The M0-M17 roadmap is implemented. The project now provides a working schema, validator, graph loader, traversal engine, path resolver, Markdown generator, context-pack builder, overlay support, hardened read-only MCP server, adapter interfaces, hardened cross-repo registry support, migration tooling, diagnostics, CLI tests, benchmarks, setup doctor checks, local usage receipts, context-pack evaluation, boundary checks, incremental authoring tools for sibling-checkout consumers, and a local human review UI.
+The M0-M17 roadmap is implemented. The project now provides a working schema, validator, graph loader, traversal engine, path resolver, Markdown generator, context-pack builder, overlay support, hardened read-only MCP server, adapter interfaces, hardened cross-repo registry support, migration tooling, diagnostics, Commander-derived CLI documentation, CLI tests, benchmarks, setup doctor checks, local usage receipts, context-pack evaluation, boundary checks, incremental authoring tools for sibling-checkout consumers, and a local human review UI.
 
 ## Core idea
 
@@ -58,6 +58,7 @@ packages/adapters/         # integration interfaces and reusable adapters
 - Suggest starter cards with `atlas suggest-card`.
 - Diagnose stale references with `atlas diff`.
 - Run policy-driven Atlas maintenance checks and autonomous fixes with `atlas maintain`.
+- Generate Commander-derived CLI command docs with `atlas cli docs generate`.
 - Record local adoption receipts with `atlas usage-note`.
 - Evaluate context-pack selection against receipts with `atlas evaluate`.
 
@@ -93,7 +94,7 @@ To browse this repository's own atlas as a local demo, run:
 pnpm atlas:ui
 ```
 
-See [`packages/cli/README.md`](./packages/cli/README.md) for the full command reference.
+See the generated [`CLI Command Reference`](./docs/generated/cli-command-reference.md) for command syntax and options. See [`packages/cli/README.md`](./packages/cli/README.md) for package usage and consumption notes.
 
 For sibling-checkout consumers, the current local compatibility contract is workspace package version `0.18.0`, entity `schema_version: 1`, usage receipt `version: 1`, boundary policy `version: 1`, and registry `version: 1`. Public repos may use exact pinned preview CLI releases such as `@agent-atlas/cli@0.18.0` after the [package publish readiness checklist](./docs/guides/package-publish-readiness.md) passes.
 

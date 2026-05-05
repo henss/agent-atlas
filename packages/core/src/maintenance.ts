@@ -7,6 +7,7 @@ import { parse, stringify } from 'yaml';
 import type { AtlasEntity } from '@agent-atlas/schema';
 import { analyzeAtlasMaintenance } from './authoring.js';
 import type { AtlasDiagnostic } from './diagnostics.js';
+import type { GeneratedCliPolicy } from './generated-cli.js';
 import { loadAtlasGraph } from './graph.js';
 import { loadAtlasDocuments } from './loader.js';
 import type { AtlasProfile } from './profile.js';
@@ -32,6 +33,7 @@ export interface AtlasMaintenancePolicy {
     path: string;
     auto_regenerate: boolean;
   };
+  generated_cli?: GeneratedCliPolicy;
   metadata: {
     auto_apply: boolean;
     allow_add: boolean;
@@ -263,6 +265,7 @@ function normalizeMaintenancePolicy(
   const profile = readProfile(value.profile, defaults.profile);
   const generatedDocs = isRecord(value.generated_docs) ? value.generated_docs : {};
   const generatedReadme = isRecord(value.generated_readme) ? value.generated_readme : undefined;
+  const generatedCli = readGeneratedCliPolicy(value.generated_cli);
   const metadata = isRecord(value.metadata) ? value.metadata : {};
   const safety = isRecord(value.safety) ? value.safety : {};
 
@@ -283,6 +286,7 @@ function normalizeMaintenancePolicy(
           auto_regenerate: readBoolean(generatedReadme.auto_regenerate, mode !== 'review-only'),
         }
       : undefined,
+    generated_cli: generatedCli,
     metadata: {
       auto_apply: readBoolean(metadata.auto_apply, mode === 'agent-maintained'),
       allow_add: readBoolean(metadata.allow_add, mode === 'agent-maintained'),
@@ -298,6 +302,70 @@ function normalizeMaintenancePolicy(
     },
     sourcePath,
   };
+}
+
+function readGeneratedCliPolicy(value: unknown): GeneratedCliPolicy | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const commander = Array.isArray(value.commander)
+    ? value.commander.map(readGeneratedCliCommanderSource).filter((source): source is NonNullable<GeneratedCliPolicy['commander'][number]> => source !== undefined)
+    : [];
+  if (commander.length === 0) {
+    return undefined;
+  }
+  const reference = isRecord(value.reference)
+    ? {
+        path: readString(value.reference.path, 'docs/generated/cli-command-reference.md'),
+        auto_regenerate: readBoolean(value.reference.auto_regenerate, false),
+      }
+    : undefined;
+  return { commander, reference };
+}
+
+function readGeneratedCliCommanderSource(value: unknown): GeneratedCliPolicy['commander'][number] | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const id = readString(value.id, '');
+  const modulePath = readString(value.module, '');
+  const exportName = readString(value.export, '');
+  const ownerComponent = readString(value.owner_component, '');
+  const commandIdPrefix = readString(value.command_id_prefix, id);
+  if (!id || !modulePath || !exportName || !ownerComponent || !commandIdPrefix) {
+    return undefined;
+  }
+  return {
+    id,
+    module: modulePath,
+    export: exportName,
+    owner_component: ownerComponent as GeneratedCliPolicy['commander'][number]['owner_component'],
+    command_id_prefix: commandIdPrefix,
+    cliName: readOptionalString(value.cli_name),
+    defaultVisibility: readGeneratedCliVisibility(value.default_visibility),
+    workflow_relations: readGeneratedCliWorkflowRelations(value.workflow_relations),
+  };
+}
+
+function readGeneratedCliWorkflowRelations(
+  value: unknown,
+): GeneratedCliPolicy['commander'][number]['workflow_relations'] {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const relations: NonNullable<GeneratedCliPolicy['commander'][number]['workflow_relations']> = {};
+  for (const [key, target] of Object.entries(value)) {
+    if (typeof target === 'string') {
+      relations[key] = target as NonNullable<GeneratedCliPolicy['commander'][number]['workflow_relations']>[string];
+    }
+  }
+  return Object.keys(relations).length > 0 ? relations : undefined;
+}
+
+function readGeneratedCliVisibility(value: unknown): GeneratedCliPolicy['commander'][number]['defaultVisibility'] {
+  return value === 'public' || value === 'private' || value === 'internal' || value === 'restricted'
+    ? value
+    : undefined;
 }
 
 async function readChangedRepoFiles(rootPath: string): Promise<string[]> {
@@ -430,6 +498,10 @@ function readProfile(value: unknown, fallback: AtlasProfile): AtlasProfile {
 
 function readString(value: unknown, fallback: string): string {
   return typeof value === 'string' && value.trim().length > 0 ? value : fallback;
+}
+
+function readOptionalString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0 ? value : undefined;
 }
 
 function readStringArray(value: unknown): string[] {

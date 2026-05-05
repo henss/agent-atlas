@@ -23,6 +23,10 @@ import {
   renderAtlasOverviewMarkdown,
   resolvePathInGraph,
   applyAtlasMaintenanceMetadataFixes,
+  loadGeneratedCliEntities,
+  loadGeneratedCliPolicy,
+  extractCommanderCliCommands,
+  renderCliReferenceMarkdown,
   suggestAtlasCard,
   validateAtlasProposal,
   validateAtlas,
@@ -31,6 +35,7 @@ import {
 } from '@agent-atlas/core';
 import { generateMarkdownViews, renderRepositoryReadme } from '@agent-atlas/markdown';
 import { parseMcpProfile, runAtlasMcpSmokeTest } from '@agent-atlas/mcp-server';
+import { createAtlasCliProgram } from './program.js';
 import type { AtlasMcpSmokeTestResult } from '@agent-atlas/mcp-server';
 import type {
   AtlasDiagnostic,
@@ -73,45 +78,34 @@ class CliUsageError extends Error {
 }
 
 function printHelp(): void {
-  console.log(`# Agent Atlas CLI
+  console.log(createAtlasCliProgram().helpInformation());
+}
 
-Status: implemented toolkit
+function printCommanderHelpForArgs(commandPath: string[]): boolean {
+  const helpIndex = commandPath.findIndex((arg) => arg === '--help' || arg === '-h');
+  if (helpIndex < 0) {
+    return false;
+  }
+  const pathSegments = commandPath.slice(0, helpIndex);
+  const commandToShow = findCommanderCommand(createAtlasCliProgram(), pathSegments);
+  if (!commandToShow) {
+    printHelp();
+    return true;
+  }
+  console.log(commandToShow.helpInformation());
+  return true;
+}
 
-Implemented commands:
-
-- atlas validate [path]
-- atlas overview [path]
-- atlas show <entity-id>
-- atlas neighbors <entity-id> --depth 2
-- atlas resolve-path <path>
-- atlas context-pack "<task>" --budget 4000
-- atlas generate markdown
-- atlas generate markdown --check
-- atlas suggest-card --path <file>
-- atlas discover-gaps [path]
-- atlas propose-cards --report <file>
-- atlas proposal validate <proposal>
-- atlas proposal apply <proposal> --select <entity-id>
-- atlas maintain check|fix|agent-instructions [path]
-- atlas diff
-- atlas migrate [path] --to 1 [--write]
-- atlas benchmark [path]
-- atlas doctor [path]
-- atlas boundary-check [path]
-- atlas usage-note "<task>" --command <command>
-- atlas evaluate [path]
-- atlas mcp smoke-test [path]
-- atlas ui [path]
-- atlas global validate [path]
-- atlas global list [path]
-- atlas global context-pack "<task>" --budget 8000
-- atlas global manifest [path]
-- atlas global generate markdown [path]
-
-Path rule: use one positional root path or --path <root>, not both.
-Current command: ${command ?? '(none)'}
-Args: ${args.join(' ')}
-`);
+function findCommanderCommand(program: ReturnType<typeof createAtlasCliProgram>, pathSegments: string[]) {
+  let current = program;
+  for (const segment of pathSegments) {
+    const next = current.commands.find((candidate) => candidate.name() === segment);
+    if (!next) {
+      return undefined;
+    }
+    current = next;
+  }
+  return current;
 }
 
 function readOptionValue(
@@ -2576,6 +2570,11 @@ async function runMaintainCheck(
     readmePath,
     renderRepositoryReadme(graph, { profile }),
   );
+  const cliReference = await checkConfiguredCliReference(options.rootPath);
+  generated.staleFiles.push(...cliReference.staleFiles);
+  generated.missingFiles.push(...cliReference.missingFiles);
+  generated.staleFiles.sort();
+  generated.missingFiles.sort();
   const generatedHasDrift =
     generated.staleFiles.length > 0 ||
     generated.missingFiles.length > 0 ||
@@ -2633,6 +2632,52 @@ async function writeGeneratedMarkdownOutput(
   return writtenFiles.sort();
 }
 
+async function renderConfiguredCliReference(rootPath: string): Promise<{
+  path?: string;
+  content?: string;
+}> {
+  const policy = await loadGeneratedCliPolicy(rootPath);
+  if (!policy?.reference?.auto_regenerate) {
+    return {};
+  }
+  const generated = await loadGeneratedCliEntities(rootPath);
+  return {
+    path: policy.reference.path,
+    content: renderCliReferenceMarkdown(generated.records),
+  };
+}
+
+async function writeConfiguredCliReference(rootPath: string): Promise<string[]> {
+  const reference = await renderConfiguredCliReference(rootPath);
+  if (!reference.path || reference.content === undefined) {
+    return [];
+  }
+  const absolutePath = path.resolve(rootPath, reference.path);
+  await mkdir(path.dirname(absolutePath), { recursive: true });
+  await writeFile(absolutePath, reference.content, 'utf8');
+  return [normalizeGeneratedPath(reference.path)];
+}
+
+async function checkConfiguredCliReference(rootPath: string): Promise<{
+  staleFiles: string[];
+  missingFiles: string[];
+}> {
+  const reference = await renderConfiguredCliReference(rootPath);
+  if (!reference.path || reference.content === undefined) {
+    return { staleFiles: [], missingFiles: [] };
+  }
+  const relativePath = normalizeGeneratedPath(reference.path);
+  try {
+    const existing = await readFile(path.resolve(rootPath, reference.path), 'utf8');
+    if (existing.replace(/\r\n/g, '\n') !== reference.content.replace(/\r\n/g, '\n')) {
+      return { staleFiles: [relativePath], missingFiles: [] };
+    }
+    return { staleFiles: [], missingFiles: [] };
+  } catch {
+    return { staleFiles: [], missingFiles: [relativePath] };
+  }
+}
+
 async function collectExistingGeneratedMarkdownFiles(
   outputPath: string,
 ): Promise<string[]> {
@@ -2678,6 +2723,9 @@ function normalizeGeneratedPath(filePath: string): string {
 }
 
 async function main(): Promise<void> {
+if (printCommanderHelpForArgs([command ?? '', ...args].filter((arg) => arg.length > 0))) {
+  return;
+}
 switch (command) {
   case undefined:
   case 'help':
@@ -2897,6 +2945,52 @@ switch (command) {
     }
     break;
   }
+  case 'cli': {
+    if (args[0] !== 'docs' || !['generate', 'check'].includes(args[1] ?? '')) {
+      printHelp();
+      process.exitCode = 1;
+      break;
+    }
+    const outputIndex = args.indexOf('--output');
+    const outputPath =
+      outputIndex >= 0
+        ? readOptionValue(args, outputIndex, '--output')
+        : 'docs/generated/cli-command-reference.md';
+    const check =
+      args[1] === 'check' ||
+      args.includes('--check');
+    const records = extractCommanderCliCommands(createAtlasCliProgram(), {
+      id: 'atlas-cli',
+      module: 'packages/cli/dist/program.js',
+      export: 'createAtlasCliProgram',
+      owner_component: 'component:cli-package',
+      command_id_prefix: 'atlas-cli',
+      cliName: 'atlas',
+      defaultVisibility: 'public',
+    });
+    const markdown = renderCliReferenceMarkdown(records);
+    const absoluteOutputPath = path.resolve(outputPath);
+    if (check) {
+      try {
+        const existing = await readFile(absoluteOutputPath, 'utf8');
+        if (existing.replace(/\r\n/g, '\n') !== markdown.replace(/\r\n/g, '\n')) {
+          console.error(`Generated CLI reference is out of date: ${absoluteOutputPath}`);
+          process.exitCode = 1;
+          break;
+        }
+      } catch {
+        console.error(`Generated CLI reference is missing: ${absoluteOutputPath}`);
+        process.exitCode = 1;
+        break;
+      }
+      console.log(`CLI command reference is up to date: ${absoluteOutputPath}`);
+      break;
+    }
+    await mkdir(path.dirname(absoluteOutputPath), { recursive: true });
+    await writeFile(absoluteOutputPath, markdown, 'utf8');
+    console.log(`Wrote CLI command reference: ${absoluteOutputPath}`);
+    break;
+  }
   case 'context-pack': {
     const options = parseContextPackArgs(args);
     if (!options.task) {
@@ -2959,6 +3053,11 @@ switch (command) {
       readmePath,
       renderRepositoryReadme(graph, { profile: options.profile }),
     );
+    const cliReference = await checkConfiguredCliReference(options.rootPath);
+    generated.staleFiles.push(...cliReference.staleFiles);
+    generated.missingFiles.push(...cliReference.missingFiles);
+    generated.staleFiles.sort();
+    generated.missingFiles.sort();
     const generatedHasDrift =
       generated.staleFiles.length > 0 ||
       generated.missingFiles.length > 0 ||
@@ -3023,7 +3122,8 @@ switch (command) {
         options.rootPath,
         policy,
       );
-      const regeneratedFiles =
+      const regeneratedFiles = [
+        ...(
         policy.mode !== 'review-only' &&
         policy.generated_docs.auto_regenerate
           ? await writeGeneratedMarkdownOutput(
@@ -3034,7 +3134,10 @@ switch (command) {
                 ? policy.generated_readme.path
                 : undefined,
             )
-          : [];
+          : []
+        ),
+        ...(policy.mode !== 'review-only' ? await writeConfiguredCliReference(options.rootPath) : []),
+      ].sort();
       const check = await runMaintainCheck(options, policy);
       const result: CliMaintainFixReport = {
         ...check,

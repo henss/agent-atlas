@@ -41,6 +41,8 @@ Serves the local read-only UI for browsing entities, diagnostics, relations, foc
 ### `implemented-by`
 
 - `component:ui-package` _(generated)_
+- `interface:atlas-cli.ui` _(generated)_
+- `interface:atlas-cli.validate` _(generated)_
 
 ### `part-of`
 

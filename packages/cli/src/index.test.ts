@@ -99,6 +99,34 @@ Status: passed
     expect(stdout).toContain('atlas input');
   });
 
+  it('generates and checks the Commander-derived CLI reference', async () => {
+    const outputPath = path.join(await mkdtemp(path.join(os.tmpdir(), 'atlas-cli-docs-')), 'cli.md');
+    const repoRoot = path.resolve('../..');
+
+    await expect(
+      execFileAsync('node', [CLI_PATH, 'cli', 'docs', 'check', '--output', outputPath], {
+        cwd: repoRoot,
+      }),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('Generated CLI reference is missing'),
+    });
+
+    const generated = await execFileAsync(
+      'node',
+      [CLI_PATH, 'cli', 'docs', 'generate', '--output', outputPath],
+      { cwd: repoRoot },
+    );
+    expect(generated.stdout).toContain('Wrote CLI command reference');
+
+    const checked = await execFileAsync(
+      'node',
+      [CLI_PATH, 'cli', 'docs', 'check', '--output', outputPath],
+      { cwd: repoRoot },
+    );
+    expect(checked.stdout).toContain('CLI command reference is up to date');
+    expect(await readFile(outputPath, 'utf8')).toContain('### `atlas validate');
+  });
+
   it('rejects unknown flags instead of treating them as paths', async () => {
     await expect(
       execFileAsync('node', [CLI_PATH, 'validate', '--badflag']),
@@ -541,7 +569,7 @@ safety:
     const root = await makeAtlasFixture();
     const usage = await execFileAsync('node', [CLI_PATH, 'ui', '--help']);
 
-    expect(usage.stderr).toContain('Usage: atlas ui');
+    expect(`${usage.stdout}${usage.stderr}`).toContain('Usage: atlas ui');
 
     await expect(
       execFileAsync('node', [CLI_PATH, 'ui', root, '--path', root]),

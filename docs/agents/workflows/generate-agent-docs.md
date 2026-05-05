@@ -36,6 +36,7 @@ Produces compact generated Markdown views and optional root READMEs from canonic
 ### `implemented-by`
 
 - `component:markdown-package` _(generated)_
+- `interface:atlas-cli.generate-markdown` _(generated)_
 
 ### `part-of`
 

@@ -4,8 +4,9 @@ import { build } from 'esbuild';
 await rm('dist', { recursive: true, force: true });
 
 await build({
-  entryPoints: ['src/index.ts'],
-  outfile: 'dist/index.js',
+  entryPoints: ['src/index.ts', 'src/program.ts'],
+  outdir: 'dist',
+  entryNames: '[name]',
   bundle: true,
   platform: 'node',
   format: 'esm',
@@ -15,6 +16,7 @@ await build({
     '@modelcontextprotocol/sdk',
     '@modelcontextprotocol/sdk/*',
     '@agent-atlas/ui',
+    'commander',
     'yaml',
     'zod',
     'zod/*',

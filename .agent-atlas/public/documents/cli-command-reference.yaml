@@ -1,0 +1,16 @@
+id: document:cli-command-reference
+kind: document
+title: CLI Command Reference
+summary: Generated Commander-derived Markdown reference for Atlas CLI command syntax, options, arguments, and descriptions.
+visibility: public
+uri: docs/generated/cli-command-reference.md
+relations:
+  - type: documents
+    target: component:cli-package
+  - type: documents
+    target: workflow:operate-atlas-cli
+agent:
+  load_when:
+    - Looking up exact atlas CLI command syntax or options
+    - Adding or changing Commander command definitions
+  token_budget_hint: 1200

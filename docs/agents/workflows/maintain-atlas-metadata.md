@@ -43,6 +43,15 @@ Runs policy-driven maintenance, stale-reference diagnostics, generated Markdown 
 - `component:cli-package` _(generated)_
 - `component:core-package` _(generated)_
 - `component:markdown-package` _(generated)_
+- `interface:atlas-cli.diff` _(generated)_
+- `interface:atlas-cli.discover-gaps` _(generated)_
+- `interface:atlas-cli.maintain-agent-instructions` _(generated)_
+- `interface:atlas-cli.maintain-check` _(generated)_
+- `interface:atlas-cli.maintain-fix` _(generated)_
+- `interface:atlas-cli.proposal-apply` _(generated)_
+- `interface:atlas-cli.proposal-validate` _(generated)_
+- `interface:atlas-cli.propose-cards` _(generated)_
+- `interface:atlas-cli.suggest-card` _(generated)_
 
 ### `part-of`
 

@@ -19,10 +19,45 @@ Provides the atlas command-line interface for validation, boundary checks, graph
 
 ## Relations
 
+### `contains`
+
+- `interface:atlas-cli.benchmark` _(generated)_
+- `interface:atlas-cli.boundary-check` _(generated)_
+- `interface:atlas-cli.cli-docs-check` _(generated)_
+- `interface:atlas-cli.cli-docs-generate` _(generated)_
+- `interface:atlas-cli.context-pack` _(generated)_
+- `interface:atlas-cli.diff` _(generated)_
+- `interface:atlas-cli.discover-gaps` _(generated)_
+- `interface:atlas-cli.doctor` _(generated)_
+- `interface:atlas-cli.evaluate` _(generated)_
+- `interface:atlas-cli.generate-markdown` _(generated)_
+- `interface:atlas-cli.global-context-pack` _(generated)_
+- `interface:atlas-cli.global-generate-markdown` _(generated)_
+- `interface:atlas-cli.global-list` _(generated)_
+- `interface:atlas-cli.global-manifest` _(generated)_
+- `interface:atlas-cli.global-validate` _(generated)_
+- `interface:atlas-cli.maintain-agent-instructions` _(generated)_
+- `interface:atlas-cli.maintain-check` _(generated)_
+- `interface:atlas-cli.maintain-fix` _(generated)_
+- `interface:atlas-cli.mcp-smoke-test` _(generated)_
+- `interface:atlas-cli.migrate` _(generated)_
+- `interface:atlas-cli.neighbors` _(generated)_
+- `interface:atlas-cli.overview` _(generated)_
+- `interface:atlas-cli.proposal-apply` _(generated)_
+- `interface:atlas-cli.proposal-validate` _(generated)_
+- `interface:atlas-cli.propose-cards` _(generated)_
+- `interface:atlas-cli.resolve-path` _(generated)_
+- `interface:atlas-cli.show` _(generated)_
+- `interface:atlas-cli.suggest-card` _(generated)_
+- `interface:atlas-cli.ui` _(generated)_
+- `interface:atlas-cli.usage-note` _(generated)_
+- `interface:atlas-cli.validate` _(generated)_
+
 ### `documented-in`
 
 - `document:boundary-checks-guide`
 - `document:boundary-safety-spec`
+- `document:cli-command-reference`
 - `document:cli-readme`
 - `document:context-pack-spec` _(generated)_
 - `document:cross-repo-atlas-guide`

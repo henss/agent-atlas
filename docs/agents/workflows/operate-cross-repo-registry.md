@@ -39,6 +39,11 @@ Validates central registry imports, merges per-repo atlases, emits manifests, an
 
 - `component:cli-package` _(generated)_
 - `component:core-package` _(generated)_
+- `interface:atlas-cli.global-context-pack` _(generated)_
+- `interface:atlas-cli.global-generate-markdown` _(generated)_
+- `interface:atlas-cli.global-list` _(generated)_
+- `interface:atlas-cli.global-manifest` _(generated)_
+- `interface:atlas-cli.global-validate` _(generated)_
 
 ### `part-of`
 

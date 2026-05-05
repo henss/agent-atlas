@@ -2,7 +2,16 @@
 
 CLI for Agent Atlas.
 
-Implemented commands:
+The detailed command reference is generated from Commander definitions:
+
+```sh
+atlas cli docs generate --output docs/generated/cli-command-reference.md
+atlas cli docs check --output docs/generated/cli-command-reference.md
+```
+
+In the repository checkout, see [`../../docs/generated/cli-command-reference.md`](../../docs/generated/cli-command-reference.md) for command syntax, options, arguments, and descriptions.
+
+Command families:
 
 ```sh
 atlas validate [path]

@@ -10,6 +10,7 @@ docs/agents/
   domains/*.md
   workflows/*.md
   components/*.md
+  interfaces/*.md
   resources/*.md
   verification.md
 ```
@@ -22,6 +23,28 @@ generated_readme:
   path: README.md
   auto_regenerate: true
 ```
+
+Repos may configure a Commander-derived CLI reference and generated command
+interfaces through `agent-atlas.maintenance.yaml`:
+
+```yaml
+generated_cli:
+  commander:
+    - id: atlas-cli
+      module: packages/cli/dist/program.js
+      export: createAtlasCliProgram
+      owner_component: component:cli-package
+      command_id_prefix: atlas-cli
+  reference:
+    path: docs/generated/cli-command-reference.md
+    auto_regenerate: true
+```
+
+Commander owns command syntax, descriptions, options, arguments, aliases, and
+hidden-command filtering. Atlas metadata may enrich commands with workflow
+relations or routing hints, but should not duplicate command syntax by hand.
+When CLI reference regeneration is enabled, `atlas maintain fix` rewrites the
+reference and `atlas maintain check` fails when it is stale or missing.
 
 ## Header convention
 

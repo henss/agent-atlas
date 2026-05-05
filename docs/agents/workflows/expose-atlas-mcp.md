@@ -42,6 +42,7 @@ Provides read-only MCP resources, tools, smoke tests, deployment notes, and safe
 ### `implemented-by`
 
 - `component:mcp-server-package` _(generated)_
+- `interface:atlas-cli.mcp-smoke-test` _(generated)_
 
 ### `part-of`
 

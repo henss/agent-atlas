@@ -38,6 +38,10 @@ Loads atlas files, normalizes graph edges, traverses related entities, and resol
 ### `implemented-by`
 
 - `component:core-package` _(generated)_
+- `interface:atlas-cli.neighbors` _(generated)_
+- `interface:atlas-cli.overview` _(generated)_
+- `interface:atlas-cli.resolve-path` _(generated)_
+- `interface:atlas-cli.show` _(generated)_
 
 ### `part-of`
 

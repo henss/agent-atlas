@@ -43,6 +43,7 @@ Selects task-relevant atlas entities, source reads, external references, verific
 
 - `component:cli-package` _(generated)_
 - `component:core-package` _(generated)_
+- `interface:atlas-cli.context-pack` _(generated)_
 
 ### `part-of`
 
