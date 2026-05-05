@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { access, readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -117,20 +117,21 @@ async function diagnoseEntityReferences(
   graph: AtlasGraph,
 ): Promise<AtlasDiagnostic[]> {
   const diagnostics: AtlasDiagnostic[] = [];
+  const repoFiles = await collectRepoFiles(graph.rootPath);
   for (const entity of graph.entities) {
-    diagnostics.push(...(await diagnoseCodeReferences(graph.rootPath, entity)));
+    diagnostics.push(...diagnoseCodeReferences(entity, repoFiles));
     diagnostics.push(...(await diagnoseCommandReferences(graph.rootPath, entity)));
   }
   return diagnostics;
 }
 
-async function diagnoseCodeReferences(
-  rootPath: string,
+function diagnoseCodeReferences(
   entity: AtlasEntity,
-): Promise<AtlasDiagnostic[]> {
+  repoFiles: string[],
+): AtlasDiagnostic[] {
   const diagnostics: AtlasDiagnostic[] = [];
   for (const entrypoint of entity.code?.entrypoints ?? []) {
-    if (!(await fileExists(path.resolve(rootPath, entrypoint)))) {
+    if (!repoFiles.includes(normalizePath(entrypoint))) {
       diagnostics.push({
         level: 'error',
         code: 'STALE_ENTRYPOINT',
@@ -142,7 +143,7 @@ async function diagnoseCodeReferences(
   }
 
   for (const codePath of entity.code?.paths ?? []) {
-    if (!(await patternMatchesAnyPath(rootPath, codePath))) {
+    if (!patternMatchesAnyPath(repoFiles, codePath)) {
       diagnostics.push({
         level: 'warning',
         code: 'STALE_CODE_PATH',
@@ -229,10 +230,10 @@ async function readGitStatus(rootPath: string): Promise<string[]> {
   }
 }
 
-async function patternMatchesAnyPath(rootPath: string, pattern: string): Promise<boolean> {
+function patternMatchesAnyPath(repoFiles: string[], pattern: string): boolean {
   const normalizedPattern = normalizePath(pattern);
   const regex = globToRegex(normalizedPattern);
-  for (const filePath of await collectRepoFiles(rootPath)) {
+  for (const filePath of repoFiles) {
     if (regex.test(filePath)) {
       return true;
     }
@@ -267,15 +268,6 @@ async function collectRepoFiles(rootPath: string): Promise<string[]> {
 
   await walk(rootPath);
   return files.sort();
-}
-
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function globToRegex(pattern: string): RegExp {

@@ -8,6 +8,7 @@ import type { AtlasEntity } from '@agent-atlas/schema';
 import { analyzeAtlasMaintenance } from './authoring.js';
 import type { AtlasDiagnostic } from './diagnostics.js';
 import type { GeneratedCliPolicy } from './generated-cli.js';
+import type { GeneratedSourcesPolicy } from './generated-sources.js';
 import { loadAtlasGraph } from './graph.js';
 import { loadAtlasDocuments } from './loader.js';
 import type { AtlasProfile } from './profile.js';
@@ -34,6 +35,7 @@ export interface AtlasMaintenancePolicy {
     auto_regenerate: boolean;
   };
   generated_cli?: GeneratedCliPolicy;
+  generated_sources?: GeneratedSourcesPolicy;
   metadata: {
     auto_apply: boolean;
     allow_add: boolean;
@@ -266,6 +268,7 @@ function normalizeMaintenancePolicy(
   const generatedDocs = isRecord(value.generated_docs) ? value.generated_docs : {};
   const generatedReadme = isRecord(value.generated_readme) ? value.generated_readme : undefined;
   const generatedCli = readGeneratedCliPolicy(value.generated_cli);
+  const generatedSources = readGeneratedSourcesPolicy(value.generated_sources, generatedCli, profile);
   const metadata = isRecord(value.metadata) ? value.metadata : {};
   const safety = isRecord(value.safety) ? value.safety : {};
 
@@ -287,6 +290,7 @@ function normalizeMaintenancePolicy(
         }
       : undefined,
     generated_cli: generatedCli,
+    generated_sources: generatedSources,
     metadata: {
       auto_apply: readBoolean(metadata.auto_apply, mode === 'agent-maintained'),
       allow_add: readBoolean(metadata.allow_add, mode === 'agent-maintained'),
@@ -302,6 +306,92 @@ function normalizeMaintenancePolicy(
     },
     sourcePath,
   };
+}
+
+function readGeneratedSourcesPolicy(
+  value: unknown,
+  generatedCli: GeneratedCliPolicy | undefined,
+  profile: AtlasProfile,
+): AtlasMaintenancePolicy['generated_sources'] {
+  const profileDefaultVisibility = profile === 'private' ? 'private' : profile === 'company' ? 'internal' : 'public';
+  const defaultVisibility = readGeneratedCliVisibility(isRecord(value) ? value.default_visibility : undefined) ?? profileDefaultVisibility;
+  const defaultPolicy: GeneratedSourcesPolicy = {
+    enabled: true,
+    disabled: [],
+    default_visibility: defaultVisibility,
+    package_scripts: { enabled: true, default_visibility: defaultVisibility, script_id_prefix: 'package-script' },
+    workspace_packages: { enabled: true, default_visibility: defaultVisibility, package_component_prefix: 'package' },
+    tests: { enabled: true, default_visibility: defaultVisibility },
+    docs: { enabled: true, default_visibility: defaultVisibility },
+    config: { enabled: true, default_visibility: defaultVisibility },
+    routes: { enabled: true, default_visibility: defaultVisibility, frameworks: ['node-http', 'express', 'hono', 'next'] },
+    dependencies: { enabled: true, default_visibility: defaultVisibility },
+    commander: generatedCli,
+    reference: {
+      path: 'docs/generated/source-derived-reference.md',
+      auto_regenerate: true,
+    },
+  };
+  if (!isRecord(value)) {
+    return defaultPolicy;
+  }
+  return {
+    ...defaultPolicy,
+    enabled: readBoolean(value.enabled, true),
+    disabled: readGeneratedSourceFamilies(value.disabled),
+    package_scripts: readGeneratedSourceFamilyPolicy(value.package_scripts, defaultPolicy.package_scripts),
+    workspace_packages: readGeneratedSourceFamilyPolicy(value.workspace_packages, defaultPolicy.workspace_packages),
+    tests: readGeneratedSourceFamilyPolicy(value.tests, defaultPolicy.tests),
+    docs: readGeneratedSourceFamilyPolicy(value.docs, defaultPolicy.docs),
+    config: readGeneratedSourceFamilyPolicy(value.config, defaultPolicy.config),
+    routes: readGeneratedSourceFamilyPolicy(value.routes, defaultPolicy.routes),
+    dependencies: readGeneratedSourceFamilyPolicy(value.dependencies, defaultPolicy.dependencies),
+    reference: isRecord(value.reference)
+      ? {
+          path: readString(value.reference.path, defaultPolicy.reference!.path),
+          auto_regenerate: readBoolean(value.reference.auto_regenerate, true),
+        }
+      : defaultPolicy.reference,
+  };
+}
+
+function readGeneratedSourceFamilyPolicy(
+  value: unknown,
+  defaults: NonNullable<AtlasMaintenancePolicy['generated_sources']>['package_scripts'],
+): NonNullable<AtlasMaintenancePolicy['generated_sources']>['package_scripts'] {
+  if (!isRecord(value)) {
+    return defaults;
+  }
+  return {
+    ...defaults,
+    enabled: readBoolean(value.enabled, defaults.enabled ?? true),
+    include: readStringArray(value.include) ?? defaults.include,
+    exclude: readStringArray(value.exclude) ?? defaults.exclude,
+    default_visibility: readGeneratedCliVisibility(value.default_visibility) ?? defaults.default_visibility,
+    owner_component: readOptionalString(value.owner_component) as AtlasEntity['id'] | undefined ?? defaults.owner_component,
+    owner_repository: readOptionalString(value.owner_repository) as AtlasEntity['id'] | undefined ?? defaults.owner_repository,
+    script_id_prefix: readOptionalString(value.script_id_prefix) ?? defaults.script_id_prefix,
+    package_component_prefix: readOptionalString(value.package_component_prefix) ?? defaults.package_component_prefix,
+    workflow_relations: readGeneratedCliWorkflowRelations(value.workflow_relations) ?? defaults.workflow_relations,
+    frameworks: readStringArray(value.frameworks) ?? defaults.frameworks,
+    dependency_cruiser_command: readOptionalString(value.dependency_cruiser_command) ?? defaults.dependency_cruiser_command,
+  };
+}
+
+function readGeneratedSourceFamilies(value: unknown): GeneratedSourcesPolicy['disabled'] {
+  const allowed = new Set<GeneratedSourcesPolicy['disabled'][number]>([
+    'commander',
+    'package_scripts',
+    'workspace_packages',
+    'tests',
+    'docs',
+    'config',
+    'routes',
+    'dependencies',
+  ]);
+  return Array.isArray(value)
+    ? value.filter((entry): entry is GeneratedSourcesPolicy['disabled'][number] => allowed.has(entry as GeneratedSourcesPolicy['disabled'][number]))
+    : [];
 }
 
 function readGeneratedCliPolicy(value: unknown): GeneratedCliPolicy | undefined {

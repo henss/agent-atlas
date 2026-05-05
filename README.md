@@ -53,11 +53,23 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 
 - Full command reference: [CLI Command Reference](docs/generated/cli-command-reference.md) - Generated Commander-derived Markdown reference for Atlas CLI command syntax, options, arguments, and descriptions.
 - Evaluation Commands (5): `atlas benchmark`, `atlas boundary-check`, `atlas doctor`, `atlas evaluate`, `atlas usage-note`
-- Generated Artifact Commands (3): `atlas cli docs check`, `atlas cli docs generate`, `atlas generate markdown`
+- Generated Artifact Commands (5): `atlas cli docs check`, `atlas cli docs generate`, `atlas generate markdown`, `atlas sources docs check`, `atlas sources docs generate`
 - Global Registry Commands (5): `atlas global context-pack`, `atlas global generate markdown`, `atlas global list`, `atlas global manifest`, `atlas global validate`
 - Graph Commands (6): `atlas context-pack`, `atlas neighbors`, `atlas overview`, `atlas resolve-path`, `atlas show`, `atlas validate`
 - Integration Commands (2): `atlas mcp smoke-test`, `atlas ui`
 - Maintenance Commands (10): `atlas diff`, `atlas discover-gaps`, `atlas maintain agent-instructions`, `atlas maintain check`, `atlas maintain fix`, `atlas migrate`, `atlas proposal apply`, `atlas proposal validate`, and 2 more in the command reference
+
+## Source-Derived Surfaces
+
+- Commander: 33
+- Config: 22
+- Dependencies: 6
+- Docs: 58
+- Package Scripts: 31
+- Routes: 1
+- Tests: 1
+- Workspace Packages: 8
+- Full generated reference: `docs/generated/source-derived-reference.md`.
 
 ## Core Idea
 
@@ -105,23 +117,30 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 
 ## Key Implementation Surfaces
 
-- `component:adapters-package` - Adapters Package: Defines adapter interfaces and generic adapters for Backstage, Sourcegraph, local docs, and external resource references.
-- `component:agent-atlas-source` - agent-atlas Source Surface: Main source, configuration, scripts, docs, and tests agents should inspect before broad repository search.
-- `component:cli-package` - CLI Package: Provides the atlas command-line interface for validation, boundary checks, graph inspection, path resolution, context packs, generated Markdown checks, incremental card suggestions, policy-driven maintenance, stale-reference diffing, cross-repo registry validation, manifests, global generated Markdown, migrations, benchmarks, setup doctor checks, usage evidence, and the local review UI launcher.
-- `component:core-package` - Core Package: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, suggests starter cards, diagnoses stale references, applies maintenance policies, merges and diagnoses cross-repo registries, supports registry manifests, runs migrations, benchmarks load performance, evaluates local usage evidence, and checks profile boundaries.
-- `component:markdown-package` - Markdown Package: Renders generated agent-facing Markdown views and optional root READMEs from loaded atlas graphs.
-- `component:mcp-server-package` - MCP Server Package: Read-only MCP server exposing atlas resources and traversal tools over stdio, with smoke tests, clearer input errors, and read-only assertions.
-- `component:schema-package` - Schema Package: Defines atlas entity types, relation vocabulary, and JSON Schema validation assets.
-- `component:ui-package` - UI Package: Serves the local read-only human review UI for browsing atlas entities, relations, focused graph neighborhoods, diagnostics, path resolution, context-pack previews, and debug metadata.
+- `component:package.agent-atlas-adapters` - @agent-atlas/adapters: Adapter interfaces and generic adapters for Agent Atlas. ([source](packages/adapters/package.json))
+- `component:package.agent-atlas-cli` - @agent-atlas/cli: Command-line interface for Agent Atlas. ([source](packages/cli/package.json))
+- `component:package.agent-atlas-core` - @agent-atlas/core: Core graph loading, validation, traversal, and context pack logic for Agent Atlas. ([source](packages/core/package.json))
+- `component:package.agent-atlas-markdown` - @agent-atlas/markdown: Generated Markdown views for Agent Atlas. ([source](packages/markdown/package.json))
+- `component:package.agent-atlas-mcp-server` - @agent-atlas/mcp-server: Read-only MCP server for Agent Atlas. ([source](packages/mcp-server/package.json))
+- `component:package.agent-atlas-root` - agent-atlas-root: Typed context graph and traversal toolkit for AI coding agents. ([source](package.json))
+- `component:package.agent-atlas-schema` - @agent-atlas/schema: Types and JSON Schema for Agent Atlas entities. ([source](packages/schema/package.json))
+- `component:package.agent-atlas-ui` - @agent-atlas/ui: Local read-only review UI for Agent Atlas graphs. ([source](packages/ui/package.json))
 
 ## Documentation
 
 - `document:agent-atlas-readme` - agent-atlas README: Primary repo entrypoint for setup, usage, architecture, and maintenance notes.
 - `document:cli-command-reference` - CLI Command Reference: Generated Commander-derived Markdown reference for Atlas CLI command syntax, options, arguments, and descriptions. ([source](docs/generated/cli-command-reference.md))
+- `document:generated.agents` - Agent guidance for Agent Atlas: Markdown document at AGENTS.md. ([source](AGENTS.md))
+- `document:generated.agents-skills-add-adapter-skill` - Add Adapter Skill: Markdown document at .agents/skills/add-adapter/SKILL.md. ([source](.agents/skills/add-adapter/SKILL.md))
+- `document:generated.agents-skills-add-atlas-entity-skill` - Add Atlas Entity Skill: Markdown document at .agents/skills/add-atlas-entity/SKILL.md. ([source](.agents/skills/add-atlas-entity/SKILL.md))
+- `document:generated.agents-skills-design-context-pack-skill` - Design Context Pack Skill: Markdown document at .agents/skills/design-context-pack/SKILL.md. ([source](.agents/skills/design-context-pack/SKILL.md))
+- `document:generated.agents-skills-implement-cli-command-skill` - Implement CLI Command Skill: Markdown document at .agents/skills/implement-cli-command/SKILL.md. ([source](.agents/skills/implement-cli-command/SKILL.md))
+- `document:generated.agents-skills-update-schema-skill` - Update Schema Skill: Markdown document at .agents/skills/update-schema/SKILL.md. ([source](.agents/skills/update-schema/SKILL.md))
 
 ## Verification
 
 - `test-scope:agent-atlas-verification` - agent-atlas Verification: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
+- `test-scope:generated.packages` - packages tests: 21 discovered test files under packages.
 
 ## Commands
 

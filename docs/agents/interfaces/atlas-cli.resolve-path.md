@@ -11,7 +11,7 @@ Resolve a file path to atlas owners.
 ## Metadata
 
 - visibility: `public`
-- tags: `cli-command`, `atlas`
+- tags: `cli-command`, `atlas`, `generated-source`, `commander`
 
 ## Access
 

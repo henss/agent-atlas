@@ -7,6 +7,7 @@ Profile: `public`
 ## Test Scopes
 
 - `test-scope:agent-atlas-verification` - agent-atlas Verification: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
+- `test-scope:generated.packages` - packages tests: 21 discovered test files under packages.
 - `test-scope:workspace-build-and-test` - Workspace Build And Test: Whole-workspace TypeScript build and test commands for validating Agent Atlas changes.
 
 ## agent-atlas Verification
@@ -27,6 +28,15 @@ Narrow default verification commands for repo-local changes; prefer more specifi
 Verifies:
 - `component:agent-atlas-source`
 - `repository:agent-atlas`
+
+## packages tests
+
+ID: `test-scope:generated.packages`
+
+21 discovered test files under packages.
+
+- command: `pnpm test`
+  purpose: Run repository test suite.
 
 ## Workspace Build And Test
 

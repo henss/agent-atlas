@@ -11,7 +11,7 @@ Generate the CLI command reference.
 ## Metadata
 
 - visibility: `public`
-- tags: `cli-command`, `atlas`
+- tags: `cli-command`, `atlas`, `generated-source`, `commander`
 
 ## Access
 

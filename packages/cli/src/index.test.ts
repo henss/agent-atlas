@@ -127,6 +127,43 @@ Status: passed
     expect(await readFile(outputPath, 'utf8')).toContain('### `atlas validate');
   });
 
+  it('generates and checks the source-derived reference', async () => {
+    const outputPath = path.join(await mkdtemp(path.join(os.tmpdir(), 'atlas-source-docs-')), 'sources.md');
+    const root = await makeAtlasFixture();
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'fixture', scripts: { test: 'vitest' } }), 'utf8');
+
+    await expect(
+      execFileAsync('node', [CLI_PATH, 'sources', 'docs', 'check', '--path', root, '--output', outputPath]),
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining('Generated source-derived reference is missing'),
+    });
+
+    const generated = await execFileAsync('node', [
+      CLI_PATH,
+      'sources',
+      'docs',
+      'generate',
+      '--path',
+      root,
+      '--output',
+      outputPath,
+    ]);
+    expect(generated.stdout).toContain('Wrote source-derived reference');
+
+    const checked = await execFileAsync('node', [
+      CLI_PATH,
+      'sources',
+      'docs',
+      'check',
+      '--path',
+      root,
+      '--output',
+      outputPath,
+    ]);
+    expect(checked.stdout).toContain('Source-derived reference is up to date');
+    expect(await readFile(outputPath, 'utf8')).toContain('interface:package-script.fixture.test');
+  });
+
   it('rejects unknown flags instead of treating them as paths', async () => {
     await expect(
       execFileAsync('node', [CLI_PATH, 'validate', '--badflag']),
@@ -421,7 +458,7 @@ misleading_cards: []
     expect(applied.stdout).toContain('# Atlas proposal apply');
   });
 
-  it('discovers static document gaps without usage receipts', async () => {
+  it('covers static documents with generated source entities', async () => {
     const root = await makeAtlasFixture();
     await mkdir(path.join(root, 'docs', 'guides'), { recursive: true });
     await writeFile(path.join(root, 'docs', 'guides', 'foo.md'), '# Foo\n');
@@ -432,8 +469,8 @@ misleading_cards: []
       root,
     ]);
 
-    expect(discovered.stdout).toContain('Gaps: 1');
-    expect(discovered.stdout).toContain('untracked-document');
+    expect(discovered.stdout).toContain('Gaps: 0');
+    expect(discovered.stdout).not.toContain('untracked-document');
   });
 
   it('runs policy-driven maintenance fixes and checks', async () => {

@@ -2,7 +2,10 @@ import type { AtlasEntity, AtlasEntityId, AtlasRelation, AtlasRelationType } fro
 import { getInverseRelationType } from '@agent-atlas/schema';
 import type { AtlasDiagnostic } from './diagnostics.js';
 import type { AtlasProfile } from './profile.js';
-import { loadGeneratedCliEntities } from './generated-cli.js';
+import {
+  loadGeneratedSourceEntities,
+  mergeGeneratedEntitiesWithManualOverlays,
+} from './generated-sources.js';
 import { validateAtlas } from './validation.js';
 
 export interface AtlasGraphIndex {
@@ -39,17 +42,21 @@ export async function loadAtlasGraph(
   options: LoadAtlasGraphOptions = {},
 ): Promise<AtlasGraph> {
   const validation = await validateAtlas(rootPath, { profile: options.profile });
-  const generatedCli = await loadGeneratedCliEntities(validation.rootPath);
-  const graphEntities = keepFirstEntityById([...validation.entities, ...generatedCli.entities]);
+  const repository = validation.entities.find((entity) => entity.kind === 'repository');
+  const generatedSources = await loadGeneratedSourceEntities(validation.rootPath, {
+    ownerRepository: repository?.id,
+  });
+  const merged = mergeGeneratedEntitiesWithManualOverlays(
+    validation.entities,
+    generatedSources.entities,
+  );
+  const graphEntities = keepFirstEntityById(merged.entities);
   const edges = normalizeGraphEdges(graphEntities);
   const index = createGraphIndex(graphEntities, edges);
   const diagnostics = [
     ...validation.diagnostics,
-    ...generatedCli.diagnostics.map((diagnostic): AtlasDiagnostic => ({
-      level: diagnostic.level,
-      code: 'GENERATED_CLI',
-      message: diagnostic.message,
-    })),
+    ...generatedSources.diagnostics,
+    ...merged.diagnostics,
     ...createGraphDiagnostics(graphEntities, edges),
   ];
 

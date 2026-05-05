@@ -80,23 +80,23 @@ Profile: `public`
 
 ## Other entities
 
+- `component:package.agent-atlas-adapters` (component) - @agent-atlas/adapters: Adapter interfaces and generic adapters for Agent Atlas.
+- `component:package.agent-atlas-adapters.dependencies` (component) - @agent-atlas/adapters dependency surface: Workspace dependency relations for @agent-atlas/adapters.
+- `component:package.agent-atlas-cli` (component) - @agent-atlas/cli: Command-line interface for Agent Atlas.
+- `component:package.agent-atlas-cli.dependencies` (component) - @agent-atlas/cli dependency surface: Workspace dependency relations for @agent-atlas/cli.
+- `component:package.agent-atlas-core` (component) - @agent-atlas/core: Core graph loading, validation, traversal, and context pack logic for Agent Atlas.
+- `component:package.agent-atlas-core.dependencies` (component) - @agent-atlas/core dependency surface: Workspace dependency relations for @agent-atlas/core.
+- `component:package.agent-atlas-markdown` (component) - @agent-atlas/markdown: Generated Markdown views for Agent Atlas.
+- `component:package.agent-atlas-markdown.dependencies` (component) - @agent-atlas/markdown dependency surface: Workspace dependency relations for @agent-atlas/markdown.
+- `component:package.agent-atlas-mcp-server` (component) - @agent-atlas/mcp-server: Read-only MCP server for Agent Atlas.
+- `component:package.agent-atlas-mcp-server.dependencies` (component) - @agent-atlas/mcp-server dependency surface: Workspace dependency relations for @agent-atlas/mcp-server.
+- `component:package.agent-atlas-root` (component) - agent-atlas-root: Typed context graph and traversal toolkit for AI coding agents.
+- `component:package.agent-atlas-schema` (component) - @agent-atlas/schema: Types and JSON Schema for Agent Atlas entities.
+- `component:package.agent-atlas-ui` (component) - @agent-atlas/ui: Local read-only review UI for Agent Atlas graphs.
+- `component:package.agent-atlas-ui.dependencies` (component) - @agent-atlas/ui dependency surface: Workspace dependency relations for @agent-atlas/ui.
 - `document:adapter-spec` (document) - Adapter Specification: Specification for adapter interfaces, optional generic adapters, and safe external resource references.
 - `document:adapters-readme` (document) - Adapters README: Package README for adapter interfaces, built-in adapter implementations, and safe external resource resolver behavior.
 - `document:agent-atlas-readme` (document) - agent-atlas README: Primary repo entrypoint for setup, usage, architecture, and maintenance notes.
 - `document:ci-template` (document) - CI Template: GitHub Actions template for validating, testing, linting, and generating Agent Atlas outputs.
 - `document:core-readme` (document) - Core README: Package README for core atlas loading, graph traversal, diagnostics, context packs, registries, migrations, maintenance, and boundary checks.
-- `document:markdown-readme` (document) - Markdown README: Package README for generated agent-facing Markdown outputs, profile handling, and generated file conventions.
-- `document:mcp-server-readme` (document) - MCP Server README: Package README for read-only MCP resources, tools, stdio entrypoint, smoke tests, and host configuration.
-- `document:schema-readme` (document) - Schema README: Package README for entity types, relation vocabulary, entity kinds, required fields, and JSON Schema assets.
-- `document:ui-readme` (document) - UI README: Package README for the local read-only review UI, hash routes, API previews, and non-editing boundaries.
-- `document:validation-spec` (document) - Validation Specification: Specification for validation diagnostics, severity levels, and actionable fix hints.
-- `document:versioning-spec` (document) - Versioning Specification: Specification for schema_version, usage receipt version, migration behavior, and sibling-checkout compatibility versions.
-- `interface:atlas-cli.benchmark` (interface) - atlas benchmark: Benchmark Atlas context-pack selection.
-- `interface:atlas-cli.boundary-check` (interface) - atlas boundary-check: Check profile boundary safety.
-- `interface:atlas-cli.cli-docs-check` (interface) - atlas cli docs check: Check the CLI command reference.
-- `interface:atlas-cli.cli-docs-generate` (interface) - atlas cli docs generate: Generate the CLI command reference.
-- `interface:atlas-cli.context-pack` (interface) - atlas context-pack: Build a task-focused context pack.
-- `interface:atlas-cli.diff` (interface) - atlas diff: Report stale Atlas metadata and generated artifacts.
-- `interface:atlas-cli.discover-gaps` (interface) - atlas discover-gaps: Discover Atlas coverage gaps.
-- `interface:atlas-cli.doctor` (interface) - atlas doctor: Check local Agent Atlas setup.
-- `interface:atlas-cli.evaluate` (interface) - atlas evaluate: Evaluate Atlas usage evidence.
+- `document:generated.agents` (document) - Agent guidance for Agent Atlas: Markdown document at AGENTS.md.

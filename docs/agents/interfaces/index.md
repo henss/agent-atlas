@@ -9,8 +9,43 @@ Generated index of visible `interface` entities.
 ## CLI Command Groups
 
 - Evaluation Commands (5): [atlas benchmark](atlas-cli.benchmark.md), [atlas boundary-check](atlas-cli.boundary-check.md), [atlas doctor](atlas-cli.doctor.md), [atlas evaluate](atlas-cli.evaluate.md), [atlas usage-note](atlas-cli.usage-note.md)
-- Generated Artifact Commands (3): [atlas cli docs check](atlas-cli.cli-docs-check.md), [atlas cli docs generate](atlas-cli.cli-docs-generate.md), [atlas generate markdown](atlas-cli.generate-markdown.md)
+- Generated Artifact Commands (5): [atlas cli docs check](atlas-cli.cli-docs-check.md), [atlas cli docs generate](atlas-cli.cli-docs-generate.md), [atlas generate markdown](atlas-cli.generate-markdown.md), [atlas sources docs check](atlas-cli.sources-docs-check.md), [atlas sources docs generate](atlas-cli.sources-docs-generate.md)
 - Global Registry Commands (5): [atlas global context-pack](atlas-cli.global-context-pack.md), [atlas global generate markdown](atlas-cli.global-generate-markdown.md), [atlas global list](atlas-cli.global-list.md), [atlas global manifest](atlas-cli.global-manifest.md), [atlas global validate](atlas-cli.global-validate.md)
 - Graph Commands (6): [atlas context-pack](atlas-cli.context-pack.md), [atlas neighbors](atlas-cli.neighbors.md), [atlas overview](atlas-cli.overview.md), [atlas resolve-path](atlas-cli.resolve-path.md), [atlas show](atlas-cli.show.md), [atlas validate](atlas-cli.validate.md)
 - Integration Commands (2): [atlas mcp smoke-test](atlas-cli.mcp-smoke-test.md), [atlas ui](atlas-cli.ui.md)
 - Maintenance Commands (10): [atlas diff](atlas-cli.diff.md), [atlas discover-gaps](atlas-cli.discover-gaps.md), [atlas maintain agent-instructions](atlas-cli.maintain-agent-instructions.md), [atlas maintain check](atlas-cli.maintain-check.md), [atlas maintain fix](atlas-cli.maintain-fix.md), [atlas migrate](atlas-cli.migrate.md), [atlas proposal apply](atlas-cli.proposal-apply.md), [atlas proposal validate](atlas-cli.proposal-validate.md), [atlas propose-cards](atlas-cli.propose-cards.md), [atlas suggest-card](atlas-cli.suggest-card.md)
+
+## Other Interfaces
+
+- [@agent-atlas/adapters build](package-script.agent-atlas-adapters.build.md) - `interface:package-script.agent-atlas-adapters.build`: Package script `build` from packages/adapters/package.json.
+- [@agent-atlas/adapters lint](package-script.agent-atlas-adapters.lint.md) - `interface:package-script.agent-atlas-adapters.lint`: Package script `lint` from packages/adapters/package.json.
+- [@agent-atlas/adapters test](package-script.agent-atlas-adapters.test.md) - `interface:package-script.agent-atlas-adapters.test`: Package script `test` from packages/adapters/package.json.
+- [@agent-atlas/cli atlas](package-script.agent-atlas-cli.atlas.md) - `interface:package-script.agent-atlas-cli.atlas`: Package script `atlas` from packages/cli/package.json.
+- [@agent-atlas/cli build](package-script.agent-atlas-cli.build.md) - `interface:package-script.agent-atlas-cli.build`: Package script `build` from packages/cli/package.json.
+- [@agent-atlas/cli lint](package-script.agent-atlas-cli.lint.md) - `interface:package-script.agent-atlas-cli.lint`: Package script `lint` from packages/cli/package.json.
+- [@agent-atlas/cli prepack](package-script.agent-atlas-cli.prepack.md) - `interface:package-script.agent-atlas-cli.prepack`: Package script `prepack` from packages/cli/package.json.
+- [@agent-atlas/cli test](package-script.agent-atlas-cli.test.md) - `interface:package-script.agent-atlas-cli.test`: Package script `test` from packages/cli/package.json.
+- [@agent-atlas/core build](package-script.agent-atlas-core.build.md) - `interface:package-script.agent-atlas-core.build`: Package script `build` from packages/core/package.json.
+- [@agent-atlas/core lint](package-script.agent-atlas-core.lint.md) - `interface:package-script.agent-atlas-core.lint`: Package script `lint` from packages/core/package.json.
+- [@agent-atlas/core test](package-script.agent-atlas-core.test.md) - `interface:package-script.agent-atlas-core.test`: Package script `test` from packages/core/package.json.
+- [@agent-atlas/markdown build](package-script.agent-atlas-markdown.build.md) - `interface:package-script.agent-atlas-markdown.build`: Package script `build` from packages/markdown/package.json.
+- [@agent-atlas/markdown lint](package-script.agent-atlas-markdown.lint.md) - `interface:package-script.agent-atlas-markdown.lint`: Package script `lint` from packages/markdown/package.json.
+- [@agent-atlas/markdown test](package-script.agent-atlas-markdown.test.md) - `interface:package-script.agent-atlas-markdown.test`: Package script `test` from packages/markdown/package.json.
+- [@agent-atlas/mcp-server build](package-script.agent-atlas-mcp-server.build.md) - `interface:package-script.agent-atlas-mcp-server.build`: Package script `build` from packages/mcp-server/package.json.
+- [@agent-atlas/mcp-server lint](package-script.agent-atlas-mcp-server.lint.md) - `interface:package-script.agent-atlas-mcp-server.lint`: Package script `lint` from packages/mcp-server/package.json.
+- [@agent-atlas/mcp-server test](package-script.agent-atlas-mcp-server.test.md) - `interface:package-script.agent-atlas-mcp-server.test`: Package script `test` from packages/mcp-server/package.json.
+- [agent-atlas-root atlas:help](package-script.agent-atlas-root.atlas-help.md) - `interface:package-script.agent-atlas-root.atlas-help`: Package script `atlas:help` from package.json.
+- [agent-atlas-root atlas:ui](package-script.agent-atlas-root.atlas-ui.md) - `interface:package-script.agent-atlas-root.atlas-ui`: Package script `atlas:ui` from package.json.
+- [agent-atlas-root build](package-script.agent-atlas-root.build.md) - `interface:package-script.agent-atlas-root.build`: Package script `build` from package.json.
+- [agent-atlas-root format](package-script.agent-atlas-root.format.md) - `interface:package-script.agent-atlas-root.format`: Package script `format` from package.json.
+- [agent-atlas-root lint](package-script.agent-atlas-root.lint.md) - `interface:package-script.agent-atlas-root.lint`: Package script `lint` from package.json.
+- [agent-atlas-root release:cli:preview](package-script.agent-atlas-root.release-cli-preview.md) - `interface:package-script.agent-atlas-root.release-cli-preview`: Package script `release:cli:preview` from package.json.
+- [agent-atlas-root release:package](package-script.agent-atlas-root.release-package.md) - `interface:package-script.agent-atlas-root.release-package`: Package script `release:package` from package.json.
+- [agent-atlas-root test](package-script.agent-atlas-root.test.md) - `interface:package-script.agent-atlas-root.test`: Package script `test` from package.json.
+- [@agent-atlas/schema build](package-script.agent-atlas-schema.build.md) - `interface:package-script.agent-atlas-schema.build`: Package script `build` from packages/schema/package.json.
+- [@agent-atlas/schema lint](package-script.agent-atlas-schema.lint.md) - `interface:package-script.agent-atlas-schema.lint`: Package script `lint` from packages/schema/package.json.
+- [@agent-atlas/schema test](package-script.agent-atlas-schema.test.md) - `interface:package-script.agent-atlas-schema.test`: Package script `test` from packages/schema/package.json.
+- [@agent-atlas/ui build](package-script.agent-atlas-ui.build.md) - `interface:package-script.agent-atlas-ui.build`: Package script `build` from packages/ui/package.json.
+- [@agent-atlas/ui lint](package-script.agent-atlas-ui.lint.md) - `interface:package-script.agent-atlas-ui.lint`: Package script `lint` from packages/ui/package.json.
+- [@agent-atlas/ui test](package-script.agent-atlas-ui.test.md) - `interface:package-script.agent-atlas-ui.test`: Package script `test` from packages/ui/package.json.
+- [GET /health](route.get.health.md) - `interface:route.get.health`: Discovered GET route in packages/core/src/generated-sources.test.ts.

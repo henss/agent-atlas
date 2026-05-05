@@ -12,5 +12,19 @@ Generated index of visible `component` entities.
 - [Core Package](core-package.md) - `component:core-package`: Loads atlas YAML, applies selected overlays, validates graph structure, normalizes relations, resolves paths, supports traversal, creates context packs, suggests starter cards, diagnoses stale references, applies maintenance policies, merges and diagnoses cross-repo registries, supports registry manifests, runs migrations, benchmarks load performance, evaluates local usage evidence, and checks profile boundaries.
 - [Markdown Package](markdown-package.md) - `component:markdown-package`: Renders generated agent-facing Markdown views and optional root READMEs from loaded atlas graphs.
 - [MCP Server Package](mcp-server-package.md) - `component:mcp-server-package`: Read-only MCP server exposing atlas resources and traversal tools over stdio, with smoke tests, clearer input errors, and read-only assertions.
+- [@agent-atlas/adapters](package.agent-atlas-adapters.md) - `component:package.agent-atlas-adapters`: Adapter interfaces and generic adapters for Agent Atlas.
+- [@agent-atlas/adapters dependency surface](package.agent-atlas-adapters.dependencies.md) - `component:package.agent-atlas-adapters.dependencies`: Workspace dependency relations for @agent-atlas/adapters.
+- [@agent-atlas/cli](package.agent-atlas-cli.md) - `component:package.agent-atlas-cli`: Command-line interface for Agent Atlas.
+- [@agent-atlas/cli dependency surface](package.agent-atlas-cli.dependencies.md) - `component:package.agent-atlas-cli.dependencies`: Workspace dependency relations for @agent-atlas/cli.
+- [@agent-atlas/core](package.agent-atlas-core.md) - `component:package.agent-atlas-core`: Core graph loading, validation, traversal, and context pack logic for Agent Atlas.
+- [@agent-atlas/core dependency surface](package.agent-atlas-core.dependencies.md) - `component:package.agent-atlas-core.dependencies`: Workspace dependency relations for @agent-atlas/core.
+- [@agent-atlas/markdown](package.agent-atlas-markdown.md) - `component:package.agent-atlas-markdown`: Generated Markdown views for Agent Atlas.
+- [@agent-atlas/markdown dependency surface](package.agent-atlas-markdown.dependencies.md) - `component:package.agent-atlas-markdown.dependencies`: Workspace dependency relations for @agent-atlas/markdown.
+- [@agent-atlas/mcp-server](package.agent-atlas-mcp-server.md) - `component:package.agent-atlas-mcp-server`: Read-only MCP server for Agent Atlas.
+- [@agent-atlas/mcp-server dependency surface](package.agent-atlas-mcp-server.dependencies.md) - `component:package.agent-atlas-mcp-server.dependencies`: Workspace dependency relations for @agent-atlas/mcp-server.
+- [agent-atlas-root](package.agent-atlas-root.md) - `component:package.agent-atlas-root`: Typed context graph and traversal toolkit for AI coding agents.
+- [@agent-atlas/schema](package.agent-atlas-schema.md) - `component:package.agent-atlas-schema`: Types and JSON Schema for Agent Atlas entities.
+- [@agent-atlas/ui](package.agent-atlas-ui.md) - `component:package.agent-atlas-ui`: Local read-only review UI for Agent Atlas graphs.
+- [@agent-atlas/ui dependency surface](package.agent-atlas-ui.dependencies.md) - `component:package.agent-atlas-ui.dependencies`: Workspace dependency relations for @agent-atlas/ui.
 - [Schema Package](schema-package.md) - `component:schema-package`: Defines atlas entity types, relation vocabulary, and JSON Schema validation assets.
 - [UI Package](ui-package.md) - `component:ui-package`: Serves the local read-only human review UI for browsing atlas entities, relations, focused graph neighborhoods, diagnostics, path resolution, context-pack previews, and debug metadata.

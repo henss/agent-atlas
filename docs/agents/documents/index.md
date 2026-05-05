@@ -22,6 +22,64 @@ Generated index of visible `document` entities.
 - [Entity Specification](entity-spec.md) - `document:entity-spec`: Specification for atlas entity identity, common fields, kinds, agent hints, schema versions, and source references.
 - [Generated Agent Docs](generated-agent-docs.md) - `document:generated-agent-docs`: Generated Markdown views for agents reading this Agent Atlas repository.
 - [Generated Markdown Specification](generated-markdown-spec.md) - `document:generated-markdown-spec`: Specification for generated agent-facing Markdown views, generated READMEs, and generated file conventions.
+- [Agent guidance for Agent Atlas](generated.agents.md) - `document:generated.agents`: Markdown document at AGENTS.md.
+- [Add Adapter Skill](generated.agents-skills-add-adapter-skill.md) - `document:generated.agents-skills-add-adapter-skill`: Markdown document at .agents/skills/add-adapter/SKILL.md.
+- [Add Atlas Entity Skill](generated.agents-skills-add-atlas-entity-skill.md) - `document:generated.agents-skills-add-atlas-entity-skill`: Markdown document at .agents/skills/add-atlas-entity/SKILL.md.
+- [Design Context Pack Skill](generated.agents-skills-design-context-pack-skill.md) - `document:generated.agents-skills-design-context-pack-skill`: Markdown document at .agents/skills/design-context-pack/SKILL.md.
+- [Implement CLI Command Skill](generated.agents-skills-implement-cli-command-skill.md) - `document:generated.agents-skills-implement-cli-command-skill`: Markdown document at .agents/skills/implement-cli-command/SKILL.md.
+- [Update Schema Skill](generated.agents-skills-update-schema-skill.md) - `document:generated.agents-skills-update-schema-skill`: Markdown document at .agents/skills/update-schema/SKILL.md.
+- [Contributing](generated.contributing.md) - `document:generated.contributing`: Markdown document at CONTRIBUTING.md.
+- [ADR 0001: Model the atlas as a typed context graph](generated.docs-adr-0001-atlas-as-typed-context-graph.md) - `document:generated.docs-adr-0001-atlas-as-typed-context-graph`: Markdown document at docs/adr/0001-atlas-as-typed-context-graph.md.
+- [ADR 0002: Public core with private overlays](generated.docs-adr-0002-public-core-private-overlays.md) - `document:generated.docs-adr-0002-public-core-private-overlays`: Markdown document at docs/adr/0002-public-core-private-overlays.md.
+- [Architecture](generated.docs-architecture.md) - `document:generated.docs-architecture`: Markdown document at docs/architecture.md.
+- [Progressive Disclosure](generated.docs-concepts-progressive-disclosure.md) - `document:generated.docs-concepts-progressive-disclosure`: Markdown document at docs/concepts/progressive-disclosure.md.
+- [Public and Private Overlays](generated.docs-concepts-public-private-overlays.md) - `document:generated.docs-concepts-public-private-overlays`: Markdown document at docs/concepts/public-private-overlays.md.
+- [Typed Context Graph](generated.docs-concepts-typed-context-graph.md) - `document:generated.docs-concepts-typed-context-graph`: Markdown document at docs/concepts/typed-context-graph.md.
+- [Design Principles](generated.docs-design-principles.md) - `document:generated.docs-design-principles`: Markdown document at docs/design-principles.md.
+- [Authoring Atlas Files](generated.docs-guides-authoring-atlas-files.md) - `document:generated.docs-guides-authoring-atlas-files`: Markdown document at docs/guides/authoring-atlas-files.md.
+- [Boundary Checks Guide](generated.docs-guides-boundary-checks.md) - `document:generated.docs-guides-boundary-checks`: Markdown document at docs/guides/boundary-checks.md.
+- [Contributor Examples](generated.docs-guides-contributor-examples.md) - `document:generated.docs-guides-contributor-examples`: Markdown document at docs/guides/contributor-examples.md.
+- [Cross-Repo Atlas Guide](generated.docs-guides-cross-repo-atlas.md) - `document:generated.docs-guides-cross-repo-atlas`: Markdown document at docs/guides/cross-repo-atlas.md.
+- [Incremental Authoring](generated.docs-guides-incremental-authoring.md) - `document:generated.docs-guides-incremental-authoring`: Markdown document at docs/guides/incremental-authoring.md.
+- [LLM Agent Usage Guide](generated.docs-guides-llm-agent-usage.md) - `document:generated.docs-guides-llm-agent-usage`: Markdown document at docs/guides/llm-agent-usage.md.
+- [Local CLI Consumption](generated.docs-guides-local-cli-consumption.md) - `document:generated.docs-guides-local-cli-consumption`: Markdown document at docs/guides/local-cli-consumption.md.
+- [MCP Deployment](generated.docs-guides-mcp-deployment.md) - `document:generated.docs-guides-mcp-deployment`: Markdown document at docs/guides/mcp-deployment.md.
+- [Package Publish Readiness](generated.docs-guides-package-publish-readiness.md) - `document:generated.docs-guides-package-publish-readiness`: Markdown document at docs/guides/package-publish-readiness.md.
+- [Per-Repo Setup Guide](generated.docs-guides-per-repo-setup.md) - `document:generated.docs-guides-per-repo-setup`: Markdown document at docs/guides/per-repo-setup.md.
+- [Agent Atlas CLI 0.16.0 Preview Release](generated.docs-guides-release-0-16-0.md) - `document:generated.docs-guides-release-0-16-0`: Markdown document at docs/guides/release-0.16.0.md.
+- [Agent Atlas CLI 0.17.0 Preview Release](generated.docs-guides-release-0-17-0.md) - `document:generated.docs-guides-release-0-17-0`: Markdown document at docs/guides/release-0.17.0.md.
+- [Agent Atlas CLI 0.18.0 Preview Release](generated.docs-guides-release-0-18-0.md) - `document:generated.docs-guides-release-0-18-0`: Markdown document at docs/guides/release-0.18.0.md.
+- [Rollout Evidence Guide](generated.docs-guides-rollout-evidence.md) - `document:generated.docs-guides-rollout-evidence`: Markdown document at docs/guides/rollout-evidence.md.
+- [Open Source Strategy](generated.docs-open-source-strategy.md) - `document:generated.docs-open-source-strategy`: Markdown document at docs/open-source-strategy.md.
+- [Adapter Specification](generated.docs-spec-adapters.md) - `document:generated.docs-spec-adapters`: Markdown document at docs/spec/adapters.md.
+- [Boundary Safety](generated.docs-spec-boundary-safety.md) - `document:generated.docs-spec-boundary-safety`: Markdown document at docs/spec/boundary-safety.md.
+- [Context Packs](generated.docs-spec-context-packs.md) - `document:generated.docs-spec-context-packs`: Markdown document at docs/spec/context-packs.md.
+- [Entity Specification](generated.docs-spec-entities.md) - `document:generated.docs-spec-entities`: Markdown document at docs/spec/entities.md.
+- [Generated Markdown Views](generated.docs-spec-generated-markdown.md) - `document:generated.docs-spec-generated-markdown`: Markdown document at docs/spec/generated-markdown.md.
+- [Entity ID Format](generated.docs-spec-id-format.md) - `document:generated.docs-spec-id-format`: Markdown document at docs/spec/id-format.md.
+- [MCP Specification](generated.docs-spec-mcp.md) - `document:generated.docs-spec-mcp`: Markdown document at docs/spec/mcp.md.
+- [Overlay Specification](generated.docs-spec-overlays.md) - `document:generated.docs-spec-overlays`: Markdown document at docs/spec/overlays.md.
+- [Registry Specification](generated.docs-spec-registry.md) - `document:generated.docs-spec-registry`: Markdown document at docs/spec/registry.md.
+- [Relation Specification](generated.docs-spec-relations.md) - `document:generated.docs-spec-relations`: Markdown document at docs/spec/relations.md.
+- [Usage Evidence](generated.docs-spec-usage-evidence.md) - `document:generated.docs-spec-usage-evidence`: Markdown document at docs/spec/usage-evidence.md.
+- [Validation Specification](generated.docs-spec-validation.md) - `document:generated.docs-spec-validation`: Markdown document at docs/spec/validation.md.
+- [Versioning and Migrations](generated.docs-spec-versioning.md) - `document:generated.docs-spec-versioning`: Markdown document at docs/spec/versioning.md.
+- [Vision](generated.docs-vision.md) - `document:generated.docs-vision`: Markdown document at docs/vision.md.
+- [Band Ops Sanitized Example](generated.examples-band-ops-sanitized-readme.md) - `document:generated.examples-band-ops-sanitized-readme`: Markdown document at examples/band-ops-sanitized/README.md.
+- [Company Cross-Repo Sanitized Example](generated.examples-company-cross-repo-sanitized-readme.md) - `document:generated.examples-company-cross-repo-sanitized-readme`: Markdown document at examples/company-cross-repo-sanitized/README.md.
+- [Control-Plane Overlays Sanitized Example](generated.examples-control-plane-overlays-sanitized-readme.md) - `document:generated.examples-control-plane-overlays-sanitized-readme`: Markdown document at examples/control-plane-overlays-sanitized/README.md.
+- [Personal Ops Sanitized Example](generated.examples-personal-ops-sanitized-readme.md) - `document:generated.examples-personal-ops-sanitized-readme`: Markdown document at examples/personal-ops-sanitized/README.md.
+- [PULL_REQUEST_TEMPLATE](generated.github-pull-request-template.md) - `document:generated.github-pull-request-template`: Markdown document at .github/PULL_REQUEST_TEMPLATE.md.
+- [@agent-atlas/adapters](generated.packages-adapters-readme.md) - `document:generated.packages-adapters-readme`: Markdown document at packages/adapters/README.md.
+- [@agent-atlas/cli](generated.packages-cli-readme.md) - `document:generated.packages-cli-readme`: Markdown document at packages/cli/README.md.
+- [@agent-atlas/core](generated.packages-core-readme.md) - `document:generated.packages-core-readme`: Markdown document at packages/core/README.md.
+- [@agent-atlas/markdown](generated.packages-markdown-readme.md) - `document:generated.packages-markdown-readme`: Markdown document at packages/markdown/README.md.
+- [@agent-atlas/mcp-server](generated.packages-mcp-server-readme.md) - `document:generated.packages-mcp-server-readme`: Markdown document at packages/mcp-server/README.md.
+- [@agent-atlas/schema](generated.packages-schema-readme.md) - `document:generated.packages-schema-readme`: Markdown document at packages/schema/README.md.
+- [@agent-atlas/ui](generated.packages-ui-readme.md) - `document:generated.packages-ui-readme`: Markdown document at packages/ui/README.md.
+- [Roadmap](generated.roadmap.md) - `document:generated.roadmap`: Markdown document at ROADMAP.md.
+- [Security Policy](generated.security.md) - `document:generated.security`: Markdown document at SECURITY.md.
+- [Agent guidance](generated.templates-repo-agents.md) - `document:generated.templates-repo-agents`: Markdown document at templates/repo/AGENTS.md.
 - [ID Format Specification](id-format-spec.md) - `document:id-format-spec`: Specification for stable Atlas entity identifiers, kind prefixes, slug rules, and validation expectations.
 - [Incremental Authoring Guide](incremental-authoring-guide.md) - `document:incremental-authoring-guide`: Guide for one-seam atlas updates using path resolution, draft card suggestions, generated-doc checks, and stale-reference diffing.
 - [LLM Agent Usage Guide](llm-agent-usage-guide.md) - `document:llm-agent-usage-guide`: Guide for using Atlas from coding agents through overview, path resolution, context packs, generated docs, and MCP resources.

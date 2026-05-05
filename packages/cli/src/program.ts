@@ -112,6 +112,33 @@ const COMMANDS: AtlasCliCommandDefinition[] = [
     group: 'Generated Artifact Commands',
   },
   {
+    path: ['sources', 'docs', 'generate'],
+    summary: 'Generate the source-derived Atlas reference.',
+    description: 'Writes the reference for entities derived from package scripts, packages, tests, docs, config, routes, and dependencies.',
+    usage: '[path] [--path <root>] [--output <path>] [--check] [--profile <profile>]',
+    arguments: ['[path]'],
+    options: [
+      { flags: '--path <root>', description: 'Atlas root path.' },
+      { flags: '--output <path>', description: 'Reference Markdown output path.' },
+      { flags: '--check', description: 'Check drift without writing files.' },
+      { flags: '--profile <profile>', description: 'Atlas profile.' },
+    ],
+    group: 'Generated Artifact Commands',
+  },
+  {
+    path: ['sources', 'docs', 'check'],
+    summary: 'Check the source-derived Atlas reference.',
+    description: 'Fails when the source-derived reference is stale or missing.',
+    usage: '[path] [--path <root>] [--output <path>] [--profile <profile>]',
+    arguments: ['[path]'],
+    options: [
+      { flags: '--path <root>', description: 'Atlas root path.' },
+      { flags: '--output <path>', description: 'Reference Markdown output path.' },
+      { flags: '--profile <profile>', description: 'Atlas profile.' },
+    ],
+    group: 'Generated Artifact Commands',
+  },
+  {
     path: ['maintain', 'check'],
     summary: 'Check Atlas maintenance state.',
     description: 'Runs validation, optional boundary checks, metadata drift checks, generated docs checks, README checks, and generated CLI reference checks.',

@@ -66,7 +66,7 @@ describe('atlas proposals', () => {
     );
   });
 
-  it('discovers untracked source documents and proposes document cards', async () => {
+  it('does not propose document cards for documents covered by generated sources', async () => {
     const root = await makeProposalFixture();
     await mkdir(path.join(root, 'docs', 'guides'), { recursive: true });
     await writeFile(path.join(root, 'docs', 'guides', 'foo.md'), '# Foo\n');
@@ -77,9 +77,8 @@ describe('atlas proposals', () => {
     const gap = report.gaps.find((candidate) => candidate.type === 'untracked-document');
     const proposal = proposeAtlasCards(report);
 
-    expect(gap?.affectedPaths).toEqual(['docs/guides/foo.md']);
-    expect(proposal.proposedEntities[0]?.kind).toBe('document');
-    expect(proposal.proposedEntities[0]?.yaml).toContain('uri: docs/guides/foo.md');
+    expect(gap).toBeUndefined();
+    expect(proposal.proposedEntities.some((entity) => entity.kind === 'document')).toBe(false);
   });
 
   it('discovers stale milestone summaries on document cards', async () => {

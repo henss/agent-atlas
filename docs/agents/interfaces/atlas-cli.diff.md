@@ -11,7 +11,7 @@ Report stale Atlas metadata and generated artifacts.
 ## Metadata
 
 - visibility: `public`
-- tags: `cli-command`, `atlas`
+- tags: `cli-command`, `atlas`, `generated-source`, `commander`
 
 ## Access
 

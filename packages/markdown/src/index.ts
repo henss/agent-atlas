@@ -125,6 +125,7 @@ export function renderRepositoryReadme(
   const tests = collectReadmeEntities(repository?.id, 'test-scope', entities, edges).slice(0, 8);
   const commands = collectReadmeCommands(repository, tests);
   const cliInterfaces = collectReadmeCliInterfaces(repository?.id, entities, edges);
+  const generatedSourceSummary = summarizeGeneratedSources(entities);
   const readmeMetadata = readRepositoryReadmeMetadata(repository);
   const docsIndex = documents.find((document) => document.uri === 'docs/index.md');
   const cliReference = readmeMetadata.cli?.reference ?? findCliReference(documents);
@@ -164,6 +165,7 @@ export function renderRepositoryReadme(
   appendReadmePathSection(lines, 'Durable State', readmeMetadata.durable_state);
   appendReadmeTextSection(lines, 'Operational Notes', readmeMetadata.operational_notes);
   appendCliSection(lines, readmeMetadata.cli, cliReference, cliInterfaces);
+  appendGeneratedSourceSection(lines, generatedSourceSummary);
   appendConfiguredSections(lines, readmeMetadata.sections);
   appendReadmeSection(lines, 'Domains', domains);
   appendReadmeSection(lines, 'Common Workflows', workflows);
@@ -180,6 +182,34 @@ export function renderRepositoryReadme(
 
   lines.push('', '## Source Of Truth', '', ...sourceNotes.map((note) => `- ${note}`));
   return `${lines.join('\n')}\n`;
+}
+
+function summarizeGeneratedSources(entities: AtlasEntity[]): Array<{ family: string; count: number }> {
+  const counts = new Map<string, number>();
+  for (const entity of entities) {
+    const generatedSource = entity.metadata?.generated_source;
+    if (!isRecord(generatedSource) || typeof generatedSource.family !== 'string') {
+      continue;
+    }
+    counts.set(generatedSource.family, (counts.get(generatedSource.family) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([family, count]) => ({ family, count }))
+    .sort((left, right) => left.family.localeCompare(right.family));
+}
+
+function appendGeneratedSourceSection(
+  lines: string[],
+  summary: Array<{ family: string; count: number }>,
+): void {
+  if (summary.length === 0) {
+    return;
+  }
+  lines.push('', '## Source-Derived Surfaces', '');
+  for (const item of summary) {
+    lines.push(`- ${titleCase(item.family.replaceAll('_', ' '))}: ${item.count}`);
+  }
+  lines.push('- Full generated reference: `docs/generated/source-derived-reference.md`.');
 }
 
 export function renderEntityCard(

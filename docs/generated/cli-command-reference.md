@@ -125,6 +125,35 @@ Options:
 - `--output <path>` (value required) - Generated docs output directory.
 - `--check` - Check drift without writing files.
 
+### `atlas sources docs check [path] [--path <root>] [--output <path>] [--profile <profile>]`
+
+Check the source-derived Atlas reference.
+
+Fails when the source-derived reference is stale or missing.
+
+Arguments:
+- `path`
+
+Options:
+- `--path <root>` (value required) - Atlas root path.
+- `--output <path>` (value required) - Reference Markdown output path.
+- `--profile <profile>` (value required) - Atlas profile.
+
+### `atlas sources docs generate [path] [--path <root>] [--output <path>] [--check] [--profile <profile>]`
+
+Generate the source-derived Atlas reference.
+
+Writes the reference for entities derived from package scripts, packages, tests, docs, config, routes, and dependencies.
+
+Arguments:
+- `path`
+
+Options:
+- `--path <root>` (value required) - Atlas root path.
+- `--output <path>` (value required) - Reference Markdown output path.
+- `--check` - Check drift without writing files.
+- `--profile <profile>` (value required) - Atlas profile.
+
 ## Global Registry Commands
 
 ### `atlas global context-pack <task> [path] [--budget <tokens>] [--deterministic] [--path <root>] [--profile <profile>] [--json]`

@@ -48,6 +48,8 @@ Provides the atlas command-line interface for validation, boundary checks, graph
 - `interface:atlas-cli.propose-cards` _(generated)_
 - `interface:atlas-cli.resolve-path` _(generated)_
 - `interface:atlas-cli.show` _(generated)_
+- `interface:atlas-cli.sources-docs-check` _(generated)_
+- `interface:atlas-cli.sources-docs-generate` _(generated)_
 - `interface:atlas-cli.suggest-card` _(generated)_
 - `interface:atlas-cli.ui` _(generated)_
 - `interface:atlas-cli.usage-note` _(generated)_

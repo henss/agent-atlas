@@ -11,7 +11,7 @@ Validate a global Atlas registry.
 ## Metadata
 
 - visibility: `public`
-- tags: `cli-command`, `atlas`
+- tags: `cli-command`, `atlas`, `generated-source`, `commander`
 
 ## Access
 

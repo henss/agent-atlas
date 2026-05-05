@@ -17,3 +17,4 @@ export * from './authoring.js';
 export * from './proposals.js';
 export * from './maintenance.js';
 export * from './generated-cli.js';
+export * from './generated-sources.js';

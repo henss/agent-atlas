@@ -11,7 +11,7 @@ Print an overview of the atlas graph.
 ## Metadata
 
 - visibility: `public`
-- tags: `cli-command`, `atlas`
+- tags: `cli-command`, `atlas`, `generated-source`, `commander`
 
 ## Access
 

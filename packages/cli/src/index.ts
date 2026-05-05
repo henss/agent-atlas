@@ -25,8 +25,10 @@ import {
   applyAtlasMaintenanceMetadataFixes,
   loadGeneratedCliEntities,
   loadGeneratedCliPolicy,
+  loadGeneratedSourceEntities,
   extractCommanderCliCommands,
   renderCliReferenceMarkdown,
+  renderSourceDerivedReferenceMarkdown,
   suggestAtlasCard,
   validateAtlasProposal,
   validateAtlas,
@@ -202,6 +204,12 @@ interface GenerateMarkdownArgs {
   profile: AtlasProfile;
   check: boolean;
   json: boolean;
+}
+
+interface SourcesDocsArgs {
+  rootPath: string;
+  outputPath?: string;
+  profile: AtlasProfile;
 }
 
 interface ContextPackArgs {
@@ -586,6 +594,47 @@ function parseGenerateMarkdownArgs(args: string[]): GenerateMarkdownArgs {
   }
 
   return { rootPath, outputPath, profile, check, json };
+}
+
+function parseSourcesDocsArgs(args: string[]): SourcesDocsArgs {
+  let rootPath = process.cwd();
+  let outputPath: string | undefined;
+  let profile: AtlasProfile = 'public';
+  let rootPathWasSet = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === 'docs' || arg === 'generate' || arg === 'check' || arg === '--check') {
+      continue;
+    }
+
+    if (arg === '--path') {
+      [rootPath, rootPathWasSet] = setRootPath(
+        readOptionValue(args, index, '--path'),
+        rootPathWasSet,
+      );
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--output') {
+      outputPath = readOptionValue(args, index, '--output');
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--profile') {
+      profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
+      index += 1;
+      continue;
+    }
+
+    rejectUnknownOption(arg);
+    [rootPath, rootPathWasSet] = setRootPath(arg, rootPathWasSet);
+  }
+
+  return { rootPath, outputPath, profile };
 }
 
 function parseContextPackArgs(args: string[]): ContextPackArgs {
@@ -2571,8 +2620,11 @@ async function runMaintainCheck(
     renderRepositoryReadme(graph, { profile }),
   );
   const cliReference = await checkConfiguredCliReference(options.rootPath);
+  const sourceReference = await checkConfiguredSourceReference(options.rootPath);
   generated.staleFiles.push(...cliReference.staleFiles);
+  generated.staleFiles.push(...sourceReference.staleFiles);
   generated.missingFiles.push(...cliReference.missingFiles);
+  generated.missingFiles.push(...sourceReference.missingFiles);
   generated.staleFiles.sort();
   generated.missingFiles.sort();
   const generatedHasDrift =
@@ -2663,6 +2715,56 @@ async function checkConfiguredCliReference(rootPath: string): Promise<{
   missingFiles: string[];
 }> {
   const reference = await renderConfiguredCliReference(rootPath);
+  if (!reference.path || reference.content === undefined) {
+    return { staleFiles: [], missingFiles: [] };
+  }
+  const relativePath = normalizeGeneratedPath(reference.path);
+  try {
+    const existing = await readFile(path.resolve(rootPath, reference.path), 'utf8');
+    if (existing.replace(/\r\n/g, '\n') !== reference.content.replace(/\r\n/g, '\n')) {
+      return { staleFiles: [relativePath], missingFiles: [] };
+    }
+    return { staleFiles: [], missingFiles: [] };
+  } catch {
+    return { staleFiles: [], missingFiles: [relativePath] };
+  }
+}
+
+async function renderConfiguredSourceReference(rootPath: string): Promise<{
+  path?: string;
+  content?: string;
+}> {
+  const maintenancePolicy = await loadAtlasMaintenancePolicy(rootPath);
+  if (!maintenancePolicy.sourcePath || maintenancePolicy.mode === 'review-only') {
+    return {};
+  }
+  const generated = await loadGeneratedSourceEntities(rootPath);
+  const reference = generated.policy.reference;
+  if (!generated.policy.enabled || !reference?.auto_regenerate) {
+    return {};
+  }
+  return {
+    path: reference.path,
+    content: renderSourceDerivedReferenceMarkdown(generated),
+  };
+}
+
+async function writeConfiguredSourceReference(rootPath: string): Promise<string[]> {
+  const reference = await renderConfiguredSourceReference(rootPath);
+  if (!reference.path || reference.content === undefined) {
+    return [];
+  }
+  const absolutePath = path.resolve(rootPath, reference.path);
+  await mkdir(path.dirname(absolutePath), { recursive: true });
+  await writeFile(absolutePath, reference.content, 'utf8');
+  return [normalizeGeneratedPath(reference.path)];
+}
+
+async function checkConfiguredSourceReference(rootPath: string): Promise<{
+  staleFiles: string[];
+  missingFiles: string[];
+}> {
+  const reference = await renderConfiguredSourceReference(rootPath);
   if (!reference.path || reference.content === undefined) {
     return { staleFiles: [], missingFiles: [] };
   }
@@ -2991,6 +3093,39 @@ switch (command) {
     console.log(`Wrote CLI command reference: ${absoluteOutputPath}`);
     break;
   }
+  case 'sources': {
+    if (args[0] !== 'docs' || !['generate', 'check'].includes(args[1] ?? '')) {
+      printHelp();
+      process.exitCode = 1;
+      break;
+    }
+    const options = parseSourcesDocsArgs(args);
+    const check = args[1] === 'check' || args.includes('--check');
+    const generated = await loadGeneratedSourceEntities(options.rootPath);
+    const outputPath = options.outputPath ?? generated.policy.reference?.path ?? 'docs/generated/source-derived-reference.md';
+    const markdown = renderSourceDerivedReferenceMarkdown(generated);
+    const absoluteOutputPath = path.resolve(options.rootPath, outputPath);
+    if (check) {
+      try {
+        const existing = await readFile(absoluteOutputPath, 'utf8');
+        if (existing.replace(/\r\n/g, '\n') !== markdown.replace(/\r\n/g, '\n')) {
+          console.error(`Generated source-derived reference is out of date: ${absoluteOutputPath}`);
+          process.exitCode = 1;
+          break;
+        }
+      } catch {
+        console.error(`Generated source-derived reference is missing: ${absoluteOutputPath}`);
+        process.exitCode = 1;
+        break;
+      }
+      console.log(`Source-derived reference is up to date: ${absoluteOutputPath}`);
+      break;
+    }
+    await mkdir(path.dirname(absoluteOutputPath), { recursive: true });
+    await writeFile(absoluteOutputPath, markdown, 'utf8');
+    console.log(`Wrote source-derived reference: ${absoluteOutputPath}`);
+    break;
+  }
   case 'context-pack': {
     const options = parseContextPackArgs(args);
     if (!options.task) {
@@ -3054,8 +3189,11 @@ switch (command) {
       renderRepositoryReadme(graph, { profile: options.profile }),
     );
     const cliReference = await checkConfiguredCliReference(options.rootPath);
+    const sourceReference = await checkConfiguredSourceReference(options.rootPath);
     generated.staleFiles.push(...cliReference.staleFiles);
+    generated.staleFiles.push(...sourceReference.staleFiles);
     generated.missingFiles.push(...cliReference.missingFiles);
+    generated.missingFiles.push(...sourceReference.missingFiles);
     generated.staleFiles.sort();
     generated.missingFiles.sort();
     const generatedHasDrift =
@@ -3137,6 +3275,7 @@ switch (command) {
           : []
         ),
         ...(policy.mode !== 'review-only' ? await writeConfiguredCliReference(options.rootPath) : []),
+        ...(policy.mode !== 'review-only' ? await writeConfiguredSourceReference(options.rootPath) : []),
       ].sort();
       const check = await runMaintainCheck(options, policy);
       const result: CliMaintainFixReport = {

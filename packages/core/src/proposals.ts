@@ -530,6 +530,9 @@ function collectWeakRelationCoverageGaps(
   documentEntities: AtlasEntity[],
 ): void {
   for (const entity of documentEntities) {
+    if (isGeneratedSourceEntity(entity)) {
+      continue;
+    }
     const usefulRelations = (entity.relations ?? []).filter((relation) =>
       ['documents', 'documented-in', 'part-of'].includes(relation.type)
         && /^(workflow|component|domain|document):/.test(relation.target),
@@ -551,6 +554,11 @@ function collectWeakRelationCoverageGaps(
       blockedReasons: [],
     });
   }
+}
+
+function isGeneratedSourceEntity(entity: AtlasEntity): boolean {
+  const generatedSource = entity.metadata?.generated_source;
+  return typeof generatedSource === 'object' && generatedSource !== null;
 }
 
 async function collectUnderModeledCapabilityGaps(
