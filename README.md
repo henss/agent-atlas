@@ -87,6 +87,11 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 
 - Apache-2.0; see `LICENSE`.
 
+## Domains
+
+- `domain:agent-atlas` - Agent Atlas: Typed context graph framework, CLI, MCP server, review UI, and adapter layer for helping coding agents navigate repositories and related context.
+- `domain:agent-atlas-local` - agent-atlas Local Surface: Repo-local architecture, docs, and verification surfaces for agent-atlas.
+
 ## Common Workflows
 
 - `workflow:audit-profile-boundaries` - Audit Profile Boundaries: Checks public, private, and company profile outputs for policy violations, private markers, restricted URI schemes, and generated-doc leaks.

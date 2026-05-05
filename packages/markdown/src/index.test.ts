@@ -106,6 +106,13 @@ describe('generateMarkdownViews', () => {
             visibility: 'public',
           },
           {
+            id: 'domain:example-domain',
+            kind: 'domain',
+            title: 'Example Domain',
+            summary: 'Top-level domain context.',
+            visibility: 'public',
+          },
+          {
             id: 'document:docs-index',
             kind: 'document',
             title: 'Docs Index',
@@ -138,6 +145,7 @@ describe('generateMarkdownViews', () => {
           },
         ],
         edges: [
+          { source: 'repository:example', target: 'domain:example-domain', type: 'contains', provenance: 'explicit' },
           { source: 'repository:example', target: 'workflow:ship', type: 'contains', provenance: 'explicit' },
           { source: 'repository:example', target: 'document:docs-index', type: 'contains', provenance: 'explicit' },
         ],
@@ -159,6 +167,8 @@ describe('generateMarkdownViews', () => {
     );
     expect(markdown).toContain('- Validation Commands (1): `example validate`');
     expect(markdown).toContain('## Custom Section');
+    expect(markdown).toContain('## Domains');
+    expect(markdown).toContain('`domain:example-domain` - Example Domain: Top-level domain context.');
     expect(markdown).toContain('Documentation entrypoint: [Docs Index](docs/index.md).');
     expect(markdown).toContain('`workflow:ship`');
     expect(markdown).toContain('`pnpm test` - Run tests.');

@@ -118,6 +118,7 @@ export function renderRepositoryReadme(
   const repository = entities.find((entity) => entity.kind === 'repository');
   const title = repository?.title ?? 'Repository';
   const summary = repository?.summary ?? 'Atlas-generated repository orientation.';
+  const domains = collectReadmeEntities(undefined, 'domain', entities, edges).slice(0, 6);
   const workflows = collectReadmeEntities(repository?.id, 'workflow', entities, edges).slice(0, 8);
   const components = collectReadmeEntities(repository?.id, 'component', entities, edges).slice(0, 10);
   const documents = collectReadmeEntities(repository?.id, 'document', entities, edges).slice(0, 8);
@@ -164,6 +165,7 @@ export function renderRepositoryReadme(
   appendReadmeTextSection(lines, 'Operational Notes', readmeMetadata.operational_notes);
   appendCliSection(lines, readmeMetadata.cli, cliReference, cliInterfaces);
   appendConfiguredSections(lines, readmeMetadata.sections);
+  appendReadmeSection(lines, 'Domains', domains);
   appendReadmeSection(lines, 'Common Workflows', workflows);
   appendReadmeSection(lines, 'Key Implementation Surfaces', components);
   appendReadmeSection(lines, 'Documentation', documents);
