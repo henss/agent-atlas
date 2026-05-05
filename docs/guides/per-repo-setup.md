@@ -48,6 +48,8 @@ Public repos that need self-contained scripts should pin the preview CLI package
     "atlas:doctor": "pnpm dlx @agent-atlas/cli@0.18.0 doctor --path . --profile public",
     "atlas:validate": "pnpm dlx @agent-atlas/cli@0.18.0 validate . --profile public",
     "atlas:boundary-check": "pnpm dlx @agent-atlas/cli@0.18.0 boundary-check . --profile public",
+    "atlas:refresh": "pnpm dlx @agent-atlas/cli@0.18.0 maintain fix --path . --profile public",
+    "atlas:check": "pnpm dlx @agent-atlas/cli@0.18.0 maintain check --path . --profile public",
     "atlas:docs:check": "pnpm dlx @agent-atlas/cli@0.18.0 generate markdown . --output docs/agents --profile public --check",
     "atlas:context-pack": "pnpm dlx @agent-atlas/cli@0.18.0 context-pack --path . --profile public",
     "atlas:resolve-path": "pnpm dlx @agent-atlas/cli@0.18.0 resolve-path --path . --profile public"
@@ -72,6 +74,8 @@ node ../agent-atlas/packages/cli/dist/index.js diff --path .
 node ../agent-atlas/packages/cli/dist/index.js usage-note "change packages/core/src/example.ts" --path . --command context-pack --entity component:example --file packages/core/src/example.ts
 node ../agent-atlas/packages/cli/dist/index.js evaluate --path .
 node ../agent-atlas/packages/cli/dist/index.js generate markdown --path . --output docs/agents --profile private
+node ../agent-atlas/packages/cli/dist/index.js maintain fix --path . --profile private
+node ../agent-atlas/packages/cli/dist/index.js maintain check --path . --profile private
 ```
 
 All atlas-loading commands accept one positional root path or `--path <root>`. Do not pass both. Prefer `--path <root>` in scripts so the target repo is obvious.

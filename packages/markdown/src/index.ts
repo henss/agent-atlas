@@ -63,6 +63,66 @@ export function generateMarkdownViews(
   return files.sort((left, right) => left.path.localeCompare(right.path));
 }
 
+export function renderRepositoryReadme(
+  graph: AtlasGraph,
+  options: MarkdownGenerationOptions = {},
+): string {
+  const profile = options.profile ?? 'public';
+  const entities = filterEntitiesByProfile(graph.entities, profile);
+  const entityIds = new Set(entities.map((entity) => entity.id));
+  const edges = graph.edges.filter((edge) => entityIds.has(edge.source) && entityIds.has(edge.target));
+  const repository = entities.find((entity) => entity.kind === 'repository');
+  const title = repository?.title ?? 'Repository';
+  const summary = repository?.summary ?? 'Atlas-generated repository orientation.';
+  const workflows = collectReadmeEntities(repository?.id, 'workflow', entities, edges).slice(0, 8);
+  const components = collectReadmeEntities(repository?.id, 'component', entities, edges).slice(0, 10);
+  const documents = collectReadmeEntities(repository?.id, 'document', entities, edges).slice(0, 8);
+  const tests = collectReadmeEntities(repository?.id, 'test-scope', entities, edges).slice(0, 8);
+  const commands = collectReadmeCommands(repository, tests);
+  const docsIndex = documents.find((document) => document.uri === 'docs/index.md');
+  const sourceNotes = [
+    ...(repository?.agent?.risk_notes ?? []),
+    'This README is generated from Agent Atlas metadata. Update `.agent-atlas/**` or the referenced canonical docs, then regenerate it.',
+  ];
+  const lines = [
+    GENERATED_HEADER,
+    '',
+    `# ${title}`,
+    '',
+    summary,
+    '',
+    '## Start Here',
+    '',
+    '- Use Agent Atlas before broad repository search.',
+    '- Read this README as a compact entrypoint, then load only the specific Atlas entities or docs needed for the task.',
+    '- If Atlas output is missing or misleading, update the Atlas metadata instead of hand-editing this README.',
+    ...(docsIndex ? [`- Documentation entrypoint: [${docsIndex.title}](${docsIndex.uri}).`] : []),
+    '',
+    '## Agent Atlas',
+    '',
+    '- Root generated view: `docs/agents/atlas.md`.',
+    '- Resolve a file: `atlas resolve-path <path> --path .`.',
+    '- Build task context: `atlas context-pack "<task>" --path . --budget 4000`.',
+    '- Refresh generated surfaces: `atlas maintain fix --path .`.',
+    '- Check generated surfaces: `atlas maintain check --path .`.',
+  ];
+
+  appendReadmeSection(lines, 'Common Workflows', workflows);
+  appendReadmeSection(lines, 'Key Implementation Surfaces', components);
+  appendReadmeSection(lines, 'Documentation', documents);
+  appendReadmeSection(lines, 'Verification', tests);
+
+  if (commands.length > 0) {
+    lines.push('', '## Commands', '');
+    for (const command of commands) {
+      lines.push(`- \`${command.command}\`${command.purpose ? ` - ${command.purpose}` : ''}`);
+    }
+  }
+
+  lines.push('', '## Source Of Truth', '', ...sourceNotes.map((note) => `- ${note}`));
+  return `${lines.join('\n')}\n`;
+}
+
 export function renderEntityCard(
   entity: AtlasEntity,
   edges: AtlasGraphEdge[] = [],
@@ -284,6 +344,55 @@ function renderUri(uri: string, profile: MarkdownProfile): string {
   }
 
   return uri;
+}
+
+function collectReadmeEntities(
+  repositoryId: AtlasEntityId | undefined,
+  kind: AtlasEntityKind,
+  entities: AtlasEntity[],
+  edges: AtlasGraphEdge[],
+): AtlasEntity[] {
+  const candidates = entities.filter((entity) => entity.kind === kind);
+  if (!repositoryId) {
+    return candidates.sort(compareEntities);
+  }
+
+  const relatedIds = new Set(
+    edges
+      .filter((edge) => edge.source === repositoryId || edge.target === repositoryId)
+      .flatMap((edge) => [edge.source, edge.target])
+      .filter((id) => id !== repositoryId),
+  );
+  const directlyRelated = candidates.filter((entity) => relatedIds.has(entity.id));
+  return (directlyRelated.length > 0 ? directlyRelated : candidates).sort(compareEntities);
+}
+
+function appendReadmeSection(lines: string[], title: string, entities: AtlasEntity[]): void {
+  if (entities.length === 0) {
+    return;
+  }
+
+  lines.push('', `## ${title}`, '');
+  for (const entity of entities) {
+    const target = entity.uri && !isPrivateUri(entity.uri) ? ` ([source](${entity.uri}))` : '';
+    lines.push(`- \`${entity.id}\` - ${entity.title}: ${entity.summary}${target}`);
+  }
+}
+
+function collectReadmeCommands(
+  repository: AtlasEntity | undefined,
+  tests: AtlasEntity[],
+): NonNullable<AtlasEntity['commands']> {
+  const seen = new Set<string>();
+  const commands: NonNullable<AtlasEntity['commands']> = [];
+  for (const command of [...(repository?.commands ?? []), ...tests.flatMap((test) => test.commands ?? [])]) {
+    if (seen.has(command.command)) {
+      continue;
+    }
+    seen.add(command.command);
+    commands.push(command);
+  }
+  return commands.slice(0, 10);
 }
 
 function isPrivateUri(uri: string | undefined): boolean {

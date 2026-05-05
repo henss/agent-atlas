@@ -255,6 +255,74 @@ Status: passed
     });
   });
 
+  it('checks and regenerates README when maintenance policy enables it', async () => {
+    const root = await makeAtlasFixture();
+    const repositoryDir = path.join(root, '.agent-atlas', 'public', 'repositories');
+    await mkdir(repositoryDir, { recursive: true });
+    await writeFile(
+      path.join(repositoryDir, 'example.yaml'),
+      `id: repository:example
+kind: repository
+title: Example Repo
+summary: Repository README source.
+visibility: public
+relations:
+  - type: contains
+    target: workflow:example
+commands:
+  - command: pnpm test
+    purpose: Run tests.
+`,
+    );
+    await writeFile(
+      path.join(root, 'agent-atlas.maintenance.yaml'),
+      `version: 1
+mode: generated-docs-only
+profile: public
+generated_docs:
+  output: docs/agents
+  auto_regenerate: true
+generated_readme:
+  path: README.md
+  auto_regenerate: true
+`,
+    );
+
+    await expect(
+      execFileAsync('node', [
+        CLI_PATH,
+        'generate',
+        'markdown',
+        '--path',
+        root,
+        '--check',
+      ]),
+    ).rejects.toMatchObject({
+      stdout: expect.stringContaining('README.md'),
+    });
+
+    const fixed = await execFileAsync('node', [
+      CLI_PATH,
+      'maintain',
+      'fix',
+      '--path',
+      root,
+    ]);
+    expect(fixed.stdout).toContain('README.md');
+    const readme = await readFile(path.join(root, 'README.md'), 'utf8');
+    expect(readme).toContain('# Example Repo');
+    expect(readme).toContain('`pnpm test` - Run tests.');
+
+    const check = await execFileAsync('node', [
+      CLI_PATH,
+      'maintain',
+      'check',
+      '--path',
+      root,
+    ]);
+    expect(check.stdout).toContain('Status: passed');
+  });
+
   it('discovers gaps, writes card proposals, validates them, and applies selected cards', async () => {
     const root = await makeAtlasFixture();
     const sourceDir = path.join(root, 'packages', 'billing', 'src');

@@ -1,7 +1,7 @@
 id: component:markdown-package
 kind: component
 title: Markdown Package
-summary: Renders generated agent-facing Markdown views from loaded atlas graphs.
+summary: Renders generated agent-facing Markdown views and optional root READMEs from loaded atlas graphs.
 visibility: public
 code:
   paths:

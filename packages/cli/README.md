@@ -184,6 +184,8 @@ Profiles:
 
 The generator refreshes known generated files and directories while preserving non-generated files such as `docs/agents/README.md`.
 
+When `agent-atlas.maintenance.yaml` enables `generated_readme`, the same command also refreshes or checks the configured root README as a generated Atlas artifact.
+
 Use `--check` in CI to compare generated Markdown with the files on disk without rewriting anything:
 
 ```sh

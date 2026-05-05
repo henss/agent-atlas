@@ -6,7 +6,7 @@ ID: `workflow:generate-agent-docs`
 Kind: `workflow`
 Profile: `public`
 
-Produces compact generated Markdown views under docs/agents from canonical atlas YAML.
+Produces compact generated Markdown views and optional root READMEs from canonical atlas YAML.
 
 ## Metadata
 
@@ -60,5 +60,5 @@ Produces compact generated Markdown views under docs/agents from canonical atlas
 
 ## Agent Hints
 
-- load when: Changing generated docs, Markdown rendering, or docs/agents output
+- load when: Changing generated docs, generated READMEs, Markdown rendering, or docs/agents output
 - token budget hint: 1200

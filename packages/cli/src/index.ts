@@ -29,7 +29,7 @@ import {
   writeAtlasCardProposal,
   writeUsageNote,
 } from '@agent-atlas/core';
-import { generateMarkdownViews } from '@agent-atlas/markdown';
+import { generateMarkdownViews, renderRepositoryReadme } from '@agent-atlas/markdown';
 import { parseMcpProfile, runAtlasMcpSmokeTest } from '@agent-atlas/mcp-server';
 import type { AtlasMcpSmokeTestResult } from '@agent-atlas/mcp-server';
 import type {
@@ -298,6 +298,14 @@ interface CliMaintainCheckReport {
 interface CliMaintainFixReport extends CliMaintainCheckReport {
   metadataFix: AtlasMaintenanceMetadataFixResult;
   regeneratedFiles: string[];
+}
+
+interface GeneratedArtifactCheck {
+  outputPath: string;
+  profile: AtlasProfile;
+  staleFiles: string[];
+  missingFiles: string[];
+  extraFiles: string[];
 }
 
 interface DiscoverGapsArgs {
@@ -1874,10 +1882,10 @@ Mode: \`${result.policy.mode}\`
 Profile: \`${result.policy.profile}\`
 
 Applied metadata files: ${result.metadataFix.appliedFiles.length}
-Regenerated docs: ${result.regeneratedFiles.length}`);
+Regenerated files: ${result.regeneratedFiles.length}`);
 
   printFileList('Applied Metadata Files', result.metadataFix.appliedFiles);
-  printFileList('Regenerated Docs', result.regeneratedFiles);
+  printFileList('Regenerated Files', result.regeneratedFiles);
   if (result.metadataFix.skippedFiles.length > 0) {
     console.log('\n## Skipped Files\n');
     for (const skipped of result.metadataFix.skippedFiles) {
@@ -1898,13 +1906,14 @@ function printMaintainAgentInstructions(policy: AtlasMaintenancePolicy): void {
 Mode: \`${policy.mode}\`
 Profile: \`${policy.profile}\`
 Generated docs: \`${policy.generated_docs.output}\`
+Generated README: ${policy.generated_readme ? `\`${policy.generated_readme.path}\`` : 'disabled'}
 
 Before broad repository search, run \`atlas resolve-path <changed-file>\` for file-specific work or \`atlas context-pack "<task>" --profile ${policy.profile}\` for broader work.
 
 When Atlas metadata is missing or stale, follow the repo policy:
 - \`review-only\`: record gaps or create proposals; do not apply metadata automatically.
-- \`generated-docs-only\`: regenerate \`${policy.generated_docs.output}\` when stale; keep metadata changes review-gated.
-- \`agent-maintained\`: update canonical \`.agent-atlas/**\` cards and regenerate \`${policy.generated_docs.output}\` when Atlas is wrong or incomplete.
+- \`generated-docs-only\`: regenerate generated Markdown surfaces when stale; keep metadata changes review-gated.
+- \`agent-maintained\`: update canonical \`.agent-atlas/**\` cards and regenerate generated Markdown surfaces when Atlas is wrong or incomplete.
 
 Before finishing, run \`atlas maintain fix --profile ${policy.profile}\`, then \`atlas maintain check --profile ${policy.profile}\`. Boundary and secret-safety failures are blockers.`);
 }
@@ -2485,13 +2494,7 @@ async function checkGeneratedMarkdownOutput(
   outputPath: string,
   profile: AtlasProfile,
   files: Array<{ path: string; content: string }>,
-): Promise<{
-  outputPath: string;
-  profile: AtlasProfile;
-  staleFiles: string[];
-  missingFiles: string[];
-  extraFiles: string[];
-}> {
+): Promise<GeneratedArtifactCheck> {
   const staleFiles: string[] = [];
   const missingFiles: string[] = [];
   const expectedFiles = new Set(files.map((file) => normalizeGeneratedPath(file.path)));
@@ -2521,6 +2524,37 @@ async function checkGeneratedMarkdownOutput(
   };
 }
 
+async function checkGeneratedArtifacts(
+  rootPath: string,
+  outputPath: string,
+  profile: AtlasProfile,
+  files: Array<{ path: string; content: string }>,
+  readmePath: string | undefined,
+  readmeContent: string,
+): Promise<GeneratedArtifactCheck> {
+  const generated = await checkGeneratedMarkdownOutput(outputPath, profile, files);
+  if (!readmePath) {
+    return generated;
+  }
+
+  const relativeReadmePath = normalizeGeneratedPath(readmePath);
+  const absoluteReadmePath = path.resolve(rootPath, readmePath);
+  try {
+    const existing = await readFile(absoluteReadmePath, 'utf8');
+    if (existing.replace(/\r\n/g, '\n') !== readmeContent.replace(/\r\n/g, '\n')) {
+      generated.staleFiles.push(relativeReadmePath);
+    }
+  } catch {
+    generated.missingFiles.push(relativeReadmePath);
+  }
+
+  return {
+    ...generated,
+    staleFiles: generated.staleFiles.sort(),
+    missingFiles: generated.missingFiles.sort(),
+  };
+}
+
 async function runMaintainCheck(
   options: MaintainArgs,
   policy: AtlasMaintenancePolicy,
@@ -2533,10 +2567,14 @@ async function runMaintainCheck(
     : undefined;
   const graph = await loadAtlasGraph(options.rootPath, { profile });
   const maintenance = await analyzeAtlasMaintenance(graph);
-  const generated = await checkGeneratedMarkdownOutput(
+  const readmePath = effectivePolicy.generated_readme?.path;
+  const generated = await checkGeneratedArtifacts(
+    options.rootPath,
     path.resolve(options.rootPath, effectivePolicy.generated_docs.output),
     profile,
     generateMarkdownViews(graph, { profile }),
+    readmePath,
+    renderRepositoryReadme(graph, { profile }),
   );
   const generatedHasDrift =
     generated.staleFiles.length > 0 ||
@@ -2574,6 +2612,7 @@ async function writeGeneratedMarkdownOutput(
   rootPath: string,
   outputPath: string,
   profile: AtlasProfile,
+  readmePath?: string,
 ): Promise<string[]> {
   const graph = await loadAtlasGraph(rootPath, { profile });
   const files = generateMarkdownViews(graph, { profile });
@@ -2584,7 +2623,14 @@ async function writeGeneratedMarkdownOutput(
     await mkdir(path.dirname(absoluteFilePath), { recursive: true });
     await writeFile(absoluteFilePath, file.content, 'utf8');
   }
-  return files.map((file) => file.path);
+  const writtenFiles = files.map((file) => file.path);
+  if (readmePath) {
+    const absoluteReadmePath = path.resolve(rootPath, readmePath);
+    await mkdir(path.dirname(absoluteReadmePath), { recursive: true });
+    await writeFile(absoluteReadmePath, renderRepositoryReadme(graph, { profile }), 'utf8');
+    writtenFiles.push(normalizeGeneratedPath(readmePath));
+  }
+  return writtenFiles.sort();
 }
 
 async function collectExistingGeneratedMarkdownFiles(
@@ -2785,6 +2831,11 @@ switch (command) {
     const graph = await loadAtlasGraph(options.rootPath, {
       profile: options.profile,
     });
+    const policy = await loadAtlasMaintenancePolicy(options.rootPath);
+    const readmePath =
+      policy.generated_readme?.auto_regenerate === true
+        ? policy.generated_readme.path
+        : undefined;
     const files = generateMarkdownViews(graph, { profile: options.profile });
     const absoluteOutputPath = path.resolve(
       options.rootPath,
@@ -2792,10 +2843,13 @@ switch (command) {
     );
 
     if (options.check) {
-      const result = await checkGeneratedMarkdownOutput(
+      const result = await checkGeneratedArtifacts(
+        options.rootPath,
         absoluteOutputPath,
         options.profile,
         files,
+        readmePath,
+        renderRepositoryReadme(graph, { profile: options.profile }),
       );
       if (options.json) {
         console.log(JSON.stringify(result, null, 2));
@@ -2817,11 +2871,23 @@ switch (command) {
       await mkdir(path.dirname(absoluteFilePath), { recursive: true });
       await writeFile(absoluteFilePath, file.content, 'utf8');
     }
+    if (readmePath) {
+      const absoluteReadmePath = path.resolve(options.rootPath, readmePath);
+      await mkdir(path.dirname(absoluteReadmePath), { recursive: true });
+      await writeFile(
+        absoluteReadmePath,
+        renderRepositoryReadme(graph, { profile: options.profile }),
+        'utf8',
+      );
+    }
 
     const result = {
       outputPath: absoluteOutputPath,
       profile: options.profile,
-      files: files.map((file) => file.path),
+      files: [
+        ...files.map((file) => file.path),
+        ...(readmePath ? [normalizeGeneratedPath(readmePath)] : []),
+      ].sort(),
     };
 
     if (options.json) {
@@ -2879,11 +2945,19 @@ switch (command) {
     const graph = await loadAtlasGraph(options.rootPath, {
       profile: options.profile,
     });
+    const policy = await loadAtlasMaintenancePolicy(options.rootPath);
+    const readmePath =
+      policy.generated_readme?.auto_regenerate === true
+        ? policy.generated_readme.path
+        : undefined;
     const maintenance = await analyzeAtlasMaintenance(graph);
-    const generated = await checkGeneratedMarkdownOutput(
+    const generated = await checkGeneratedArtifacts(
+      options.rootPath,
       path.resolve(options.rootPath, 'docs/agents'),
       options.profile,
       generateMarkdownViews(graph, { profile: options.profile }),
+      readmePath,
+      renderRepositoryReadme(graph, { profile: options.profile }),
     );
     const generatedHasDrift =
       generated.staleFiles.length > 0 ||
@@ -2956,6 +3030,9 @@ switch (command) {
               options.rootPath,
               policy.generated_docs.output,
               policy.profile,
+              policy.generated_readme?.auto_regenerate
+                ? policy.generated_readme.path
+                : undefined,
             )
           : [];
       const check = await runMaintainCheck(options, policy);

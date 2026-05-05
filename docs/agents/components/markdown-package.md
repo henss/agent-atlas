@@ -6,7 +6,7 @@ ID: `component:markdown-package`
 Kind: `component`
 Profile: `public`
 
-Renders generated agent-facing Markdown views from loaded atlas graphs.
+Renders generated agent-facing Markdown views and optional root READMEs from loaded atlas graphs.
 
 ## Metadata
 

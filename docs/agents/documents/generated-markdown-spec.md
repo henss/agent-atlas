@@ -6,7 +6,7 @@ ID: `document:generated-markdown-spec`
 Kind: `document`
 Profile: `public`
 
-Specification for generated agent-facing Markdown views and generated file conventions.
+Specification for generated agent-facing Markdown views, generated READMEs, and generated file conventions.
 
 ## Metadata
 

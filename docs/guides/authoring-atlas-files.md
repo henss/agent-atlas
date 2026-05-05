@@ -80,6 +80,14 @@ access:
 
 Then put actual private URIs in private overlays.
 
+## Put README-worthy facts in Atlas
+
+If a fact is durable enough for a repo README, model it in Atlas metadata or a
+referenced canonical document. Generated READMEs are entrypoints, so avoid
+hand-written README-only knowledge. Use repository summaries, commands,
+relations, documents, test scopes, and agent hints to control what appears in
+README, `docs/agents/**`, MCP output, and context packs without duplicating it.
+
 Public-safe placeholder:
 
 ```yaml

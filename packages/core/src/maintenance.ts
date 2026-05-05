@@ -28,6 +28,10 @@ export interface AtlasMaintenancePolicy {
     output: string;
     auto_regenerate: boolean;
   };
+  generated_readme?: {
+    path: string;
+    auto_regenerate: boolean;
+  };
   metadata: {
     auto_apply: boolean;
     allow_add: boolean;
@@ -258,6 +262,7 @@ function normalizeMaintenancePolicy(
   const mode = readMode(value.mode, defaults.mode);
   const profile = readProfile(value.profile, defaults.profile);
   const generatedDocs = isRecord(value.generated_docs) ? value.generated_docs : {};
+  const generatedReadme = isRecord(value.generated_readme) ? value.generated_readme : undefined;
   const metadata = isRecord(value.metadata) ? value.metadata : {};
   const safety = isRecord(value.safety) ? value.safety : {};
 
@@ -272,6 +277,12 @@ function normalizeMaintenancePolicy(
         mode !== 'review-only',
       ),
     },
+    generated_readme: generatedReadme
+      ? {
+          path: readString(generatedReadme.path, 'README.md'),
+          auto_regenerate: readBoolean(generatedReadme.auto_regenerate, mode !== 'review-only'),
+        }
+      : undefined,
     metadata: {
       auto_apply: readBoolean(metadata.auto_apply, mode === 'agent-maintained'),
       allow_add: readBoolean(metadata.allow_add, mode === 'agent-maintained'),

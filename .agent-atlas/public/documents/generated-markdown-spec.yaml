@@ -1,7 +1,7 @@
 id: document:generated-markdown-spec
 kind: document
 title: Generated Markdown Specification
-summary: Specification for generated agent-facing Markdown views and generated file conventions.
+summary: Specification for generated agent-facing Markdown views, generated READMEs, and generated file conventions.
 visibility: public
 uri: docs/spec/generated-markdown.md
 relations:

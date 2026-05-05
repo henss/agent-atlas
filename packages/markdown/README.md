@@ -10,6 +10,7 @@ Implemented outputs:
 - component cards
 - resource/document cards when visible in the selected profile
 - verification guide
+- optional root README entrypoint
 
 Generated files start with:
 

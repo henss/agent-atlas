@@ -33,6 +33,9 @@ mode: agent-maintained
 profile: public
 generated_docs:
   output: docs/agents
+generated_readme:
+  path: README.md
+  auto_regenerate: true
 metadata:
   allow_delete: false
 `,
@@ -42,6 +45,10 @@ metadata:
 
     expect(policy.mode).toBe('agent-maintained');
     expect(policy.generated_docs.auto_regenerate).toBe(true);
+    expect(policy.generated_readme).toEqual({
+      path: 'README.md',
+      auto_regenerate: true,
+    });
     expect(policy.metadata.auto_apply).toBe(true);
     expect(policy.metadata.allow_add).toBe(true);
     expect(policy.metadata.allow_delete).toBe(false);
