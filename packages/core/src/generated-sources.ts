@@ -1,5 +1,7 @@
+import { execFile } from 'node:child_process';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import { parse } from 'yaml';
 
 import type { AtlasEntity, AtlasEntityId, AtlasRelation, AtlasVisibility } from '@agent-atlas/schema';
@@ -80,6 +82,8 @@ interface PackageManifest {
   devDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
 }
+
+const execFileAsync = promisify(execFile);
 
 const GENERATED_SOURCE_FAMILIES: GeneratedSourceFamily[] = [
   'commander',
@@ -424,6 +428,11 @@ function isFamilyEnabled(policy: GeneratedSourcesPolicy, family: GeneratedSource
 }
 
 async function listRepoFiles(rootPath: string): Promise<string[]> {
+  const gitFiles = await listGitIndexedFiles(rootPath);
+  if (gitFiles.length > 0) {
+    return gitFiles.filter((filePath) => !isExcludedPath(filePath)).sort();
+  }
+
   const files: string[] = [];
   async function walk(directory: string): Promise<void> {
     let entries;
@@ -449,6 +458,21 @@ async function listRepoFiles(rootPath: string): Promise<string[]> {
   }
   await walk(rootPath);
   return files.sort();
+}
+
+async function listGitIndexedFiles(rootPath: string): Promise<string[]> {
+  try {
+    const { stdout } = await execFileAsync('git', ['ls-files', '--cached', '--modified'], {
+      cwd: rootPath,
+      maxBuffer: 10 * 1024 * 1024,
+    });
+    return stdout
+      .split(/\r?\n/)
+      .map((line) => normalizePath(line.trim()))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
 }
 
 async function readPackageManifests(rootPath: string, files: string[]): Promise<Array<{ path: string; dir: string; manifest: PackageManifest }>> {

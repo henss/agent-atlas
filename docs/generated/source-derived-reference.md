@@ -87,7 +87,7 @@ Generated entities: 160
 
 ## Tests
 
-- `test-scope:generated.packages` - packages tests: 21 discovered test files under packages.
+- `test-scope:generated.packages` - packages tests: 22 discovered test files under packages.
 
 ## Docs
 

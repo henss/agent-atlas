@@ -1,12 +1,16 @@
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 import {
   loadGeneratedSourceEntities,
   mergeGeneratedEntitiesWithManualOverlays,
 } from './generated-sources.js';
 import type { AtlasEntity } from '@agent-atlas/schema';
+
+const execFileAsync = promisify(execFile);
 
 describe('generated source entities', () => {
   it('extracts default-on package, script, test, doc, config, route, and dependency surfaces', async () => {
@@ -90,6 +94,21 @@ profile: private
 
     expect(script?.visibility).toBe('private');
     expect(result.policy.default_visibility).toBe('private');
+  });
+
+  it('uses indexed git files instead of unrelated untracked files when available', async () => {
+    const root = await makeFixtureRepo();
+    await execFileAsync('git', ['init'], { cwd: root });
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'fixture-root' }), 'utf8');
+    await writeFile(path.join(root, 'README.md'), '# Fixture Repo\n', 'utf8');
+    await writeFile(path.join(root, 'scratch.md'), '# Untracked Scratch\n', 'utf8');
+    await execFileAsync('git', ['add', 'package.json', 'README.md'], { cwd: root });
+
+    const result = await loadGeneratedSourceEntities(root);
+    const ids = result.entities.map((entity) => entity.id);
+
+    expect(ids).toContain('document:generated.readme');
+    expect(ids).not.toContain('document:generated.scratch');
   });
 
   it('lets manual overlays enrich generated entities without overriding generated facts', () => {
