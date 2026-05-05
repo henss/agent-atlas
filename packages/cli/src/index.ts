@@ -1710,6 +1710,7 @@ Owners: ${result.owners.length}`);
   printOwnerSection(result.owners);
   printContextSection('Workflows', result.workflows);
   printContextSection('Domains', result.domains);
+  printContextSection('Capabilities', result.capabilities);
   printContextSection('Documents', result.documents);
   printContextSection('Tests', result.tests);
 }

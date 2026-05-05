@@ -121,6 +121,22 @@ describe('generateMarkdownViews', () => {
             uri: 'docs/index.md',
           },
           {
+            id: 'capability:agent-skill.ship',
+            kind: 'capability',
+            title: 'Ship skill',
+            summary: 'Use when releasing the package.',
+            visibility: 'public',
+            uri: '.agents/skills/ship/SKILL.md',
+          },
+          {
+            id: 'document:generated.agents-skills-ship-skill',
+            kind: 'document',
+            title: 'Ship skill',
+            summary: 'Markdown document at .agents/skills/ship/SKILL.md.',
+            visibility: 'public',
+            uri: '.agents/skills/ship/SKILL.md',
+          },
+          {
             id: 'interface:example-cli.validate',
             kind: 'interface',
             title: 'example validate',
@@ -147,6 +163,7 @@ describe('generateMarkdownViews', () => {
         edges: [
           { source: 'repository:example', target: 'domain:example-domain', type: 'contains', provenance: 'explicit' },
           { source: 'repository:example', target: 'workflow:ship', type: 'contains', provenance: 'explicit' },
+          { source: 'repository:example', target: 'capability:agent-skill.ship', type: 'contains', provenance: 'explicit' },
           { source: 'repository:example', target: 'document:docs-index', type: 'contains', provenance: 'explicit' },
         ],
       },
@@ -169,6 +186,9 @@ describe('generateMarkdownViews', () => {
     expect(markdown).toContain('## Custom Section');
     expect(markdown).toContain('## Domains');
     expect(markdown).toContain('`domain:example-domain` - Example Domain: Top-level domain context.');
+    expect(markdown).toContain('## Agent Capabilities');
+    expect(markdown).toContain('`capability:agent-skill.ship` - Ship skill: Use when releasing the package.');
+    expect(markdown).not.toContain('document:generated.agents-skills-ship-skill');
     expect(markdown).toContain('Documentation entrypoint: [Docs Index](docs/index.md).');
     expect(markdown).toContain('`workflow:ship`');
     expect(markdown).toContain('`pnpm test` - Run tests.');

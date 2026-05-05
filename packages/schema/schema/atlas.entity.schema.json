@@ -18,7 +18,7 @@
     },
     "id": {
       "type": "string",
-      "pattern": "^(domain|system|workflow|repository|component|interface|tool|resource|document|dataset|secret-scope|test-scope):[a-z0-9][a-z0-9._/-]*$"
+      "pattern": "^(domain|system|workflow|repository|component|capability|interface|tool|resource|document|dataset|secret-scope|test-scope):[a-z0-9][a-z0-9._/-]*$"
     },
     "kind": {
       "type": "string",
@@ -28,6 +28,7 @@
         "workflow",
         "repository",
         "component",
+        "capability",
         "interface",
         "tool",
         "resource",
@@ -203,7 +204,7 @@
           },
           "target": {
             "type": "string",
-            "pattern": "^(domain|system|workflow|repository|component|interface|tool|resource|document|dataset|secret-scope|test-scope):[a-z0-9][a-z0-9._/-]*$"
+            "pattern": "^(domain|system|workflow|repository|component|capability|interface|tool|resource|document|dataset|secret-scope|test-scope):[a-z0-9][a-z0-9._/-]*$"
           },
           "summary": {
             "type": "string"

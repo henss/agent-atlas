@@ -13,7 +13,7 @@ import type { AtlasEntity } from '@agent-atlas/schema';
 const execFileAsync = promisify(execFile);
 
 describe('generated source entities', () => {
-  it('extracts default-on package, script, test, doc, config, route, and dependency surfaces', async () => {
+  it('extracts default-on package, script, test, skill, doc, config, route, and dependency surfaces', async () => {
     const root = await makeFixtureRepo();
     await writeFile(
       path.join(root, 'package.json'),
@@ -37,6 +37,12 @@ describe('generated source entities', () => {
     );
     await writeFile(path.join(root, 'packages/core/src/index.test.ts'), 'describe("core", () => {});\n', 'utf8');
     await writeFile(path.join(root, 'README.md'), '# Fixture Repo\n', 'utf8');
+    await mkdir(path.join(root, '.agents/skills/review-code'), { recursive: true });
+    await writeFile(
+      path.join(root, '.agents/skills/review-code/SKILL.md'),
+      '# Review code\n\nUse when reviewing repository changes.\n',
+      'utf8',
+    );
     await writeFile(path.join(root, 'tsconfig.json'), '{}\n', 'utf8');
     await writeFile(path.join(root, 'packages/core/src/server.ts'), 'app.get("/health", () => {});\n', 'utf8');
 
@@ -47,10 +53,15 @@ describe('generated source entities', () => {
     expect(ids).toContain('component:package.fixture-core');
     expect(ids).toContain('interface:package-script.fixture-root.build');
     expect(ids).toContain('test-scope:generated.packages');
+    expect(ids).toContain('capability:agent-skill.review-code');
     expect(ids).toContain('document:generated.readme');
     expect(ids).toContain('resource:config.tsconfig');
     expect(ids).toContain('interface:route.get.health');
     expect(ids).toContain('component:package.fixture-root.dependencies');
+    expect(result.entities.find((entity) => entity.id === 'capability:agent-skill.review-code')?.relations).toContainEqual({
+      type: 'documented-in',
+      target: 'document:generated.agents-skills-review-code-skill',
+    });
     expect(result.policy.enabled).toBe(true);
   });
 
@@ -58,12 +69,15 @@ describe('generated source entities', () => {
     const root = await makeFixtureRepo();
     await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'fixture-root', scripts: { test: 'vitest' } }), 'utf8');
     await writeFile(path.join(root, 'README.md'), '# Fixture Repo\n', 'utf8');
+    await mkdir(path.join(root, '.agents/skills/review-code'), { recursive: true });
+    await writeFile(path.join(root, '.agents/skills/review-code/SKILL.md'), '# Review code\n\nUse when reviewing changes.\n', 'utf8');
     await writeFile(
       path.join(root, 'agent-atlas.maintenance.yaml'),
       `version: 1
 generated_sources:
   disabled:
     - package_scripts
+    - agent_skills
   docs:
     enabled: false
 `,
@@ -74,6 +88,7 @@ generated_sources:
     const ids = result.entities.map((entity) => entity.id);
 
     expect(ids).not.toContain('interface:package-script.fixture-root.test');
+    expect(ids).not.toContain('capability:agent-skill.review-code');
     expect(ids).not.toContain('document:generated.readme');
     expect(ids).toContain('component:package.fixture-root');
   });

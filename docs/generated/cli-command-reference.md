@@ -143,7 +143,7 @@ Options:
 
 Generate the source-derived Atlas reference.
 
-Writes the reference for entities derived from package scripts, packages, tests, docs, config, routes, and dependencies.
+Writes the reference for entities derived from package scripts, packages, tests, agent skills, docs, config, routes, and dependencies.
 
 Arguments:
 - `path`

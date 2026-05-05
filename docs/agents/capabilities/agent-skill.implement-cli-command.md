@@ -2,16 +2,16 @@
 
 # Implement CLI Command Skill
 
-ID: `document:generated.agents-skills-implement-cli-command-skill`
-Kind: `document`
+ID: `capability:agent-skill.implement-cli-command`
+Kind: `capability`
 Profile: `public`
 
-Markdown document at .agents/skills/implement-cli-command/SKILL.md.
+CLI output should be concise Markdown by default and JSON only with `--json`.
 
 ## Metadata
 
 - visibility: `public`
-- tags: `generated-source`, `docs`
+- tags: `agent-skill`, `generated-source`, `agent_skills`
 
 ## Code
 
@@ -23,9 +23,9 @@ Markdown document at .agents/skills/implement-cli-command/SKILL.md.
 
 ## Relations
 
-### `documents`
+### `documented-in`
 
-- `capability:agent-skill.implement-cli-command` _(generated)_
+- `document:generated.agents-skills-implement-cli-command-skill`
 
 ### `part-of`
 

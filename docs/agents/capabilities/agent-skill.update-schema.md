@@ -2,16 +2,16 @@
 
 # Update Schema Skill
 
-ID: `document:generated.agents-skills-update-schema-skill`
-Kind: `document`
+ID: `capability:agent-skill.update-schema`
+Kind: `capability`
 Profile: `public`
 
-Markdown document at .agents/skills/update-schema/SKILL.md.
+Schema changes must keep docs, TypeScript types, JSON Schema, and examples aligned.
 
 ## Metadata
 
 - visibility: `public`
-- tags: `generated-source`, `docs`
+- tags: `agent-skill`, `generated-source`, `agent_skills`
 
 ## Code
 
@@ -23,9 +23,9 @@ Markdown document at .agents/skills/update-schema/SKILL.md.
 
 ## Relations
 
-### `documents`
+### `documented-in`
 
-- `capability:agent-skill.update-schema` _(generated)_
+- `document:generated.agents-skills-update-schema-skill`
 
 ### `part-of`
 

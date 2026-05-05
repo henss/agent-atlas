@@ -2,16 +2,16 @@
 
 # Design Context Pack Skill
 
-ID: `document:generated.agents-skills-design-context-pack-skill`
-Kind: `document`
+ID: `capability:agent-skill.design-context-pack`
+Kind: `capability`
 Profile: `public`
 
-Markdown document at .agents/skills/design-context-pack/SKILL.md.
+A context pack is a task-specific, token-budgeted map. It should route the agent, not become the entire source of truth.
 
 ## Metadata
 
 - visibility: `public`
-- tags: `generated-source`, `docs`
+- tags: `agent-skill`, `generated-source`, `agent_skills`
 
 ## Code
 
@@ -23,9 +23,9 @@ Markdown document at .agents/skills/design-context-pack/SKILL.md.
 
 ## Relations
 
-### `documents`
+### `documented-in`
 
-- `capability:agent-skill.design-context-pack` _(generated)_
+- `document:generated.agents-skills-design-context-pack-skill`
 
 ### `part-of`
 

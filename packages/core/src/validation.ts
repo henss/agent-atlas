@@ -38,7 +38,7 @@ interface AtlasDocumentSource {
 }
 
 const ENTITY_ID_PATTERN =
-  /^(domain|system|workflow|repository|component|interface|tool|resource|document|dataset|secret-scope|test-scope):[a-z0-9][a-z0-9._/-]*$/;
+  /^(domain|system|workflow|repository|component|capability|interface|tool|resource|document|dataset|secret-scope|test-scope):[a-z0-9][a-z0-9._/-]*$/;
 
 const PRIVATE_URI_SCHEMES = [
   'notion:',

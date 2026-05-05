@@ -13,6 +13,7 @@ export type GeneratedSourceFamily =
   | 'package_scripts'
   | 'workspace_packages'
   | 'tests'
+  | 'agent_skills'
   | 'docs'
   | 'config'
   | 'routes'
@@ -44,6 +45,7 @@ export interface GeneratedSourcesPolicy {
   package_scripts: GeneratedSourceFamilyPolicy;
   workspace_packages: GeneratedSourceFamilyPolicy;
   tests: GeneratedSourceFamilyPolicy;
+  agent_skills: GeneratedSourceFamilyPolicy;
   docs: GeneratedSourceFamilyPolicy;
   config: GeneratedSourceFamilyPolicy;
   routes: GeneratedSourceFamilyPolicy;
@@ -90,6 +92,7 @@ const GENERATED_SOURCE_FAMILIES: GeneratedSourceFamily[] = [
   'package_scripts',
   'workspace_packages',
   'tests',
+  'agent_skills',
   'docs',
   'config',
   'routes',
@@ -173,6 +176,12 @@ export async function loadGeneratedSourceEntities(
     records.push(...generated.records);
   }
 
+  if (isFamilyEnabled(policy, 'agent_skills')) {
+    const generated = await generateAgentSkillCapabilities(absoluteRoot, policy, allFiles);
+    entities.push(...generated.entities);
+    records.push(...generated.records);
+  }
+
   if (isFamilyEnabled(policy, 'docs')) {
     const generated = await generateDocumentEntities(absoluteRoot, policy, allFiles);
     entities.push(...generated.entities);
@@ -232,6 +241,10 @@ function applyDefaultOwnerRepository(
       owner_repository: policy.workspace_packages.owner_repository ?? ownerRepository,
     },
     tests: { ...policy.tests, owner_repository: policy.tests.owner_repository ?? ownerRepository },
+    agent_skills: {
+      ...policy.agent_skills,
+      owner_repository: policy.agent_skills.owner_repository ?? ownerRepository,
+    },
     docs: { ...policy.docs, owner_repository: policy.docs.owner_repository ?? ownerRepository },
     config: { ...policy.config, owner_repository: policy.config.owner_repository ?? ownerRepository },
     routes: { ...policy.routes, owner_repository: policy.routes.owner_repository ?? ownerRepository },
@@ -311,6 +324,7 @@ function defaultGeneratedSourcesPolicy(): GeneratedSourcesPolicy {
     package_scripts: { enabled: true, default_visibility: defaultVisibility, script_id_prefix: 'package-script' },
     workspace_packages: { enabled: true, default_visibility: defaultVisibility, package_component_prefix: 'package' },
     tests: { enabled: true, default_visibility: defaultVisibility },
+    agent_skills: { enabled: true, default_visibility: defaultVisibility },
     docs: { enabled: true, default_visibility: defaultVisibility },
     config: { enabled: true, default_visibility: defaultVisibility },
     routes: { enabled: true, default_visibility: defaultVisibility, frameworks: ['node-http', 'express', 'hono', 'next'] },
@@ -348,6 +362,11 @@ function readGeneratedSourcesPolicy(value: unknown): GeneratedSourcesPolicy {
     tests: readFamilyPolicy(
       (root as Record<string, unknown>).tests,
       { ...defaults.tests, default_visibility: defaultVisibility },
+      defaultVisibility,
+    ),
+    agent_skills: readFamilyPolicy(
+      (root as Record<string, unknown>).agent_skills,
+      { ...defaults.agent_skills, default_visibility: defaultVisibility },
       defaultVisibility,
     ),
     docs: readFamilyPolicy(
@@ -590,6 +609,42 @@ function generateTestScopes(policy: GeneratedSourcesPolicy, files: string[]): Ge
     }, 'tests', paths);
     entities.push(entity);
     records.push({ family: 'tests', entityId: id, title: entity.title, summary: entity.summary, inputs: paths });
+  }
+  return { entities, records };
+}
+
+async function generateAgentSkillCapabilities(rootPath: string, policy: GeneratedSourcesPolicy, files: string[]): Promise<GeneratedEntities> {
+  const family = policy.agent_skills;
+  const skillFiles = applyIncludeExclude(
+    files.filter((file) => /^\.agents\/skills\/[^/]+\/SKILL\.md$/i.test(file)),
+    family,
+  );
+  const entities: AtlasEntity[] = [];
+  const records: GeneratedSourceRecord[] = [];
+  for (const file of skillFiles) {
+    const skillName = file.split('/')[2] ?? path.basename(path.dirname(file));
+    const id = `capability:agent-skill.${slugify(skillName)}` as AtlasEntityId;
+    const documentId = `document:generated.${slugify(stripExtension(file))}` as AtlasEntityId;
+    const title = await readMarkdownTitle(rootPath, file) ?? titleCase(skillName.replaceAll('-', ' '));
+    const summary = await readMarkdownSummary(rootPath, file) ?? `Agent skill defined at ${file}.`;
+    const relations: AtlasRelation[] = [
+      { type: 'documented-in', target: documentId },
+      ...(family.owner_repository ? [{ type: 'part-of' as const, target: family.owner_repository }] : []),
+    ];
+    const entity = markGeneratedEntity({
+      id,
+      kind: 'capability',
+      title,
+      summary,
+      visibility: family.default_visibility ?? policy.default_visibility,
+      uri: file,
+      code: { paths: [file] },
+      relations,
+      tags: ['agent-skill'],
+      metadata: { agent_skill: { name: skillName, path: file, document_id: documentId } },
+    }, 'agent_skills', [file]);
+    entities.push(entity);
+    records.push({ family: 'agent_skills', entityId: id, title: entity.title, summary: entity.summary, inputs: [file] });
   }
   return { entities, records };
 }
@@ -852,6 +907,28 @@ async function readMarkdownTitle(rootPath: string, file: string): Promise<string
   } catch {
     return undefined;
   }
+}
+
+async function readMarkdownSummary(rootPath: string, file: string): Promise<string | undefined> {
+  try {
+    const content = await readFile(path.join(rootPath, file), 'utf8');
+    const lines = content.split(/\r?\n/);
+    let inFrontmatter = false;
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (line === '---') {
+        inFrontmatter = !inFrontmatter;
+        continue;
+      }
+      if (inFrontmatter || !line || line.startsWith('#') || line.startsWith('```') || line.startsWith('<!--')) {
+        continue;
+      }
+      return line.replace(/^[-*]\s+/, '').slice(0, 240);
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
 }
 
 function applyIncludeExclude(files: string[], policy: GeneratedSourceFamilyPolicy): string[] {

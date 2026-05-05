@@ -2,7 +2,7 @@
 
 > Generated from repository source surfaces. Edit source files or Atlas overlays, then rerun `atlas maintain fix`.
 
-Generated entities: 160
+Generated entities: 165
 
 ## Commander
 
@@ -87,7 +87,15 @@ Generated entities: 160
 
 ## Tests
 
-- `test-scope:generated.packages` - packages tests: 22 discovered test files under packages.
+- `test-scope:generated.packages` - packages tests: 25 discovered test files under packages.
+
+## Agent Skills
+
+- `capability:agent-skill.add-adapter` - Add Adapter Skill: Adapters should connect Agent Atlas to existing systems without making the core vendor-specific.
+- `capability:agent-skill.add-atlas-entity` - Add Atlas Entity Skill: Use this skill when creating or modifying `.agent-atlas/**/*.yaml` files.
+- `capability:agent-skill.design-context-pack` - Design Context Pack Skill: A context pack is a task-specific, token-budgeted map. It should route the agent, not become the entire source of truth.
+- `capability:agent-skill.implement-cli-command` - Implement CLI Command Skill: CLI output should be concise Markdown by default and JSON only with `--json`.
+- `capability:agent-skill.update-schema` - Update Schema Skill: Schema changes must keep docs, TypeScript types, JSON Schema, and examples aligned.
 
 ## Docs
 

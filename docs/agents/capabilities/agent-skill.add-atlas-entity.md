@@ -2,16 +2,16 @@
 
 # Add Atlas Entity Skill
 
-ID: `document:generated.agents-skills-add-atlas-entity-skill`
-Kind: `document`
+ID: `capability:agent-skill.add-atlas-entity`
+Kind: `capability`
 Profile: `public`
 
-Markdown document at .agents/skills/add-atlas-entity/SKILL.md.
+Use this skill when creating or modifying `.agent-atlas/**/*.yaml` files.
 
 ## Metadata
 
 - visibility: `public`
-- tags: `generated-source`, `docs`
+- tags: `agent-skill`, `generated-source`, `agent_skills`
 
 ## Code
 
@@ -23,9 +23,9 @@ Markdown document at .agents/skills/add-atlas-entity/SKILL.md.
 
 ## Relations
 
-### `documents`
+### `documented-in`
 
-- `capability:agent-skill.add-atlas-entity` _(generated)_
+- `document:generated.agents-skills-add-atlas-entity-skill`
 
 ### `part-of`
 

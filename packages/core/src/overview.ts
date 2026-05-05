@@ -13,6 +13,7 @@ export interface AtlasOverviewEntityRef {
 
 export interface AtlasOverviewWorkflow {
   entity: AtlasOverviewEntityRef;
+  capabilities: AtlasOverviewEntityRef[];
   components: AtlasOverviewEntityRef[];
   documents: AtlasOverviewEntityRef[];
   tests: AtlasOverviewEntityRef[];
@@ -21,6 +22,7 @@ export interface AtlasOverviewWorkflow {
 export interface AtlasOverviewDomain {
   entity: AtlasOverviewEntityRef;
   workflows: AtlasOverviewWorkflow[];
+  capabilities: AtlasOverviewEntityRef[];
   components: AtlasOverviewEntityRef[];
   documents: AtlasOverviewEntityRef[];
   tests: AtlasOverviewEntityRef[];
@@ -32,6 +34,7 @@ export interface AtlasOverview {
   counts: {
     domains: number;
     workflows: number;
+    capabilities: number;
     components: number;
     documents: number;
     tests: number;
@@ -69,6 +72,7 @@ export function createAtlasOverview(
     counts: {
       domains: domains.length,
       workflows: entities.filter((entity) => entity.kind === 'workflow').length,
+      capabilities: entities.filter((entity) => entity.kind === 'capability').length,
       components: entities.filter((entity) => entity.kind === 'component').length,
       documents: entities.filter((entity) => entity.kind === 'document').length,
       tests: entities.filter((entity) => entity.kind === 'test-scope').length,
@@ -96,7 +100,7 @@ export function renderAtlasOverviewMarkdown(overview: AtlasOverview): string {
     '',
     '- Begin with a domain to understand the broad area.',
     '- Drill into workflows to see capabilities and processes.',
-    '- Follow components, documents, and tests only as needed for the task.',
+    '- Follow capabilities, components, documents, and tests only as needed for the task.',
     '- Use path resolution for bottom-up navigation from a source file.',
     '',
     '## Major capabilities',
@@ -121,11 +125,33 @@ export function renderAtlasOverviewMarkdown(overview: AtlasOverview): string {
       if (componentText) {
         lines.push(`  Components: ${componentText}`);
       }
+      const capabilityText = workflow.capabilities
+        .slice(0, 4)
+        .map((capability) => `\`${capability.id}\``)
+        .join(', ');
+      if (capabilityText) {
+        lines.push(`  Capabilities: ${capabilityText}`);
+      }
     }
     lines.push('');
   }
 
-  lines.push('## Implementation surfaces', '');
+  lines.push('## Agent capabilities', '');
+  const capabilities = uniqueRefs(
+    overview.domains.flatMap((domain) => [
+      ...domain.capabilities,
+      ...domain.workflows.flatMap((workflow) => workflow.capabilities),
+    ]),
+  );
+  if (capabilities.length === 0) {
+    lines.push('- No capabilities are attached to the overview.');
+  } else {
+    for (const capability of capabilities) {
+      lines.push(`- \`${capability.id}\` - ${capability.title}: ${capability.summary}`);
+    }
+  }
+
+  lines.push('', '## Implementation surfaces', '');
   for (const domain of overview.domains) {
     const components = uniqueRefs([
       ...domain.components,
@@ -187,16 +213,18 @@ function createDomainOverview(
     .map((workflow) => createWorkflowOverview(workflow, entities, edges, included))
     .sort((left, right) => compareRefs(left.entity, right.entity));
   const components = collectRelated(domain.id, 'component', entities, edges, ['contains']);
+  const capabilities = collectRelated(domain.id, 'capability', entities, edges, ['contains', 'uses']);
   const documents = collectSupporting(domain.id, 'document', entities, edges);
   const tests = collectSupporting(domain.id, 'test-scope', entities, edges);
 
-  for (const entity of [...components, ...documents, ...tests]) {
+  for (const entity of [...capabilities, ...components, ...documents, ...tests]) {
     included.add(entity.id);
   }
 
   return {
     entity: toEntityRef(domain),
     workflows,
+    capabilities: capabilities.map((entity) => toEntityRef(entity)).sort(compareRefs),
     components: components.map((entity) => toEntityRef(entity)).sort(compareRefs),
     documents: documents.map((entity) => toEntityRef(entity)).sort(compareRefs),
     tests: tests.map((entity) => toEntityRef(entity)).sort(compareRefs),
@@ -214,15 +242,20 @@ function createWorkflowOverview(
     ...collectRelated(workflow.id, 'component', entities, edges, ['uses', 'implemented-by']),
     ...collectIncoming(workflow.id, 'component', entities, edges, ['implements']),
   ]);
+  const capabilities = uniqueEntities([
+    ...collectRelated(workflow.id, 'capability', entities, edges, ['uses', 'contains']),
+    ...collectIncoming(workflow.id, 'capability', entities, edges, ['implements']),
+  ]);
   const documents = collectSupporting(workflow.id, 'document', entities, edges);
   const tests = collectSupporting(workflow.id, 'test-scope', entities, edges);
 
-  for (const entity of [...components, ...documents, ...tests]) {
+  for (const entity of [...capabilities, ...components, ...documents, ...tests]) {
     included.add(entity.id);
   }
 
   return {
     entity: toEntityRef(workflow),
+    capabilities: capabilities.map((entity) => toEntityRef(entity)).sort(compareRefs),
     components: components.map((entity) => toEntityRef(entity)).sort(compareRefs),
     documents: documents.map((entity) => toEntityRef(entity)).sort(compareRefs),
     tests: tests.map((entity) => toEntityRef(entity)).sort(compareRefs),

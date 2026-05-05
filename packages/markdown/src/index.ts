@@ -57,6 +57,7 @@ const CARD_KIND_DIRECTORIES: Partial<Record<AtlasEntityKind, string>> = {
   domain: 'domains',
   workflow: 'workflows',
   component: 'components',
+  capability: 'capabilities',
   interface: 'interfaces',
   resource: 'resources',
   document: 'documents',
@@ -121,7 +122,10 @@ export function renderRepositoryReadme(
   const domains = collectReadmeEntities(undefined, 'domain', entities, edges).slice(0, 6);
   const workflows = collectReadmeEntities(repository?.id, 'workflow', entities, edges).slice(0, 8);
   const components = collectReadmeEntities(repository?.id, 'component', entities, edges).slice(0, 10);
-  const documents = collectReadmeEntities(repository?.id, 'document', entities, edges).slice(0, 8);
+  const capabilities = collectReadmeEntities(repository?.id, 'capability', entities, edges).slice(0, 10);
+  const documents = collectReadmeEntities(repository?.id, 'document', entities, edges)
+    .filter((entity) => !isAgentSkillDocument(entity))
+    .slice(0, 8);
   const tests = collectReadmeEntities(repository?.id, 'test-scope', entities, edges).slice(0, 8);
   const commands = collectReadmeCommands(repository, tests);
   const cliInterfaces = collectReadmeCliInterfaces(repository?.id, entities, edges);
@@ -169,6 +173,7 @@ export function renderRepositoryReadme(
   appendConfiguredSections(lines, readmeMetadata.sections);
   appendReadmeSection(lines, 'Domains', domains);
   appendReadmeSection(lines, 'Common Workflows', workflows);
+  appendReadmeSection(lines, 'Agent Capabilities', capabilities);
   appendReadmeSection(lines, 'Key Implementation Surfaces', components);
   appendReadmeSection(lines, 'Documentation', documents);
   appendReadmeSection(lines, 'Verification', tests);
@@ -420,12 +425,16 @@ function renderLocalDrillDown(entity: AtlasEntity, edges: AtlasGraphEdge[]): str
 
   const lines: string[] = [];
   const workflows = relatedEntities(entity.id, 'contains', 'workflow', edges);
+  const capabilities = relatedEntities(entity.id, ['contains', 'uses', 'implements'], 'capability', edges);
   const components = relatedEntities(entity.id, ['contains', 'uses', 'implemented-by'], 'component', edges);
   const documents = relatedEntities(entity.id, 'documented-in', 'document', edges);
   const tests = relatedEntities(entity.id, 'tested-by', 'test-scope', edges);
 
   if (workflows.length > 0) {
     lines.push('### Workflows', '', ...workflows.map((id) => `- \`${id}\``), '');
+  }
+  if (capabilities.length > 0) {
+    lines.push('### Capabilities', '', ...capabilities.map((id) => `- \`${id}\``), '');
   }
   if (components.length > 0) {
     lines.push('### Components', '', ...components.map((id) => `- \`${id}\``), '');
@@ -500,6 +509,10 @@ function appendReadmeSection(lines: string[], title: string, entities: AtlasEnti
     const target = entity.uri && !isPrivateUri(entity.uri) ? ` ([source](${entity.uri}))` : '';
     lines.push(`- \`${entity.id}\` - ${entity.title}: ${entity.summary}${target}`);
   }
+}
+
+function isAgentSkillDocument(entity: AtlasEntity): boolean {
+  return Boolean(entity.uri && /^\.agents\/skills\/[^/]+\/SKILL\.md$/i.test(entity.uri));
 }
 
 function collectReadmeCommands(

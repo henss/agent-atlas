@@ -2,16 +2,16 @@
 
 # Add Adapter Skill
 
-ID: `document:generated.agents-skills-add-adapter-skill`
-Kind: `document`
+ID: `capability:agent-skill.add-adapter`
+Kind: `capability`
 Profile: `public`
 
-Markdown document at .agents/skills/add-adapter/SKILL.md.
+Adapters should connect Agent Atlas to existing systems without making the core vendor-specific.
 
 ## Metadata
 
 - visibility: `public`
-- tags: `generated-source`, `docs`
+- tags: `agent-skill`, `generated-source`, `agent_skills`
 
 ## Code
 
@@ -23,9 +23,9 @@ Markdown document at .agents/skills/add-adapter/SKILL.md.
 
 ## Relations
 
-### `documents`
+### `documented-in`
 
-- `capability:agent-skill.add-adapter` _(generated)_
+- `document:generated.agents-skills-add-adapter-skill`
 
 ### `part-of`
 

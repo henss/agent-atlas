@@ -16,6 +16,7 @@ Examples:
 domain:calendar
 workflow:plan-week
 component:google-calendar-adapter
+capability:agent-skill.review-project-status
 document:notion-weekly-planning-system
 resource:primary-calendar
 test-scope:calendar-tests
@@ -137,6 +138,13 @@ code:
   public_symbols:
     - createCalendarClient
 ```
+
+### `capability`
+
+An agent-usable capability such as a Codex skill, reusable task workflow, or
+other invoked guidance bundle. Source-derived agent skills use stable IDs like
+`capability:agent-skill.<skill-name>` and link back to their backing
+`.agents/skills/<name>/SKILL.md` document.
 
 ### `interface`
 

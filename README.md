@@ -61,6 +61,7 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 
 ## Source-Derived Surfaces
 
+- Agent Skills: 5
 - Commander: 33
 - Config: 22
 - Dependencies: 6
@@ -115,6 +116,14 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 - `workflow:manage-overlays` - Manage Overlays: Applies profile-specific atlas overlays while keeping public-safe base metadata separate from private or company enrichments.
 - `workflow:measure-atlas-adoption` - Measure Atlas Adoption: Records local usage receipts and evaluates context-pack selection against completed sessions without adding hosted telemetry.
 
+## Agent Capabilities
+
+- `capability:agent-skill.add-adapter` - Add Adapter Skill: Adapters should connect Agent Atlas to existing systems without making the core vendor-specific. ([source](.agents/skills/add-adapter/SKILL.md))
+- `capability:agent-skill.add-atlas-entity` - Add Atlas Entity Skill: Use this skill when creating or modifying `.agent-atlas/**/*.yaml` files. ([source](.agents/skills/add-atlas-entity/SKILL.md))
+- `capability:agent-skill.design-context-pack` - Design Context Pack Skill: A context pack is a task-specific, token-budgeted map. It should route the agent, not become the entire source of truth. ([source](.agents/skills/design-context-pack/SKILL.md))
+- `capability:agent-skill.implement-cli-command` - Implement CLI Command Skill: CLI output should be concise Markdown by default and JSON only with `--json`. ([source](.agents/skills/implement-cli-command/SKILL.md))
+- `capability:agent-skill.update-schema` - Update Schema Skill: Schema changes must keep docs, TypeScript types, JSON Schema, and examples aligned. ([source](.agents/skills/update-schema/SKILL.md))
+
 ## Key Implementation Surfaces
 
 - `component:package.agent-atlas-adapters` - @agent-atlas/adapters: Adapter interfaces and generic adapters for Agent Atlas. ([source](packages/adapters/package.json))
@@ -131,16 +140,16 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 - `document:agent-atlas-readme` - agent-atlas README: Primary repo entrypoint for setup, usage, architecture, and maintenance notes.
 - `document:cli-command-reference` - CLI Command Reference: Generated Commander-derived Markdown reference for Atlas CLI command syntax, options, arguments, and descriptions. ([source](docs/generated/cli-command-reference.md))
 - `document:generated.agents` - Agent guidance for Agent Atlas: Markdown document at AGENTS.md. ([source](AGENTS.md))
-- `document:generated.agents-skills-add-adapter-skill` - Add Adapter Skill: Markdown document at .agents/skills/add-adapter/SKILL.md. ([source](.agents/skills/add-adapter/SKILL.md))
-- `document:generated.agents-skills-add-atlas-entity-skill` - Add Atlas Entity Skill: Markdown document at .agents/skills/add-atlas-entity/SKILL.md. ([source](.agents/skills/add-atlas-entity/SKILL.md))
-- `document:generated.agents-skills-design-context-pack-skill` - Design Context Pack Skill: Markdown document at .agents/skills/design-context-pack/SKILL.md. ([source](.agents/skills/design-context-pack/SKILL.md))
-- `document:generated.agents-skills-implement-cli-command-skill` - Implement CLI Command Skill: Markdown document at .agents/skills/implement-cli-command/SKILL.md. ([source](.agents/skills/implement-cli-command/SKILL.md))
-- `document:generated.agents-skills-update-schema-skill` - Update Schema Skill: Markdown document at .agents/skills/update-schema/SKILL.md. ([source](.agents/skills/update-schema/SKILL.md))
+- `document:generated.contributing` - Contributing: Markdown document at CONTRIBUTING.md. ([source](CONTRIBUTING.md))
+- `document:generated.docs-adr-0001-atlas-as-typed-context-graph` - ADR 0001: Model the atlas as a typed context graph: Markdown document at docs/adr/0001-atlas-as-typed-context-graph.md. ([source](docs/adr/0001-atlas-as-typed-context-graph.md))
+- `document:generated.docs-adr-0002-public-core-private-overlays` - ADR 0002: Public core with private overlays: Markdown document at docs/adr/0002-public-core-private-overlays.md. ([source](docs/adr/0002-public-core-private-overlays.md))
+- `document:generated.docs-architecture` - Architecture: Markdown document at docs/architecture.md. ([source](docs/architecture.md))
+- `document:generated.docs-concepts-progressive-disclosure` - Progressive Disclosure: Markdown document at docs/concepts/progressive-disclosure.md. ([source](docs/concepts/progressive-disclosure.md))
 
 ## Verification
 
 - `test-scope:agent-atlas-verification` - agent-atlas Verification: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
-- `test-scope:generated.packages` - packages tests: 22 discovered test files under packages.
+- `test-scope:generated.packages` - packages tests: 25 discovered test files under packages.
 
 ## Commands
 

@@ -83,6 +83,7 @@ const KIND_COLORS: Record<string, string> = {
   workflow: 'grape',
   domain: 'teal',
   document: 'yellow',
+  capability: 'green',
   resource: 'orange',
   repository: 'cyan',
   system: 'indigo',
@@ -445,13 +446,14 @@ function OverviewDashboard({
       <Box>
         <Title order={2}>Atlas Overview</Title>
         <Text c="dimmed">
-          Start with domains and workflows, then drill into components, documents, and tests as needed.
+          Start with domains and workflows, then drill into capabilities, components, documents, and tests as needed.
         </Text>
       </Box>
       <StatsRow
         stats={[
           ['domains', overview.counts.domains],
           ['workflows', overview.counts.workflows],
+          ['capabilities', overview.counts.capabilities],
           ['components', overview.counts.components],
           ['documents', overview.counts.documents],
           ['tests', overview.counts.tests],
@@ -828,6 +830,7 @@ function DrillDownPanel({
 }): JSX.Element | null {
   const sections = [
     ['Workflows', drillDown.workflows],
+    ['Capabilities', drillDown.capabilities],
     ['Components', drillDown.components],
     ['Documents', drillDown.documents],
     ['Tests', drillDown.tests],
@@ -1231,6 +1234,7 @@ function PathResolver(): JSX.Element {
               ['owners', result.data.owners.length],
               ['workflows', result.data.workflows.length],
               ['domains', result.data.domains.length],
+              ['capabilities', result.data.capabilities.length],
               ['documents', result.data.documents.length],
               ['tests', result.data.tests.length],
             ]}
@@ -1353,6 +1357,7 @@ function entityDrillDown(
 ): {
   breadcrumb: string[];
   workflows: Array<{ id: AtlasEntityId; title: string }>;
+  capabilities: Array<{ id: AtlasEntityId; title: string }>;
   components: Array<{ id: AtlasEntityId; title: string }>;
   documents: Array<{ id: AtlasEntityId; title: string }>;
   tests: Array<{ id: AtlasEntityId; title: string }>;
@@ -1360,6 +1365,7 @@ function entityDrillDown(
   const empty = {
     breadcrumb: [],
     workflows: [],
+    capabilities: [],
     components: [],
     documents: [],
     tests: [],
@@ -1373,6 +1379,7 @@ function entityDrillDown(
       return {
         breadcrumb: [domain.entity.title],
         workflows: domain.workflows.map((workflow) => workflow.entity),
+        capabilities: domain.capabilities,
         components: domain.components,
         documents: domain.documents,
         tests: domain.tests,
@@ -1383,6 +1390,7 @@ function entityDrillDown(
         return {
           breadcrumb: [domain.entity.title, workflow.entity.title],
           workflows: [],
+          capabilities: workflow.capabilities,
           components: workflow.components,
           documents: workflow.documents,
           tests: workflow.tests,
@@ -1392,6 +1400,7 @@ function entityDrillDown(
         return {
           breadcrumb: [domain.entity.title, workflow.entity.title],
           workflows: [],
+          capabilities: workflow.capabilities,
           components: workflow.components,
           documents: workflow.documents,
           tests: workflow.tests,
@@ -1402,6 +1411,7 @@ function entityDrillDown(
       return {
         breadcrumb: [domain.entity.title],
         workflows: domain.workflows.map((workflow) => workflow.entity),
+        capabilities: domain.capabilities,
         components: domain.components,
         documents: domain.documents,
         tests: domain.tests,

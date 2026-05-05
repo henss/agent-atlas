@@ -26,11 +26,12 @@ export interface PathResolutionResult {
   owners: PathOwnerMatch[];
   workflows: PathContextMatch[];
   domains: PathContextMatch[];
+  capabilities: PathContextMatch[];
   documents: PathContextMatch[];
   tests: PathContextMatch[];
 }
 
-const CONTEXT_KINDS = new Set(['workflow', 'domain', 'document', 'test-scope']);
+const CONTEXT_KINDS = new Set(['workflow', 'domain', 'capability', 'document', 'test-scope']);
 
 export function resolvePathInGraph(
   graph: AtlasGraph,
@@ -47,6 +48,7 @@ export function resolvePathInGraph(
     owners,
     workflows: context.filter((match) => match.entity.kind === 'workflow'),
     domains: context.filter((match) => match.entity.kind === 'domain'),
+    capabilities: context.filter((match) => match.entity.kind === 'capability'),
     documents: context.filter((match) => match.entity.kind === 'document'),
     tests: context.filter((match) => match.entity.kind === 'test-scope'),
   };

@@ -114,7 +114,7 @@ const COMMANDS: AtlasCliCommandDefinition[] = [
   {
     path: ['sources', 'docs', 'generate'],
     summary: 'Generate the source-derived Atlas reference.',
-    description: 'Writes the reference for entities derived from package scripts, packages, tests, docs, config, routes, and dependencies.',
+    description: 'Writes the reference for entities derived from package scripts, packages, tests, agent skills, docs, config, routes, and dependencies.',
     usage: '[path] [--path <root>] [--output <path>] [--check] [--profile <profile>]',
     arguments: ['[path]'],
     options: [

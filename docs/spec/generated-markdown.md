@@ -92,3 +92,10 @@ commands before broad search, list the most relevant workflows, implementation
 surfaces, docs, and verification scopes, and state that README-worthy durable
 facts belong in Atlas metadata or referenced canonical docs instead of manual
 README prose.
+
+## Source-derived capabilities
+
+Agent skills are rendered as first-class `capability:*` entities, with their
+`SKILL.md` files kept as backing `document:*` entities. This lets agents browse
+or select the reusable capability directly while preserving the source document
+as the implementation and authoring surface.

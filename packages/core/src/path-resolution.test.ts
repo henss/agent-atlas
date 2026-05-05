@@ -48,6 +48,7 @@ describe('resolvePathInGraph', () => {
     expect(result.owners).toEqual([]);
     expect(result.workflows).toEqual([]);
     expect(result.domains).toEqual([]);
+    expect(result.capabilities).toEqual([]);
     expect(result.documents).toEqual([]);
     expect(result.tests).toEqual([]);
   });

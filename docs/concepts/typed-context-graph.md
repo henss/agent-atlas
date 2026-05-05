@@ -12,6 +12,7 @@ Example:
 
 ```text
 workflow:publish-single --uses--> component:video-generator
+workflow:publish-single --uses--> capability:agent-skill.release-checklist
 workflow:publish-single --documented-in--> document:release-process
 component:video-generator --tested-by--> test-scope:video-generation-tests
 ```

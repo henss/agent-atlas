@@ -13,7 +13,7 @@ Profile: `public`
 
 - Begin with a domain to understand the broad area.
 - Drill into workflows to see capabilities and processes.
-- Follow components, documents, and tests only as needed for the task.
+- Follow capabilities, components, documents, and tests only as needed for the task.
 - Use path resolution for bottom-up navigation from a source file.
 
 ## Major capabilities
@@ -51,6 +51,10 @@ Profile: `public`
 
 - No workflows are directly attached to this domain.
 
+## Agent capabilities
+
+- No capabilities are attached to the overview.
+
 ## Implementation surfaces
 
 ### Agent Atlas
@@ -80,6 +84,11 @@ Profile: `public`
 
 ## Other entities
 
+- `capability:agent-skill.add-adapter` (capability) - Add Adapter Skill: Adapters should connect Agent Atlas to existing systems without making the core vendor-specific.
+- `capability:agent-skill.add-atlas-entity` (capability) - Add Atlas Entity Skill: Use this skill when creating or modifying `.agent-atlas/**/*.yaml` files.
+- `capability:agent-skill.design-context-pack` (capability) - Design Context Pack Skill: A context pack is a task-specific, token-budgeted map. It should route the agent, not become the entire source of truth.
+- `capability:agent-skill.implement-cli-command` (capability) - Implement CLI Command Skill: CLI output should be concise Markdown by default and JSON only with `--json`.
+- `capability:agent-skill.update-schema` (capability) - Update Schema Skill: Schema changes must keep docs, TypeScript types, JSON Schema, and examples aligned.
 - `component:package.agent-atlas-adapters` (component) - @agent-atlas/adapters: Adapter interfaces and generic adapters for Agent Atlas.
 - `component:package.agent-atlas-adapters.dependencies` (component) - @agent-atlas/adapters dependency surface: Workspace dependency relations for @agent-atlas/adapters.
 - `component:package.agent-atlas-cli` (component) - @agent-atlas/cli: Command-line interface for Agent Atlas.
@@ -95,8 +104,3 @@ Profile: `public`
 - `component:package.agent-atlas-ui` (component) - @agent-atlas/ui: Local read-only review UI for Agent Atlas graphs.
 - `component:package.agent-atlas-ui.dependencies` (component) - @agent-atlas/ui dependency surface: Workspace dependency relations for @agent-atlas/ui.
 - `document:adapter-spec` (document) - Adapter Specification: Specification for adapter interfaces, optional generic adapters, and safe external resource references.
-- `document:adapters-readme` (document) - Adapters README: Package README for adapter interfaces, built-in adapter implementations, and safe external resource resolver behavior.
-- `document:agent-atlas-readme` (document) - agent-atlas README: Primary repo entrypoint for setup, usage, architecture, and maintenance notes.
-- `document:ci-template` (document) - CI Template: GitHub Actions template for validating, testing, linting, and generating Agent Atlas outputs.
-- `document:core-readme` (document) - Core README: Package README for core atlas loading, graph traversal, diagnostics, context packs, registries, migrations, maintenance, and boundary checks.
-- `document:generated.agents` (document) - Agent guidance for Agent Atlas: Markdown document at AGENTS.md.
