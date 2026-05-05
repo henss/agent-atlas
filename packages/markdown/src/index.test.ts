@@ -148,6 +148,7 @@ describe('generateMarkdownViews', () => {
                 command: 'validate',
                 usage: 'example validate [--json]',
                 group: 'Validation Commands',
+                group_description: 'Commands for validating repository metadata and generated artifacts.',
               },
             },
           },
@@ -182,7 +183,9 @@ describe('generateMarkdownViews', () => {
     expect(markdown).toContain(
       '- Full command reference: [CLI Reference](docs/generated/cli-command-reference.md) - Generated command details.',
     );
-    expect(markdown).toContain('- Validation Commands (1): `example validate`');
+    expect(markdown).toContain(
+      '- Validation Commands (1): Commands for validating repository metadata and generated artifacts. `example validate`',
+    );
     expect(markdown).toContain('## Custom Section');
     expect(markdown).toContain('## Domains');
     expect(markdown).toContain('`domain:example-domain` - Example Domain: Top-level domain context.');

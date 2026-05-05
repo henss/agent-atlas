@@ -53,6 +53,8 @@ export interface AtlasCliCommandRecord {
   options: AtlasCliCommandOption[];
   arguments: AtlasCliCommandArgument[];
   group: string;
+  groupSummary?: string;
+  groupDescription?: string;
   visibility: AtlasVisibility;
   ownerComponentId: AtlasEntityId;
   workflowId?: AtlasEntityId;
@@ -140,6 +142,7 @@ export function extractCommanderCliCommands(
   const cliName = source.cliName ?? readCommanderName(program) ?? source.id;
   const defaultVisibility = source.defaultVisibility ?? 'public';
   const records: AtlasCliCommandRecord[] = [];
+  const groupMetadata = collectCommanderGroupMetadata(program);
 
   function visit(command: CommanderLike, parentPath: string[]): void {
     const name = readCommanderName(command);
@@ -151,6 +154,8 @@ export function extractCommanderCliCommands(
     if (command !== program && !isHiddenCommand(command) && hasExecutableShape) {
       const commandId = commandPath.join('-');
       const entityId = `interface:${source.command_id_prefix}.${slugify(commandId)}` as AtlasEntityId;
+      const group = readHelpGroup(command) ?? `${commandPath[0]} commands`;
+      const groupInfo = groupMetadata.get(normalizeGroupTitle(group));
       records.push({
         id: `${source.command_id_prefix}.${slugify(commandId)}`,
         entityId,
@@ -163,7 +168,9 @@ export function extractCommanderCliCommands(
         aliases: readAliases(command),
         options: readOptions(command),
         arguments: readArguments(command),
-        group: readHelpGroup(command) ?? `${commandPath[0]} commands`,
+        group,
+        groupSummary: groupInfo?.summary,
+        groupDescription: groupInfo?.description,
         visibility: defaultVisibility,
         ownerComponentId: source.owner_component,
         workflowId: source.workflow_relations?.[commandPath.join(' ')],
@@ -191,6 +198,10 @@ export function renderCliReferenceMarkdown(records: AtlasCliCommandRecord[]): st
     if (record.group !== currentGroup) {
       currentGroup = record.group;
       lines.push(`## ${titleCase(record.group.replace(/:$/, ''))}`, '');
+      const groupDescription = record.groupDescription ?? record.groupSummary;
+      if (groupDescription) {
+        lines.push(groupDescription, '');
+      }
     }
     lines.push(`### \`${record.usage}\``, '', record.summary, '');
     if (record.description && record.description !== record.summary) {
@@ -241,6 +252,8 @@ function commandRecordToEntity(record: AtlasCliCommandRecord): AtlasEntity {
         command: record.commandPath.join(' '),
         usage: record.usage,
         group: record.group,
+        group_summary: record.groupSummary,
+        group_description: record.groupDescription,
         description: record.description,
         aliases: record.aliases,
         arguments: record.arguments,
@@ -320,8 +333,12 @@ function readCommanderName(command: CommanderLike): string | undefined {
 }
 
 function readSummary(command: CommanderLike): string {
-  const summary = safeRead(() => command.summary?.());
+  const summary = readOptionalSummary(command);
   return summary || readDescription(command) || readCommanderName(command) || 'CLI command.';
+}
+
+function readOptionalSummary(command: CommanderLike): string | undefined {
+  return safeRead(() => command.summary?.());
 }
 
 function readDescription(command: CommanderLike): string {
@@ -378,6 +395,36 @@ function compareCommandRecords(left: AtlasCliCommandRecord, right: AtlasCliComma
     return groupCompare;
   }
   return left.usage.localeCompare(right.usage);
+}
+
+function collectCommanderGroupMetadata(program: CommanderLike): Map<string, { summary?: string; description?: string }> {
+  const groups = new Map<string, { summary?: string; description?: string }>();
+
+  function visit(command: CommanderLike): void {
+    if (command !== program && !isHiddenCommand(command)) {
+      const group = readHelpGroup(command);
+      const hasExecutableShape = (command.registeredArguments?.length ?? 0) > 0 || (command.options?.length ?? 0) > 0;
+      if (group && !hasExecutableShape) {
+        const summary = readOptionalSummary(command);
+        const description = readDescription(command);
+        groups.set(normalizeGroupTitle(group), {
+          summary: summary && summary !== readCommanderName(command) ? summary : undefined,
+          description: description && description !== summary ? description : undefined,
+        });
+      }
+    }
+
+    for (const child of command.commands ?? []) {
+      visit(child);
+    }
+  }
+
+  visit(program);
+  return groups;
+}
+
+function normalizeGroupTitle(group: string): string {
+  return group.replace(/:+$/g, '').trim().toLowerCase();
 }
 
 function slugify(value: string): string {

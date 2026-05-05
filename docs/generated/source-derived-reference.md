@@ -87,7 +87,7 @@ Generated entities: 165
 
 ## Tests
 
-- `test-scope:generated.packages` - packages tests: 25 discovered test files under packages.
+- `test-scope:generated.packages` - packages tests: 23 discovered test files under packages.
 
 ## Agent Skills
 

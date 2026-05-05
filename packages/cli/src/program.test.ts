@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { Command } from 'commander';
 
 import { extractCommanderCliCommands, renderCliReferenceMarkdown } from '../../core/src/generated-cli.js';
 import { createAtlasCliProgram } from './program.js';
@@ -52,5 +53,44 @@ describe('Commander-derived Atlas CLI catalog', () => {
     expect(markdown).toContain('### `atlas validate');
     expect(markdown).toContain('### `atlas cli docs generate');
     expect(markdown).toContain('Options:');
+  });
+
+  it('extracts Commander group summaries from non-executable group commands', () => {
+    const program = new Command()
+      .name('example')
+      .exitOverride();
+    program
+      .command('extract')
+      .summary('Extraction command group.')
+      .description('Commands for extracting code and docs into a separate repository.')
+      .helpGroup('Extraction Commands:');
+    program
+      .command('extract:scan')
+      .summary('Scan extraction candidates.')
+      .description('Scans source files before extraction.')
+      .helpGroup('Extraction Commands:')
+      .option('--path <path>', 'Path to scan.');
+
+    const records = extractCommanderCliCommands(program, {
+      id: 'example-cli',
+      module: 'dist/program.js',
+      export: 'createProgram',
+      owner_component: 'component:cli-package',
+      command_id_prefix: 'example-cli',
+      cliName: 'example',
+      defaultVisibility: 'public',
+    });
+
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({
+      id: 'example-cli.extract-scan',
+      group: 'Extraction Commands:',
+      groupSummary: 'Extraction command group.',
+      groupDescription: 'Commands for extracting code and docs into a separate repository.',
+    });
+
+    const markdown = renderCliReferenceMarkdown(records);
+    expect(markdown).toContain('## Extraction Commands');
+    expect(markdown).toContain('Commands for extracting code and docs into a separate repository.');
   });
 });

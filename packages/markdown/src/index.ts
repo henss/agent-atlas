@@ -378,7 +378,7 @@ function renderEntityDirectoryIndex(
   if (cliInterfaces.length > 0) {
     lines.push('## CLI Command Groups', '');
     for (const group of groupCliInterfaceLinks(cliInterfaces)) {
-      lines.push(`- ${group.title} (${group.items.length}): ${group.items.map((item) => `[${item.label}](${item.path})`).join(', ')}`);
+    lines.push(`- ${group.title} (${group.items.length})${group.description ? `: ${group.description} ` : ': '}${group.items.map((item) => `[${item.label}](${item.path})`).join(', ')}`);
     }
     const otherInterfaces = entities.filter((entity) => !isRecord(entity.metadata?.cli));
     if (otherInterfaces.length > 0) {
@@ -620,8 +620,9 @@ function appendCliSection(
   for (const group of interfaceGroups) {
     const shownCommands = group.commands.slice(0, README_CLI_GROUP_COMMAND_LIMIT);
     const hiddenCount = group.commands.length - shownCommands.length;
+    const description = group.description ? `: ${group.description}` : ':';
     lines.push(
-      `- ${group.title} (${group.commands.length}): ${shownCommands.map((command) => `\`${command}\``).join(', ')}${hiddenCount > 0 ? `, and ${hiddenCount} more in the command reference` : ''}`,
+      `- ${group.title} (${group.commands.length})${description} ${shownCommands.map((command) => `\`${command}\``).join(', ')}${hiddenCount > 0 ? `, and ${hiddenCount} more in the command reference` : ''}`,
     );
   }
 }
@@ -719,47 +720,51 @@ function findCliReference(documents: AtlasEntity[]): ReadmeLinkItem | undefined 
   };
 }
 
-function groupCliInterfaces(interfaces: AtlasEntity[]): Array<{ title: string; commands: string[] }> {
-  const groups = new Map<string, string[]>();
+function groupCliInterfaces(interfaces: AtlasEntity[]): Array<{ title: string; description?: string; commands: string[] }> {
+  const groups = new Map<string, { description?: string; commands: string[] }>();
   for (const entity of interfaces) {
     const cli = isRecord(entity.metadata?.cli) ? entity.metadata.cli : undefined;
     const cliName = readString(cli?.cli_name);
     const command = readString(cli?.command);
     const label = [cliName, command].filter(Boolean).join(' ') || entity.title;
     const group = normalizeCliGroupTitle(readString(cli?.group) ?? 'CLI Commands');
-    const groupCommands = groups.get(group) ?? [];
-    groupCommands.push(label);
-    groups.set(group, groupCommands);
+    const current = groups.get(group) ?? { commands: [] };
+    current.description = current.description ?? readString(cli?.group_description) ?? readString(cli?.group_summary);
+    current.commands.push(label);
+    groups.set(group, current);
   }
 
   return [...groups.entries()]
     .sort(([left], [right]) => left.localeCompare(right))
-    .map(([title, commands]) => ({
+    .map(([title, group]) => ({
       title,
-      commands: [...new Set(commands)].sort((left, right) => left.localeCompare(right)),
+      description: group.description,
+      commands: [...new Set(group.commands)].sort((left, right) => left.localeCompare(right)),
     }));
 }
 
 function groupCliInterfaceLinks(
   interfaces: AtlasEntity[],
-): Array<{ title: string; items: Array<{ label: string; path: string }> }> {
-  const groups = new Map<string, Array<{ label: string; path: string }>>();
+): Array<{ title: string; description?: string; items: Array<{ label: string; path: string }> }> {
+  const groups = new Map<string, { description?: string; items: Array<{ label: string; path: string }> }>();
   for (const entity of interfaces) {
     const cli = isRecord(entity.metadata?.cli) ? entity.metadata.cli : undefined;
     const cliName = readString(cli?.cli_name);
     const command = readString(cli?.command);
     const label = [cliName, command].filter(Boolean).join(' ') || entity.title;
     const group = normalizeCliGroupTitle(readString(cli?.group) ?? 'CLI Commands');
-    const groupItems = groups.get(group) ?? [];
-    groupItems.push({ label, path: `${entitySlug(entity.id)}.md` });
-    groups.set(group, groupItems);
+    const current = groups.get(group) ?? { items: [] };
+    current.description = current.description ?? readString(cli?.group_description) ?? readString(cli?.group_summary);
+    current.items.push({ label, path: `${entitySlug(entity.id)}.md` });
+    groups.set(group, current);
   }
 
   return [...groups.entries()]
     .sort(([left], [right]) => left.localeCompare(right))
-    .map(([title, items]) => ({
+    .map(([title, group]) => ({
       title,
-      items: items.sort((left, right) => left.label.localeCompare(right.label)),
+      description: group.description,
+      items: group.items.sort((left, right) => left.label.localeCompare(right.label)),
     }));
 }
 

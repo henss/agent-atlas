@@ -149,7 +149,7 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 ## Verification
 
 - `test-scope:agent-atlas-verification` - agent-atlas Verification: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
-- `test-scope:generated.packages` - packages tests: 25 discovered test files under packages.
+- `test-scope:generated.packages` - packages tests: 23 discovered test files under packages.
 
 ## Commands
 
