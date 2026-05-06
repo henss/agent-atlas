@@ -25,6 +25,7 @@ import {
 import type {
   AtlasGraph,
   AtlasGraphEdge,
+  AtlasOverview,
   AtlasProfile,
   NeighborResult,
 } from "@agent-atlas/core";
@@ -64,11 +65,16 @@ export interface ListEntitiesArgs {
   query?: string;
   profile?: AtlasProfile;
   budget?: number;
+  mode?: McpOutputMode;
+  limit?: number;
 }
 
 export interface AtlasOverviewArgs {
   profile?: AtlasProfile;
   budget?: number;
+  mode?: McpOutputMode;
+  limit?: number;
+  includeOtherEntities?: boolean;
 }
 
 export interface DescribeEntityArgs {
@@ -76,6 +82,8 @@ export interface DescribeEntityArgs {
   depth?: number;
   profile?: AtlasProfile;
   budget?: number;
+  mode?: McpOutputMode;
+  limit?: number;
 }
 
 export interface ResolvePathArgs {
@@ -83,6 +91,11 @@ export interface ResolvePathArgs {
   profile?: AtlasProfile;
   depth?: number;
   budget?: number;
+  mode?: McpOutputMode;
+  limit?: number;
+  includeBroadMatches?: boolean;
+  includeLowConfidence?: boolean;
+  minConfidence?: number;
 }
 
 export interface FindRelatedArgs {
@@ -91,6 +104,8 @@ export interface FindRelatedArgs {
   depth?: number;
   profile?: AtlasProfile;
   budget?: number;
+  mode?: McpOutputMode;
+  limit?: number;
 }
 
 export interface ContextPackArgs {
@@ -98,6 +113,20 @@ export interface ContextPackArgs {
   budget?: number;
   profile?: AtlasProfile;
 }
+
+type McpOutputMode = "compact" | "standard" | "full";
+
+interface McpRenderOptions {
+  mode: McpOutputMode;
+  limit?: number;
+  includeOtherEntities: boolean;
+  includeBroadMatches: boolean;
+  includeLowConfidence: boolean;
+  minConfidence: number;
+}
+
+const MCP_OUTPUT_MODES = ["compact", "standard", "full"] as const;
+const DEFAULT_MIN_CONFIDENCE = 0.5;
 
 export interface AtlasMcpHandlers {
   overview(args?: AtlasOverviewArgs): Promise<string>;
@@ -130,8 +159,12 @@ export function createAtlasMcpHandlers(
     async overview(args = {}) {
       const profile = parseMcpProfile(args.profile, defaultProfile);
       const graph = await graphFor(profile);
+      const renderOptions = createMcpRenderOptions(args);
       return fitMcpMarkdownBudget(
-        renderMcpOverviewMarkdown(createAtlasOverview(graph, profile)),
+        renderMcpOverviewMarkdown(
+          createAtlasOverview(graph, profile),
+          renderOptions,
+        ),
         args.budget,
       );
     },
@@ -153,9 +186,10 @@ export function createAtlasMcpHandlers(
           query ? entitySearchText(entity).includes(query) : true,
         )
         .sort(compareEntities);
+      const renderOptions = createMcpRenderOptions(args);
 
       return fitMcpMarkdownBudget(
-        renderEntityListMarkdown(entities, profile),
+        renderEntityListMarkdown(entities, profile, renderOptions),
         args.budget,
       );
     },
@@ -175,12 +209,14 @@ export function createAtlasMcpHandlers(
       const neighbors = findNeighbors(graph.index, args.id, {
         depth: args.depth ?? 1,
       });
+      const renderOptions = createMcpRenderOptions(args);
       return renderEntityDescriptionMarkdown(
         graph,
         entity,
         neighbors,
         profile,
         args.budget,
+        renderOptions,
       );
     },
 
@@ -205,12 +241,14 @@ export function createAtlasMcpHandlers(
       const result = resolvePathInGraph(graph, normalizedInput.path, {
         depth: args.depth ?? 3,
       });
+      const renderOptions = createMcpRenderOptions(args);
       return fitMcpMarkdownBudget(
         renderPathResolutionMarkdown(
           args.path,
           result.normalizedPath,
           result,
           atlasRoot,
+          renderOptions,
         ),
         args.budget,
       );
@@ -238,12 +276,14 @@ export function createAtlasMcpHandlers(
         depth: args.depth ?? 1,
         relationTypes: args.relation ? [args.relation] : undefined,
       });
+      const renderOptions = createMcpRenderOptions(args);
       return fitMcpMarkdownBudget(
         renderRelatedMarkdown(
           args.id,
           neighbors,
           args.relation,
           args.depth ?? 1,
+          renderOptions,
         ),
         args.budget,
       );
@@ -375,6 +415,9 @@ export function createAtlasMcpServer(
       inputSchema: {
         profile: z.enum(["public", "private", "company"]).optional(),
         budget: z.number().int().positive().optional(),
+        mode: z.enum(MCP_OUTPUT_MODES).optional(),
+        limit: z.number().int().positive().optional(),
+        includeOtherEntities: z.boolean().optional(),
       },
       annotations: { readOnlyHint: true },
     },
@@ -393,6 +436,8 @@ export function createAtlasMcpServer(
         query: z.string().optional(),
         profile: z.enum(["public", "private", "company"]).optional(),
         budget: z.number().int().positive().optional(),
+        mode: z.enum(MCP_OUTPUT_MODES).optional(),
+        limit: z.number().int().positive().optional(),
       },
       annotations: { readOnlyHint: true },
     },
@@ -410,6 +455,8 @@ export function createAtlasMcpServer(
         depth: z.number().int().positive().optional(),
         profile: z.enum(["public", "private", "company"]).optional(),
         budget: z.number().int().positive().optional(),
+        mode: z.enum(MCP_OUTPUT_MODES).optional(),
+        limit: z.number().int().positive().optional(),
       },
       annotations: { readOnlyHint: true },
     },
@@ -428,6 +475,11 @@ export function createAtlasMcpServer(
         profile: z.enum(["public", "private", "company"]).optional(),
         depth: z.number().int().positive().optional(),
         budget: z.number().int().positive().optional(),
+        mode: z.enum(MCP_OUTPUT_MODES).optional(),
+        limit: z.number().int().positive().optional(),
+        includeBroadMatches: z.boolean().optional(),
+        includeLowConfidence: z.boolean().optional(),
+        minConfidence: z.number().min(0).max(1).optional(),
       },
       annotations: { readOnlyHint: true },
     },
@@ -446,6 +498,8 @@ export function createAtlasMcpServer(
         depth: z.number().int().positive().optional(),
         profile: z.enum(["public", "private", "company"]).optional(),
         budget: z.number().int().positive().optional(),
+        mode: z.enum(MCP_OUTPUT_MODES).optional(),
+        limit: z.number().int().positive().optional(),
       },
       annotations: { readOnlyHint: true },
     },
@@ -617,44 +671,125 @@ async function readAtlasResource(
 function renderEntityListMarkdown(
   entities: AtlasEntity[],
   profile: AtlasProfile,
+  options: McpRenderOptions,
 ): string {
+  const shown = selectForOutput(entities, options);
   const lines = [
     "# Atlas entities",
     "",
     `Profile: \`${profile}\``,
     `Count: ${entities.length}`,
+    `Shown: ${shown.items.length}`,
     "",
   ];
-  for (const entity of entities) {
+  for (const entity of shown.items) {
     lines.push(
       `- \`${entity.id}\` (${entity.kind}) - ${entity.title}: ${entity.summary}`,
     );
   }
+  lines.push(...renderOmittedLines(shown.omitted, "entities"));
   return `${lines.join("\n")}\n`;
 }
 
 function renderMcpOverviewMarkdown(
-  overview: ReturnType<typeof createAtlasOverview>,
+  overview: AtlasOverview,
+  options: McpRenderOptions,
 ): string {
-  return renderAtlasOverviewMarkdown(overview).replace(
-    [
-      "## How to drill down",
+  if (options.mode === "full") {
+    return renderAtlasOverviewMarkdown(overview).replace(
+      [
+        "## How to drill down",
+        "",
+        "- `atlas show <entity-id>` shows one entity and its immediate relations.",
+        "- `atlas neighbors <entity-id> --depth 2` traverses nearby graph context.",
+        "- `atlas resolve-path <path>` maps source files to owning context.",
+        '- `atlas context-pack "<task>" --budget 4000` selects task-specific reads and verification.',
+      ].join("\n"),
+      renderMcpNextTools().join("\n"),
+    );
+  }
+
+  const domainLimit = options.mode === "compact" ? 5 : 12;
+  const workflowLimit = options.limit ?? (options.mode === "compact" ? 12 : 30);
+  const domains = overview.domains.slice(0, domainLimit);
+  const workflows = overview.domains
+    .flatMap((domain) => domain.workflows)
+    .slice(0, workflowLimit);
+  const lines = [
+    "# Atlas overview",
+    "",
+    `Profile: \`${overview.profile}\``,
+    "",
+    "## Counts",
+    "",
+    `- Domains: ${overview.counts.domains}`,
+    `- Workflows: ${overview.counts.workflows}`,
+    `- Capabilities: ${overview.counts.capabilities}`,
+    `- Components: ${overview.counts.components}`,
+    `- Documents: ${overview.counts.documents}`,
+    `- Tests: ${overview.counts.tests}`,
+    `- Entities: ${overview.counts.entities}`,
+    `- Relations: ${overview.counts.relations}`,
+    "",
+    "## Start Here",
+    "",
+    ...domains.map(
+      (domain) =>
+        `- \`${domain.entity.id}\` - ${domain.entity.title}: ${domain.entity.summary}`,
+    ),
+    "",
+    "## Key Workflows",
+    "",
+    ...workflows.map(
+      (workflow) =>
+        `- \`${workflow.entity.id}\` - ${workflow.entity.title}: ${workflow.entity.summary}`,
+    ),
+  ];
+
+  const omittedDomains = overview.domains.length - domains.length;
+  const omittedWorkflows =
+    overview.domains.flatMap((domain) => domain.workflows).length -
+    workflows.length;
+  const omittedLines = [
+    ...renderOmittedCount("domains", omittedDomains),
+    ...renderOmittedCount("workflows", omittedWorkflows),
+  ];
+  if (!options.includeOtherEntities && overview.otherEntities.length > 0) {
+    omittedLines.push(
+      `- ${overview.otherEntities.length} other entities hidden. Use \`includeOtherEntities: true\` or \`mode: "full"\` to include them.`,
+    );
+  }
+  if (omittedDomains > 0 || omittedWorkflows > 0) {
+    omittedLines.push(
+      '- Use `mode: "standard"` or `mode: "full"` to expand overview breadth.',
+    );
+  }
+  if (omittedLines.length > 0) {
+    lines.push(
       "",
-      "- `atlas show <entity-id>` shows one entity and its immediate relations.",
-      "- `atlas neighbors <entity-id> --depth 2` traverses nearby graph context.",
-      "- `atlas resolve-path <path>` maps source files to owning context.",
-      '- `atlas context-pack "<task>" --budget 4000` selects task-specific reads and verification.',
-    ].join("\n"),
-    [
-      "## Use MCP tools next",
+      "## Omitted Context",
       "",
-      "- `describe_entity` shows one entity and its immediate relations.",
-      "- `find_related` traverses nearby graph context.",
-      "- `resolve_path` maps source files to owning context.",
-      "- `context_pack` selects task-specific reads and verification.",
-      "- CLI commands provide the same navigation when an MCP host is unavailable.",
-    ].join("\n"),
-  );
+      ...omittedLines,
+    );
+  }
+
+  if (options.includeOtherEntities && overview.otherEntities.length > 0) {
+    const shownOther = selectForOutput(overview.otherEntities, options);
+    lines.push(
+      "",
+      "## Other Entities",
+      "",
+      ...shownOther.items.map(
+        (entity) =>
+          `- \`${entity.id}\` (${entity.kind}) - ${entity.title}: ${entity.summary}`,
+      ),
+      ...renderOmittedLines(shownOther.omitted, "other entities"),
+    );
+  }
+
+  lines.push("", ...renderMcpNextTools());
+
+  return `${lines.join("\n")}\n`;
 }
 
 function renderEntityDescriptionMarkdown(
@@ -663,9 +798,13 @@ function renderEntityDescriptionMarkdown(
   neighbors: NeighborResult[],
   profile: AtlasProfile,
   budget: number | undefined,
+  options: McpRenderOptions,
 ): string {
   const outgoing = graph.index.outgoingById.get(entity.id) ?? [];
   const incoming = graph.index.incomingById.get(entity.id) ?? [];
+  const shownOutgoing = selectForOutput(outgoing, options);
+  const shownIncoming = selectForOutput(incoming, options);
+  const shownNeighbors = selectForOutput(neighbors, options);
   const lines = [
     `# ${entity.title}`,
     "",
@@ -685,15 +824,18 @@ function renderEntityDescriptionMarkdown(
     "",
     "## Relations",
     "",
-    ...renderEdgeLines("Outgoing", outgoing),
-    ...renderEdgeLines("Incoming", incoming),
+    ...renderEdgeLines("Outgoing", shownOutgoing.items),
+    ...renderOmittedLines(shownOutgoing.omitted, "outgoing relations"),
+    ...renderEdgeLines("Incoming", shownIncoming.items),
+    ...renderOmittedLines(shownIncoming.omitted, "incoming relations"),
     "",
     "## Related",
     "",
-    ...neighbors.map(
+    ...shownNeighbors.items.map(
       (neighbor) =>
         `- d${neighbor.distance} \`${neighbor.entity.id}\` (${neighbor.entity.kind}): ${neighbor.entity.title}${neighbor.via ? ` via \`${neighbor.via.type}\`` : ""}`,
     ),
+    ...renderOmittedLines(shownNeighbors.omitted, "related entities"),
   );
 
   return fitMcpMarkdownBudget(`${lines.join("\n")}\n`, budget);
@@ -704,24 +846,50 @@ function renderPathResolutionMarkdown(
   normalizedPath: string,
   result: ReturnType<typeof resolvePathInGraph>,
   atlasRoot: string,
+  options: McpRenderOptions,
 ): string {
+  const owners = selectPathMatches(result.owners, options, { alwaysIncludeOwners: true });
+  const workflows = selectPathMatches(result.workflows, options);
+  const domains = selectPathMatches(result.domains, options);
+  const documents = selectPathMatches(result.documents, options);
+  const tests = selectPathMatches(result.tests, options);
   const lines = [
     "# Atlas path resolution",
     "",
     `Path: \`${normalizedPath || requestedPath}\``,
     "",
   ];
-  lines.push("## Owners", "", ...renderPathMatches(result.owners));
-  lines.push("", "## Workflows", "", ...renderPathMatches(result.workflows));
-  lines.push("", "## Domains", "", ...renderPathMatches(result.domains));
-  lines.push("", "## Documents", "", ...renderPathMatches(result.documents));
-  lines.push("", "## Tests", "", ...renderPathMatches(result.tests));
+  lines.push("## Owners", "", ...renderPathMatches(owners.items), ...renderPathOmissions(owners));
+  lines.push("", "## Workflows", "", ...renderPathMatches(workflows.items), ...renderPathOmissions(workflows));
+  lines.push("", "## Domains", "", ...renderPathMatches(domains.items), ...renderPathOmissions(domains));
+  lines.push("", "## Documents", "", ...renderPathMatches(documents.items), ...renderPathOmissions(documents));
+  lines.push("", "## Tests", "", ...renderPathMatches(tests.items), ...renderPathOmissions(tests));
   if (!hasPathMatches(result)) {
     lines.push(
       "",
       "## Hint",
       "",
       `- No Atlas entities matched this path under root \`${atlasRoot}\`. Check Atlas coverage for this repo or use the MCP server configured for the target repository.`,
+    );
+  }
+  const hiddenCount =
+    owners.hiddenLowConfidence +
+    workflows.hiddenLowConfidence +
+    domains.hiddenLowConfidence +
+    documents.hiddenLowConfidence +
+    tests.hiddenLowConfidence +
+    owners.omitted +
+    workflows.omitted +
+    domains.omitted +
+    documents.omitted +
+    tests.omitted;
+  if (hiddenCount > 0) {
+    lines.push(
+      "",
+      "## Next",
+      "",
+      "- Use `includeLowConfidence: true` or `includeBroadMatches: true` to inspect hidden weak context.",
+      "- Use `mode: \"full\"` to disable compact relevance limits.",
     );
   }
   return `${lines.join("\n")}\n`;
@@ -732,7 +900,9 @@ function renderRelatedMarkdown(
   neighbors: NeighborResult[],
   relation: AtlasRelationType | undefined,
   depth: number,
+  options: McpRenderOptions,
 ): string {
+  const shown = selectForOutput(neighbors, options);
   const lines = [
     "# Atlas related entities",
     "",
@@ -740,13 +910,15 @@ function renderRelatedMarkdown(
     `Depth: ${depth}`,
     `Relation: ${relation ? `\`${relation}\`` : "all"}`,
     `Count: ${neighbors.length}`,
+    `Shown: ${shown.items.length}`,
     "",
   ];
-  for (const neighbor of neighbors) {
+  for (const neighbor of shown.items) {
     lines.push(
       `- d${neighbor.distance} \`${neighbor.entity.id}\` (${neighbor.entity.kind}): ${neighbor.entity.title}${neighbor.via ? ` via \`${neighbor.via.type}\`` : ""}`,
     );
   }
+  lines.push(...renderOmittedLines(shown.omitted, "related entities"));
   return `${lines.join("\n")}\n`;
 }
 
@@ -767,6 +939,110 @@ function renderPathMatches(
     const detail = match.pattern ? ` via \`${match.pattern}\`` : "";
     return `- \`${match.entity.id}\` (${match.confidence.toFixed(2)}): ${match.entity.title}${detail}`;
   });
+}
+
+function createMcpRenderOptions(args: {
+  mode?: McpOutputMode;
+  limit?: number;
+  includeOtherEntities?: boolean;
+  includeBroadMatches?: boolean;
+  includeLowConfidence?: boolean;
+  minConfidence?: number;
+}): McpRenderOptions {
+  const mode = args.mode ?? "compact";
+  return {
+    mode,
+    limit: args.limit,
+    includeOtherEntities: args.includeOtherEntities ?? mode === "full",
+    includeBroadMatches: args.includeBroadMatches ?? mode === "full",
+    includeLowConfidence: args.includeLowConfidence ?? mode === "full",
+    minConfidence:
+      args.minConfidence ??
+      (mode === "compact" ? DEFAULT_MIN_CONFIDENCE : mode === "standard" ? 0.3 : 0),
+  };
+}
+
+function defaultLimit(options: McpRenderOptions): number | undefined {
+  if (options.limit !== undefined) {
+    return options.limit;
+  }
+  if (options.mode === "compact") {
+    return 25;
+  }
+  if (options.mode === "standard") {
+    return 75;
+  }
+  return undefined;
+}
+
+function selectForOutput<T>(
+  items: T[],
+  options: McpRenderOptions,
+): { items: T[]; omitted: number } {
+  const limit = defaultLimit(options);
+  if (!limit) {
+    return { items, omitted: 0 };
+  }
+  return {
+    items: items.slice(0, limit),
+    omitted: Math.max(0, items.length - limit),
+  };
+}
+
+function selectPathMatches<T extends { confidence: number }>(
+  matches: T[],
+  options: McpRenderOptions,
+  config: { alwaysIncludeOwners?: boolean } = {},
+): { items: T[]; omitted: number; hiddenLowConfidence: number } {
+  const includeWeak =
+    options.includeLowConfidence ||
+    options.includeBroadMatches ||
+    options.mode === "full" ||
+    config.alwaysIncludeOwners === true;
+  const filtered = includeWeak
+    ? matches
+    : matches.filter((match) => match.confidence >= options.minConfidence);
+  const selected = selectForOutput(filtered, options);
+  return {
+    ...selected,
+    hiddenLowConfidence: matches.length - filtered.length,
+  };
+}
+
+function renderPathOmissions(result: {
+  omitted: number;
+  hiddenLowConfidence: number;
+}): string[] {
+  return [
+    ...renderOmittedLines(result.omitted, "additional matches"),
+    ...renderOmittedLines(result.hiddenLowConfidence, "low-confidence matches"),
+  ];
+}
+
+function renderOmittedLines(count: number, label: string): string[] {
+  if (count <= 0) {
+    return [];
+  }
+  return [`- ${count} ${label} omitted.`];
+}
+
+function renderOmittedCount(label: string, count: number): string[] {
+  if (count <= 0) {
+    return [];
+  }
+  return [`- ${count} ${label} hidden.`];
+}
+
+function renderMcpNextTools(): string[] {
+  return [
+    "## Use MCP tools next",
+    "",
+    "- `describe_entity` shows one entity and its immediate relations.",
+    "- `find_related` traverses nearby graph context.",
+    "- `resolve_path` maps source files to owning context.",
+    "- `context_pack` selects task-specific reads and verification.",
+    "- CLI commands provide the same navigation when an MCP host is unavailable.",
+  ];
 }
 
 function hasPathMatches(result: ReturnType<typeof resolvePathInGraph>): boolean {

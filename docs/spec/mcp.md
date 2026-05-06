@@ -29,6 +29,8 @@ Inputs:
 - `query?`
 - `profile?`
 - `budget?`
+- `mode?`: `compact`, `standard`, or `full`
+- `limit?`
 
 Returns compact entity summaries.
 
@@ -38,6 +40,9 @@ Inputs:
 
 - `profile?`
 - `budget?`
+- `mode?`: `compact`, `standard`, or `full`
+- `limit?`
+- `includeOtherEntities?`
 
 Returns an overview-first map of domains, workflows, implementation surfaces,
 documents, tests, and MCP tool drill-down guidance. `atlas://root` returns this
@@ -51,6 +56,8 @@ Inputs:
 - `depth?`
 - `profile?`
 - `budget?`
+- `mode?`: `compact`, `standard`, or `full`
+- `limit?`
 
 Returns entity card plus selected neighbors.
 
@@ -62,11 +69,19 @@ Inputs:
 - `profile?`
 - `depth?`
 - `budget?`
+- `mode?`: `compact`, `standard`, or `full`
+- `limit?`
+- `includeBroadMatches?`
+- `includeLowConfidence?`
+- `minConfidence?`
 
 Returns owning component(s), workflows, domains, docs, resources, and verification scopes.
 Repo-relative paths are preferred. Absolute paths are accepted only when they are
 inside the configured atlas root; outside-root paths return a scoped-server error
 so agents do not mistake a wrong server for missing Atlas coverage.
+By default the response is compact: direct owners and strong nearby context are
+shown first, while weak or broad graph matches are counted as omitted context.
+Use `mode: "full"` or the inclusion flags when auditing coverage.
 
 ### `find_related`
 
@@ -77,6 +92,8 @@ Inputs:
 - `depth?`
 - `profile?`
 - `budget?`
+- `mode?`: `compact`, `standard`, or `full`
+- `limit?`
 
 Returns graph neighborhood.
 
@@ -90,9 +107,11 @@ Inputs:
 
 Returns task-specific context pack.
 
-All Markdown-returning tools accept or honor a positive integer `budget` where
-available. The budget is approximate and is applied to MCP output size so hosts
-can request compact responses.
+MCP tools default to `mode: "compact"` so responses route agents to the next
+useful entity, path, read, or verification target without dumping the whole
+graph. Use `mode: "standard"` for broader orientation and `mode: "full"` for
+audits or debugging. `limit` caps displayed rows. The `budget` field remains an
+approximate final safety fuse and should not be the primary relevance control.
 
 ## Smoke test
 

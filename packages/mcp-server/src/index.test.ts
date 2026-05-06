@@ -21,9 +21,13 @@ describe('Agent Atlas MCP handlers', () => {
 
     const overview = await handlers.overview();
     expect(overview).toContain('# Atlas overview');
-    expect(overview).toContain('## Major capabilities');
+    expect(overview).toContain('## Counts');
+    expect(overview).toContain('## Omitted Context');
     expect(overview).toContain('## Use MCP tools next');
     expect(overview).toContain('`describe_entity`');
+
+    const fullOverview = await handlers.overview({ mode: 'full' });
+    expect(fullOverview).toContain('## Major capabilities');
 
     const description = await handlers.describeEntity({
       id: 'workflow:create-context-pack',
@@ -41,12 +45,21 @@ describe('Agent Atlas MCP handlers', () => {
 
     const pathResult = await handlers.resolvePath({ path: 'packages/cli/src/index.ts' });
     expect(pathResult).toContain('component:cli-package');
+    expect(pathResult).toContain('low-confidence matches omitted');
+    expect(pathResult).toContain('## Next');
 
     const absolutePathResult = await handlers.resolvePath({
       path: path.resolve('../../packages/cli/src/index.ts'),
     });
     expect(absolutePathResult).toContain('Path: `packages/cli/src/index.ts`');
     expect(absolutePathResult).toContain('component:cli-package');
+
+    const fullPathResult = await handlers.resolvePath({
+      path: 'packages/cli/src/index.ts',
+      mode: 'full',
+    });
+    expect(fullPathResult).toContain('document:');
+    expect(fullPathResult).not.toContain('low-confidence matches omitted');
 
     const pack = await handlers.contextPack({
       task: 'change CLI path resolution in packages/cli/src/index.ts',

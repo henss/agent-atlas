@@ -24,6 +24,11 @@ Most MCP agents should start with tools rather than resource templates:
 - Use `resolve_path` when starting from a file path.
 - Use `context_pack` for broad or multi-seam tasks.
 
+Tool output is compact by default. Use `mode: "standard"` or `mode: "full"` to
+expand breadth, and use `limit`, `includeLowConfidence`, or
+`includeBroadMatches` when auditing hidden context. `budget` is a final output
+fuse, not the main relevance control.
+
 The resource templates expose the same read-only context for hosts that prefer
 URI reads, but they are secondary to the tools for normal agent workflows.
 
