@@ -191,6 +191,25 @@ Status: passed
     });
   });
 
+  it('accepts -- before context-pack task text for package-script wrappers', async () => {
+    const root = await makeAtlasFixture();
+
+    const { stdout } = await execFileAsync('node', [
+      CLI_PATH,
+      'context-pack',
+      '--path',
+      root,
+      '--profile',
+      'public',
+      '--',
+      'Change Example Workflow',
+    ]);
+
+    expect(stdout).toContain('# Context pack');
+    expect(stdout).toContain('Task: Change Example Workflow');
+    expect(stdout).toContain('workflow:example');
+  });
+
   it('writes usage notes and evaluates local evidence', async () => {
     const root = await makeAtlasFixture();
 
@@ -550,6 +569,18 @@ safety:
     expect(manifest.stdout).toContain('# Atlas global manifest');
     expect(manifest.stdout).toContain('Registry version: 1');
     expect(manifest.stdout).toContain('onboarding-api');
+
+    const contextPack = await execFileAsync('node', [
+      CLI_PATH,
+      'global',
+      'context-pack',
+      '--path',
+      registryRoot,
+      '--',
+      'change onboarding api',
+    ]);
+    expect(contextPack.stdout).toContain('# Context pack');
+    expect(contextPack.stdout).toContain('Task: change onboarding api');
 
     const generated = await execFileAsync('node', [
       CLI_PATH,

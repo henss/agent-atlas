@@ -645,21 +645,27 @@ function parseContextPackArgs(args: string[]): ContextPackArgs {
   let deterministic = false;
   let json = false;
   let rootPathWasSet = false;
+  let parseOptions = true;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
 
-    if (arg === '--json') {
+    if (parseOptions && arg === '--') {
+      parseOptions = false;
+      continue;
+    }
+
+    if (parseOptions && arg === '--json') {
       json = true;
       continue;
     }
 
-    if (arg === '--deterministic') {
+    if (parseOptions && arg === '--deterministic') {
       deterministic = true;
       continue;
     }
 
-    if (arg === '--path') {
+    if (parseOptions && arg === '--path') {
       [rootPath, rootPathWasSet] = setRootPath(
         readOptionValue(args, index, '--path'),
         rootPathWasSet,
@@ -668,19 +674,21 @@ function parseContextPackArgs(args: string[]): ContextPackArgs {
       continue;
     }
 
-    if (arg === '--budget') {
+    if (parseOptions && arg === '--budget') {
       budget = parsePositiveInteger(readOptionValue(args, index, '--budget'), budget);
       index += 1;
       continue;
     }
 
-    if (arg === '--profile') {
+    if (parseOptions && arg === '--profile') {
       profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
-    rejectUnknownOption(arg);
+    if (parseOptions) {
+      rejectUnknownOption(arg);
+    }
     if (!task) {
       task = arg;
       continue;
@@ -742,6 +750,7 @@ function parseGlobalContextPackArgs(args: string[]): GlobalContextPackArgs {
   let deterministic = false;
   let json = false;
   let rootPathWasSet = false;
+  let parseOptions = true;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -750,17 +759,22 @@ function parseGlobalContextPackArgs(args: string[]): GlobalContextPackArgs {
       continue;
     }
 
-    if (arg === '--json') {
+    if (parseOptions && arg === '--') {
+      parseOptions = false;
+      continue;
+    }
+
+    if (parseOptions && arg === '--json') {
       json = true;
       continue;
     }
 
-    if (arg === '--deterministic') {
+    if (parseOptions && arg === '--deterministic') {
       deterministic = true;
       continue;
     }
 
-    if (arg === '--path') {
+    if (parseOptions && arg === '--path') {
       [rootPath, rootPathWasSet] = setRootPath(
         readOptionValue(args, index, '--path'),
         rootPathWasSet,
@@ -769,19 +783,21 @@ function parseGlobalContextPackArgs(args: string[]): GlobalContextPackArgs {
       continue;
     }
 
-    if (arg === '--budget') {
+    if (parseOptions && arg === '--budget') {
       budget = parsePositiveInteger(readOptionValue(args, index, '--budget'), budget);
       index += 1;
       continue;
     }
 
-    if (arg === '--profile') {
+    if (parseOptions && arg === '--profile') {
       profile = parseAtlasProfile(readOptionValue(args, index, '--profile'));
       index += 1;
       continue;
     }
 
-    rejectUnknownOption(arg);
+    if (parseOptions) {
+      rejectUnknownOption(arg);
+    }
     if (!task) {
       task = arg;
       continue;
