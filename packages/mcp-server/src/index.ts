@@ -17,6 +17,11 @@ import {
   renderContextPackMarkdown,
   resolvePathInGraph,
 } from "@agent-atlas/core";
+import {
+  ATLAS_ENTITY_KINDS,
+  ATLAS_RELATION_TYPES,
+  isAtlasEntityKind,
+} from "@agent-atlas/schema";
 import type {
   AtlasGraph,
   AtlasGraphEdge,
@@ -58,6 +63,12 @@ export interface ListEntitiesArgs {
   kind?: AtlasEntityKind;
   query?: string;
   profile?: AtlasProfile;
+  budget?: number;
+}
+
+export interface AtlasOverviewArgs {
+  profile?: AtlasProfile;
+  budget?: number;
 }
 
 export interface DescribeEntityArgs {
@@ -71,6 +82,7 @@ export interface ResolvePathArgs {
   path: string;
   profile?: AtlasProfile;
   depth?: number;
+  budget?: number;
 }
 
 export interface FindRelatedArgs {
@@ -78,6 +90,7 @@ export interface FindRelatedArgs {
   relation?: AtlasRelationType;
   depth?: number;
   profile?: AtlasProfile;
+  budget?: number;
 }
 
 export interface ContextPackArgs {
@@ -87,7 +100,7 @@ export interface ContextPackArgs {
 }
 
 export interface AtlasMcpHandlers {
-  overview(args?: { profile?: AtlasProfile }): Promise<string>;
+  overview(args?: AtlasOverviewArgs): Promise<string>;
   listEntities(args?: ListEntitiesArgs): Promise<string>;
   describeEntity(args: DescribeEntityArgs): Promise<string>;
   resolvePath(args: ResolvePathArgs): Promise<string>;
@@ -99,7 +112,7 @@ export interface AtlasMcpHandlers {
 export function createAtlasMcpHandlers(
   options: AtlasMcpServerOptions,
 ): AtlasMcpHandlers {
-  const atlasRoot = options.atlasRoot;
+  const atlasRoot = path.resolve(options.atlasRoot);
   const defaultProfile = options.profile ?? "public";
 
   async function graphFor(profile?: AtlasProfile): Promise<AtlasGraph> {
@@ -117,12 +130,22 @@ export function createAtlasMcpHandlers(
     async overview(args = {}) {
       const profile = parseMcpProfile(args.profile, defaultProfile);
       const graph = await graphFor(profile);
-      return renderAtlasOverviewMarkdown(createAtlasOverview(graph, profile));
+      return fitMcpMarkdownBudget(
+        renderMcpOverviewMarkdown(createAtlasOverview(graph, profile)),
+        args.budget,
+      );
     },
 
     async listEntities(args = {}) {
       const profile = parseMcpProfile(args.profile, defaultProfile);
       const graph = await graphFor(profile);
+      if (args.kind && !isAtlasEntityKind(args.kind)) {
+        return renderMcpErrorMarkdown(
+          "Invalid entity kind",
+          `\`${args.kind}\` is not a valid Atlas entity kind.`,
+          `Use one of: ${ATLAS_ENTITY_KINDS.map((kind) => `\`${kind}\``).join(", ")}.`,
+        );
+      }
       const query = args.query?.toLowerCase();
       const entities = graph.entities
         .filter((entity) => (args.kind ? entity.kind === args.kind : true))
@@ -131,7 +154,10 @@ export function createAtlasMcpHandlers(
         )
         .sort(compareEntities);
 
-      return renderEntityListMarkdown(entities, profile);
+      return fitMcpMarkdownBudget(
+        renderEntityListMarkdown(entities, profile),
+        args.budget,
+      );
     },
 
     async describeEntity(args) {
@@ -167,20 +193,39 @@ export function createAtlasMcpHandlers(
           "Pass a path such as `packages/cli/src/index.ts`.",
         );
       }
+      const normalizedInput = normalizeMcpPathInput(args.path, atlasRoot);
+      if (normalizedInput.kind === "outside-root") {
+        return renderMcpErrorMarkdown(
+          "Path outside atlas root",
+          `\`${args.path}\` is outside this repo-scoped Atlas MCP server root \`${atlasRoot}\`.`,
+          "Use a path under this root or connect to the Agent Atlas MCP server configured for the target repository.",
+        );
+      }
       const graph = await graphFor(profile);
-      const result = resolvePathInGraph(graph, args.path, {
+      const result = resolvePathInGraph(graph, normalizedInput.path, {
         depth: args.depth ?? 3,
       });
-      return renderPathResolutionMarkdown(
-        args.path,
-        result.normalizedPath,
-        result,
+      return fitMcpMarkdownBudget(
+        renderPathResolutionMarkdown(
+          args.path,
+          result.normalizedPath,
+          result,
+          atlasRoot,
+        ),
+        args.budget,
       );
     },
 
     async findRelated(args) {
       const profile = parseMcpProfile(args.profile, defaultProfile);
       const graph = await graphFor(profile);
+      if (args.relation && !isMcpRelationType(args.relation)) {
+        return renderMcpErrorMarkdown(
+          "Invalid relation type",
+          `\`${args.relation}\` is not a valid Atlas relation type.`,
+          `Use one of: ${ATLAS_RELATION_TYPES.map((relation) => `\`${relation}\``).join(", ")}.`,
+        );
+      }
       if (!graph.index.entitiesById.has(args.id)) {
         return renderMcpErrorMarkdown(
           "Entity not found",
@@ -193,11 +238,14 @@ export function createAtlasMcpHandlers(
         depth: args.depth ?? 1,
         relationTypes: args.relation ? [args.relation] : undefined,
       });
-      return renderRelatedMarkdown(
-        args.id,
-        neighbors,
-        args.relation,
-        args.depth ?? 1,
+      return fitMcpMarkdownBudget(
+        renderRelatedMarkdown(
+          args.id,
+          neighbors,
+          args.relation,
+          args.depth ?? 1,
+        ),
+        args.budget,
       );
     },
 
@@ -217,7 +265,7 @@ export function createAtlasMcpHandlers(
         profile,
         deterministic: true,
       });
-      return renderContextPackMarkdown(pack);
+      return fitMcpMarkdownBudget(renderContextPackMarkdown(pack), args.budget);
     },
 
     async readResource(uri) {
@@ -253,7 +301,8 @@ export function createAtlasMcpServer(
     "atlas://root",
     {
       title: "Agent Atlas Root",
-      description: "Compact root summary of the selected atlas profile.",
+      description:
+        "Compact root summary of the selected atlas profile. Prefer MCP tools for task-specific drill-down.",
       mimeType: "text/markdown",
     },
     async (uri) => resourceText(uri.href, await handlers.overview()),
@@ -325,11 +374,12 @@ export function createAtlasMcpServer(
         "Return an overview-first map of domains, workflows, implementation surfaces, documents, and tests.",
       inputSchema: {
         profile: z.enum(["public", "private", "company"]).optional(),
+        budget: z.number().int().positive().optional(),
       },
       annotations: { readOnlyHint: true },
     },
     async (args) =>
-      toolText(await handlers.overview(args as { profile?: AtlasProfile })),
+      toolText(await handlers.overview(args as AtlasOverviewArgs)),
   );
 
   server.registerTool(
@@ -339,9 +389,10 @@ export function createAtlasMcpServer(
       description:
         "List compact entity summaries from the selected atlas profile.",
       inputSchema: {
-        kind: z.string().optional(),
+        kind: z.enum(ATLAS_ENTITY_KINDS).optional(),
         query: z.string().optional(),
         profile: z.enum(["public", "private", "company"]).optional(),
+        budget: z.number().int().positive().optional(),
       },
       annotations: { readOnlyHint: true },
     },
@@ -376,6 +427,7 @@ export function createAtlasMcpServer(
         path: z.string(),
         profile: z.enum(["public", "private", "company"]).optional(),
         depth: z.number().int().positive().optional(),
+        budget: z.number().int().positive().optional(),
       },
       annotations: { readOnlyHint: true },
     },
@@ -390,9 +442,10 @@ export function createAtlasMcpServer(
       description: "Traverse graph neighborhood around an entity.",
       inputSchema: {
         id: z.string(),
-        relation: z.string().optional(),
+        relation: z.enum(ATLAS_RELATION_TYPES).optional(),
         depth: z.number().int().positive().optional(),
         profile: z.enum(["public", "private", "company"]).optional(),
+        budget: z.number().int().positive().optional(),
       },
       annotations: { readOnlyHint: true },
     },
@@ -512,7 +565,7 @@ export async function runAtlasMcpSmokeTest(
 
 interface ReadResourceHandlers {
   defaultProfile: AtlasProfile;
-  overview(args?: { profile?: AtlasProfile }): Promise<string>;
+  overview(args?: AtlasOverviewArgs): Promise<string>;
   listEntities(args?: ListEntitiesArgs): Promise<string>;
   describeEntity(args: DescribeEntityArgs): Promise<string>;
   resolvePath(args: ResolvePathArgs): Promise<string>;
@@ -580,6 +633,30 @@ function renderEntityListMarkdown(
   return `${lines.join("\n")}\n`;
 }
 
+function renderMcpOverviewMarkdown(
+  overview: ReturnType<typeof createAtlasOverview>,
+): string {
+  return renderAtlasOverviewMarkdown(overview).replace(
+    [
+      "## How to drill down",
+      "",
+      "- `atlas show <entity-id>` shows one entity and its immediate relations.",
+      "- `atlas neighbors <entity-id> --depth 2` traverses nearby graph context.",
+      "- `atlas resolve-path <path>` maps source files to owning context.",
+      '- `atlas context-pack "<task>" --budget 4000` selects task-specific reads and verification.',
+    ].join("\n"),
+    [
+      "## Use MCP tools next",
+      "",
+      "- `describe_entity` shows one entity and its immediate relations.",
+      "- `find_related` traverses nearby graph context.",
+      "- `resolve_path` maps source files to owning context.",
+      "- `context_pack` selects task-specific reads and verification.",
+      "- CLI commands provide the same navigation when an MCP host is unavailable.",
+    ].join("\n"),
+  );
+}
+
 function renderEntityDescriptionMarkdown(
   graph: AtlasGraph,
   entity: AtlasEntity,
@@ -619,13 +696,14 @@ function renderEntityDescriptionMarkdown(
     ),
   );
 
-  return fitMarkdownBudget(`${lines.join("\n")}\n`, budget);
+  return fitMcpMarkdownBudget(`${lines.join("\n")}\n`, budget);
 }
 
 function renderPathResolutionMarkdown(
   requestedPath: string,
   normalizedPath: string,
   result: ReturnType<typeof resolvePathInGraph>,
+  atlasRoot: string,
 ): string {
   const lines = [
     "# Atlas path resolution",
@@ -638,6 +716,14 @@ function renderPathResolutionMarkdown(
   lines.push("", "## Domains", "", ...renderPathMatches(result.domains));
   lines.push("", "## Documents", "", ...renderPathMatches(result.documents));
   lines.push("", "## Tests", "", ...renderPathMatches(result.tests));
+  if (!hasPathMatches(result)) {
+    lines.push(
+      "",
+      "## Hint",
+      "",
+      `- No Atlas entities matched this path under root \`${atlasRoot}\`. Check Atlas coverage for this repo or use the MCP server configured for the target repository.`,
+    );
+  }
   return `${lines.join("\n")}\n`;
 }
 
@@ -681,6 +767,16 @@ function renderPathMatches(
     const detail = match.pattern ? ` via \`${match.pattern}\`` : "";
     return `- \`${match.entity.id}\` (${match.confidence.toFixed(2)}): ${match.entity.title}${detail}`;
   });
+}
+
+function hasPathMatches(result: ReturnType<typeof resolvePathInGraph>): boolean {
+  return (
+    result.owners.length > 0 ||
+    result.workflows.length > 0 ||
+    result.domains.length > 0 ||
+    result.documents.length > 0 ||
+    result.tests.length > 0
+  );
 }
 
 function renderEdgeLines(title: string, edges: AtlasGraphEdge[]): string[] {
@@ -792,6 +888,30 @@ function stringVariable(value: unknown): string {
 
 function decodePathValue(value: string): string {
   return decodeURIComponent(value.replace(/^\/+/, ""));
+}
+
+function normalizeMcpPathInput(
+  value: string,
+  atlasRoot: string,
+): { kind: "path"; path: string } | { kind: "outside-root" } {
+  const trimmed = value.trim();
+  if (!path.isAbsolute(trimmed)) {
+    return { kind: "path", path: normalizeFilePath(trimmed) };
+  }
+
+  const relativePath = path.relative(atlasRoot, path.resolve(trimmed));
+  if (
+    relativePath === "" ||
+    (!relativePath.startsWith("..") && !path.isAbsolute(relativePath))
+  ) {
+    return { kind: "path", path: normalizeFilePath(relativePath || ".") };
+  }
+
+  return { kind: "outside-root" };
+}
+
+function isMcpRelationType(value: string): value is AtlasRelationType {
+  return (ATLAS_RELATION_TYPES as readonly string[]).includes(value);
 }
 
 function parseOptionalInteger(value: string | undefined): number | undefined {
@@ -906,7 +1026,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function fitMarkdownBudget(
+function fitMcpMarkdownBudget(
   markdown: string,
   budget: number | undefined,
 ): string {

@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
@@ -21,6 +22,8 @@ describe('Agent Atlas MCP handlers', () => {
     const overview = await handlers.overview();
     expect(overview).toContain('# Atlas overview');
     expect(overview).toContain('## Major capabilities');
+    expect(overview).toContain('## Use MCP tools next');
+    expect(overview).toContain('`describe_entity`');
 
     const description = await handlers.describeEntity({
       id: 'workflow:create-context-pack',
@@ -38,6 +41,12 @@ describe('Agent Atlas MCP handlers', () => {
 
     const pathResult = await handlers.resolvePath({ path: 'packages/cli/src/index.ts' });
     expect(pathResult).toContain('component:cli-package');
+
+    const absolutePathResult = await handlers.resolvePath({
+      path: path.resolve('../../packages/cli/src/index.ts'),
+    });
+    expect(absolutePathResult).toContain('Path: `packages/cli/src/index.ts`');
+    expect(absolutePathResult).toContain('component:cli-package');
 
     const pack = await handlers.contextPack({
       task: 'change CLI path resolution in packages/cli/src/index.ts',
@@ -60,8 +69,60 @@ describe('Agent Atlas MCP handlers', () => {
     const pathResult = await handlers.resolvePath({ path: '' });
     expect(pathResult).toContain('# MCP error: Invalid path');
 
+    const outsidePathResult = await handlers.resolvePath({
+      path: path.resolve('../../../llm-orchestrator/package.json'),
+    });
+    expect(outsidePathResult).toContain('# MCP error: Path outside atlas root');
+    expect(outsidePathResult).toContain('repo-scoped Atlas MCP server root');
+
+    const unmatchedPathResult = await handlers.resolvePath({
+      path: 'scratch/untracked-missing.ts',
+    });
+    expect(unmatchedPathResult).toContain('## Hint');
+    expect(unmatchedPathResult).toContain('No Atlas entities matched this path');
+
+    const invalidKind = await handlers.listEntities({ kind: 'unknown' as never });
+    expect(invalidKind).toContain('# MCP error: Invalid entity kind');
+
+    const invalidRelation = await handlers.findRelated({
+      id: 'workflow:create-context-pack',
+      relation: 'unknown' as never,
+    });
+    expect(invalidRelation).toContain('# MCP error: Invalid relation type');
+
     const pack = await handlers.contextPack({ task: '' });
     expect(pack).toContain('# MCP error: Invalid task');
+  });
+
+  it('budgets MCP Markdown responses', async () => {
+    const handlers = createAtlasMcpHandlers({
+      atlasRoot: path.resolve('../..'),
+      profile: 'public',
+    });
+
+    const overview = await handlers.overview({ budget: 20 });
+    expect(overview).toContain('_Trimmed to budget._');
+
+    const list = await handlers.listEntities({ budget: 20 });
+    expect(list).toContain('_Trimmed to budget._');
+
+    const pathResult = await handlers.resolvePath({
+      path: 'packages/cli/src/index.ts',
+      budget: 20,
+    });
+    expect(pathResult).toContain('_Trimmed to budget._');
+
+    const related = await handlers.findRelated({
+      id: 'workflow:create-context-pack',
+      budget: 20,
+    });
+    expect(related).toContain('_Trimmed to budget._');
+
+    const pack = await handlers.contextPack({
+      task: 'change CLI path resolution in packages/cli/src/index.ts',
+      budget: 20,
+    });
+    expect(pack).toContain('_Trimmed to budget._');
   });
 
   it('reads atlas resource URIs', async () => {
@@ -102,6 +163,13 @@ describe('Agent Atlas MCP handlers', () => {
           'context_pack',
         ]),
       );
+      const listEntitiesTool = tools.tools.find((tool) => tool.name === 'list_entities');
+      expect(JSON.stringify(listEntitiesTool?.inputSchema)).toContain('"domain"');
+      expect(JSON.stringify(listEntitiesTool?.inputSchema)).toContain('"test-scope"');
+
+      const findRelatedTool = tools.tools.find((tool) => tool.name === 'find_related');
+      expect(JSON.stringify(findRelatedTool?.inputSchema)).toContain('"part-of"');
+      expect(JSON.stringify(findRelatedTool?.inputSchema)).toContain('"tested-by"');
 
       const resourceTemplates = await client.listResourceTemplates();
       expect(resourceTemplates.resourceTemplates.map((resource) => resource.uriTemplate)).toEqual(
@@ -121,6 +189,11 @@ describe('Agent Atlas MCP handlers', () => {
     }
 
     expect(server.isConnected()).toBe(false);
+  });
+
+  it('documents the overview tool in the package README', async () => {
+    const readme = await readFile(path.resolve('README.md'), 'utf8');
+    expect(readme).toContain('- `atlas_overview`');
   });
 
   it('smoke-tests resolve_path, context_pack, and read-only behavior', async () => {

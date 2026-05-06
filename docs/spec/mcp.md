@@ -13,6 +13,10 @@ atlas://path/{repo-relative-path}
 atlas://context-pack?task=...&budget=...
 ```
 
+Resource templates are read-only convenience surfaces for MCP hosts that prefer
+URI reads. Most LLM agents should use the tools first because tool schemas expose
+the expected inputs more clearly.
+
 ## Tools
 
 Implemented tools:
@@ -21,9 +25,10 @@ Implemented tools:
 
 Inputs:
 
-- `kind?`
+- `kind?`: one of the Atlas entity kinds from `docs/spec/entities.md`
 - `query?`
 - `profile?`
+- `budget?`
 
 Returns compact entity summaries.
 
@@ -32,10 +37,11 @@ Returns compact entity summaries.
 Inputs:
 
 - `profile?`
+- `budget?`
 
 Returns an overview-first map of domains, workflows, implementation surfaces,
-documents, tests, and drill-down commands. `atlas://root` returns this same
-orientation view.
+documents, tests, and MCP tool drill-down guidance. `atlas://root` returns this
+same orientation view.
 
 ### `describe_entity`
 
@@ -54,17 +60,23 @@ Inputs:
 
 - `path`
 - `profile?`
+- `depth?`
+- `budget?`
 
 Returns owning component(s), workflows, domains, docs, resources, and verification scopes.
+Repo-relative paths are preferred. Absolute paths are accepted only when they are
+inside the configured atlas root; outside-root paths return a scoped-server error
+so agents do not mistake a wrong server for missing Atlas coverage.
 
 ### `find_related`
 
 Inputs:
 
 - `id`
-- `relation?`
+- `relation?`: one of the relation types from `docs/spec/relations.md`
 - `depth?`
 - `profile?`
+- `budget?`
 
 Returns graph neighborhood.
 
@@ -77,6 +89,10 @@ Inputs:
 - `profile?`
 
 Returns task-specific context pack.
+
+All Markdown-returning tools accept or honor a positive integer `budget` where
+available. The budget is approximate and is applied to MCP output size so hosts
+can request compact responses.
 
 ## Smoke test
 

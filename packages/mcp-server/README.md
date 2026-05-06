@@ -11,11 +11,21 @@ Resources:
 
 Tools:
 
+- `atlas_overview`
 - `list_entities`
 - `describe_entity`
 - `resolve_path`
 - `find_related`
 - `context_pack`
+
+Most MCP agents should start with tools rather than resource templates:
+
+- Use `atlas_overview` for initial orientation.
+- Use `resolve_path` when starting from a file path.
+- Use `context_pack` for broad or multi-seam tasks.
+
+The resource templates expose the same read-only context for hosts that prefer
+URI reads, but they are secondary to the tools for normal agent workflows.
 
 Do not add write tools until the security model is documented and tested. Humanity has enough footguns.
 

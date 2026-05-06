@@ -499,10 +499,14 @@ async function listGitIndexedFiles(rootPath: string): Promise<string[]> {
       cwd: rootPath,
       maxBuffer: 10 * 1024 * 1024,
     });
-    return stdout
-      .split(/\r?\n/)
-      .map((line) => normalizePath(line.trim()))
-      .filter(Boolean);
+    return [
+      ...new Set(
+        stdout
+          .split(/\r?\n/)
+          .map((line) => normalizePath(line.trim()))
+          .filter(Boolean),
+      ),
+    ];
   } catch {
     return [];
   }

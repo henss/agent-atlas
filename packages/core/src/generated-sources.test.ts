@@ -146,6 +146,22 @@ profile: private
     expect(ids).not.toContain('document:generated.scratch');
   });
 
+  it('deduplicates modified tracked files from git index discovery', async () => {
+    const root = await makeFixtureRepo();
+    await execFileAsync('git', ['init'], { cwd: root });
+    await mkdir(path.join(root, 'src'), { recursive: true });
+    await writeFile(path.join(root, 'package.json'), JSON.stringify({ name: 'fixture-root' }), 'utf8');
+    await writeFile(path.join(root, 'src', 'index.test.ts'), 'test("first", () => {});\n', 'utf8');
+    await execFileAsync('git', ['add', 'package.json', 'src/index.test.ts'], { cwd: root });
+    await writeFile(path.join(root, 'src', 'index.test.ts'), 'test("changed", () => {});\n', 'utf8');
+
+    const result = await loadGeneratedSourceEntities(root);
+    const tests = result.entities.find((entity) => entity.id === 'test-scope:generated.src');
+
+    expect(tests?.summary).toBe('1 discovered test file under src.');
+    expect(tests?.code?.paths).toEqual(['src/index.test.ts']);
+  });
+
   it('lets manual overlays enrich generated entities without overriding generated facts', () => {
     const generated: AtlasEntity = {
       id: 'interface:package-script.root.test',
