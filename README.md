@@ -2,7 +2,7 @@
 
 # Agent Atlas
 
-Agent Atlas is an agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
+Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 
 ## Quick Orientation
 
@@ -14,17 +14,30 @@ Agent Atlas is an agent Atlas is a typed context graph and traversal toolkit for
 
 ## What This Repo Does
 
-- Checks public, private, and company profile outputs for policy violations, private markers, restricted URI schemes, and generated-doc leaks.
-- Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
-- Evolves entity fields, relation types, validation behavior, and schema documentation together.
 - Provides read-only MCP resources, tools, smoke tests, deployment notes, and safety assertions for listing entities, describing graph context, resolving paths, finding related entities, and creating context packs.
+- Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
 - Produces compact generated Markdown views and optional root READMEs from canonical atlas YAML.
+- Records local usage receipts and evaluates context-pack selection against completed sessions without adding hosted telemetry.
+- Evolves entity fields, relation types, validation behavior, and schema documentation together.
 - Runs policy-driven maintenance, stale-reference diagnostics, generated Markdown checks, and incremental card suggestions so canonical YAML and generated docs stay aligned.
 
 ## Normal Use
 
-- Use `pnpm orch <command>` for the repo-supported workflows listed in the command groups below.
+- Use `atlas <command>` for the repo-supported workflows listed in the command groups below.
 - Verify meaningful changes with `pnpm test` to repo-local verification candidate.
+
+## Common Entry Points
+
+| Task | Command |
+| --- | --- |
+| Build a task-focused context pack. | `atlas context-pack` |
+| Resolve a file path to atlas owners. | `atlas resolve-path` |
+| Build a global registry context pack. | `atlas global context-pack` |
+| Run MCP smoke tests. | `atlas mcp smoke-test` |
+| Inspect the atlas graph overview. | `atlas overview` |
+| Check local Agent Atlas setup. | `atlas doctor` |
+| Validate a global Atlas registry. | `atlas global validate` |
+| Validate atlas metadata. | `atlas validate` |
 
 ## Core Idea
 

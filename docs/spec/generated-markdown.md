@@ -102,6 +102,10 @@ project-specific prose:
   or CLI command-group summaries when workflows are unavailable.
 - `Normal Use` from startup commands, CLI command groups, and verification
   commands while leaving detailed agent rules to `AGENTS.md`.
+- `Common Entry Points` from generated CLI command metadata such as
+  `importance`, `lifecycle`, `audience`, and `tasks`. Commander-backed CLIs can
+  attach this metadata near command definitions; otherwise Agent Atlas infers it
+  from command names, groups, summaries, and descriptions.
 - `CLI` from generated command groups and command-reference links.
 - `Where Things Live` from visible entity paths rooted in canonical directories
   as `.agent-atlas/`, `docs/agents/`, `docs/generated/`, `registry/`,

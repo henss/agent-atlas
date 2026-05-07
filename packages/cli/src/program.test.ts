@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Command } from 'commander';
 
-import { extractCommanderCliCommands, renderCliReferenceMarkdown } from '../../core/src/generated-cli.js';
+import { extractCommanderCliCommands, renderCliReferenceMarkdown, withAtlasCommandMetadata } from '../../core/src/generated-cli.js';
 import { createAtlasCliProgram } from './program.js';
 
 describe('Commander-derived Atlas CLI catalog', () => {
@@ -32,7 +32,13 @@ describe('Commander-derived Atlas CLI catalog', () => {
     });
     expect(contextPack?.arguments.map((argument) => argument.name)).toContain('task');
     expect(contextPack?.options.map((option) => option.flags)).toContain('--budget <tokens>');
+    expect(contextPack?.metadata).toMatchObject({
+      importance: 'primary',
+      lifecycle: ['orient'],
+      tasks: ['build a task-focused context pack'],
+    });
     expect(generateMarkdown?.entityId).toBe('interface:atlas-cli.generate-markdown');
+    expect(generateMarkdown?.metadata.lifecycle).toContain('maintain');
     expect(records.some((record) => record.id === 'atlas-cli.help')).toBe(false);
   });
 
@@ -52,7 +58,47 @@ describe('Commander-derived Atlas CLI catalog', () => {
     expect(markdown).toContain('# CLI Command Reference');
     expect(markdown).toContain('### `atlas validate');
     expect(markdown).toContain('### `atlas cli docs generate');
+    expect(markdown).toContain('Relevance: `common`; lifecycle: `verify`');
     expect(markdown).toContain('Options:');
+  });
+
+  it('extracts explicit Atlas metadata attached to Commander definitions', () => {
+    const program = new Command()
+      .name('example')
+      .exitOverride();
+    program.addCommand(
+      withAtlasCommandMetadata(
+        new Command('project:status')
+          .summary('Inspect project state.')
+          .description('Reports current project state for humans and agents.')
+          .option('--json', 'Print machine-readable JSON output.'),
+        {
+          importance: 'primary',
+          lifecycle: ['orient'],
+          audience: ['human', 'agent'],
+          tasks: ['inspect current project state'],
+          relatedDocs: ['docs/status.md'],
+        },
+      ),
+    );
+
+    const records = extractCommanderCliCommands(program, {
+      id: 'example-cli',
+      module: 'dist/program.js',
+      export: 'createProgram',
+      owner_component: 'component:cli-package',
+      command_id_prefix: 'example-cli',
+      cliName: 'example',
+      defaultVisibility: 'public',
+    });
+
+    expect(records[0]?.metadata).toEqual({
+      importance: 'primary',
+      lifecycle: ['orient'],
+      audience: ['human', 'agent'],
+      tasks: ['inspect current project state'],
+      relatedDocs: ['docs/status.md'],
+    });
   });
 
   it('extracts Commander group summaries from non-executable group commands', () => {

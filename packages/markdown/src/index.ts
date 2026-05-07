@@ -44,6 +44,17 @@ interface CliInterfaceGroup {
   title: string;
   description?: string;
   commands: string[];
+  items: CliInterfaceItem[];
+}
+
+interface CliInterfaceItem {
+  label: string;
+  command: string;
+  summary: string;
+  importance?: string;
+  lifecycle: string[];
+  audience: string[];
+  tasks: string[];
 }
 
 interface RepositoryReadmeMetadata {
@@ -169,6 +180,7 @@ export function renderRepositoryReadme(
 
   appendGeneratedOverviewSection(lines, readmeMetadata, repository, workflows, components, cliGroups);
   appendNormalUseSection(lines, readmeMetadata, sessionStart, cliGroups, tests, commands);
+  appendCommonEntryPointsSection(lines, cliGroups);
   appendConfiguredSections(lines, readmeMetadata.sections);
   appendReadmeTextSection(lines, 'Current Truth Order', readmeMetadata.current_truth_order);
   appendCliSection(lines, readmeMetadata.cli, cliReference, cliGroups);
@@ -627,7 +639,11 @@ function collectReadmeCliInterfaces(
 
 function humanRepositorySummary(repository: AtlasEntity | undefined): string {
   const title = repository?.title ?? 'This repository';
-  const summary = summaryFragment(repository?.summary ?? 'the capabilities described below');
+  const rawSummary = repository?.summary?.trim();
+  if (rawSummary && new RegExp(`^${escapeRegExp(title)}\\s+is\\b`, 'i').test(rawSummary)) {
+    return sentenceFromSummary(rawSummary);
+  }
+  const summary = summaryFragment(rawSummary ?? 'the capabilities described below');
   return `${title} is ${summaryWithArticle(summary)}.`;
 }
 
@@ -690,7 +706,8 @@ function appendNormalUseSection(
     items.push(`Start with \`${sessionStart.command}\`${sessionStart.purpose ? ` to ${lowercaseFirst(sessionStart.purpose)}` : ' for repo orientation'}.`);
   }
   if (cliGroups.length > 0) {
-    items.push('Use `pnpm orch <command>` for the repo-supported workflows listed in the command groups below.');
+    const cliInvocation = inferCliInvocation(cliGroups) ?? 'the repo CLI';
+    items.push(`Use \`${cliInvocation}${cliInvocation === 'the repo CLI' ? '' : ' <command>'}\` for the repo-supported workflows listed in the command groups below.`);
   }
   const verificationCommand =
     commands.find((command) => /\bverify:session\b/.test(command.command)) ??
@@ -747,6 +764,18 @@ function findSessionStartCommand(
   }
   const cliCommand = cliGroups.flatMap((group) => group.commands).find((command) => /session:start\b/.test(command));
   return cliCommand ? { command: cliCommand } : undefined;
+}
+
+function inferCliInvocation(cliGroups: CliInterfaceGroup[]): string | undefined {
+  const label = cliGroups.flatMap((group) => group.commands)[0];
+  if (!label) {
+    return undefined;
+  }
+  const parts = label.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return undefined;
+  }
+  return /^(pnpm|npm|yarn|bun)$/.test(parts[0]) && parts[1] ? `${parts[0]} ${parts[1]}` : parts[0];
 }
 
 function collectDefaultDurableState(entities: AtlasEntity[]): ReadmePathItem[] | undefined {
@@ -813,6 +842,10 @@ function preferredIndex(order: string[], value: string): number {
 
 function lowercaseFirst(value: string): string {
   return value.length > 0 ? `${value.charAt(0).toLowerCase()}${value.slice(1).replace(/\.$/, '')}` : value;
+}
+
+function uppercaseFirst(value: string): string {
+  return value.length > 0 ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : value;
 }
 
 function summaryFragment(value: string): string {
@@ -882,6 +915,18 @@ function appendConfiguredSections(lines: string[], sections: ReadmeSection[] | u
   }
 }
 
+function appendCommonEntryPointsSection(lines: string[], cliGroups: CliInterfaceGroup[]): void {
+  const entryPoints = rankCliEntryPoints(cliGroups).slice(0, 8);
+  if (entryPoints.length === 0) {
+    return;
+  }
+
+  lines.push('', '## Common Entry Points', '', '| Task | Command |', '| --- | --- |');
+  for (const item of entryPoints) {
+    lines.push(`| ${escapeMarkdownTableCell(commandTaskLabel(item))} | \`${item.label}\` |`);
+  }
+}
+
 function appendCliSection(
   lines: string[],
   cliMetadata: ReadmeCliMetadata | undefined,
@@ -932,6 +977,10 @@ function githubHeadingAnchor(title: string): string {
 
 function escapeMarkdownTableCell(value: string): string {
   return value.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function renderReadmeList(items: string[]): string[] {
@@ -1028,16 +1077,25 @@ function findCliReference(documents: AtlasEntity[]): ReadmeLinkItem | undefined 
 }
 
 function groupCliInterfaces(interfaces: AtlasEntity[]): CliInterfaceGroup[] {
-  const groups = new Map<string, { description?: string; commands: string[] }>();
+  const groups = new Map<string, { description?: string; commands: string[]; items: CliInterfaceItem[] }>();
   for (const entity of interfaces) {
     const cli = isRecord(entity.metadata?.cli) ? entity.metadata.cli : undefined;
     const cliName = readString(cli?.cli_name);
     const command = readString(cli?.command);
     const label = [cliName, command].filter(Boolean).join(' ') || entity.title;
     const group = normalizeCliGroupTitle(readString(cli?.group) ?? 'CLI Commands');
-    const current = groups.get(group) ?? { commands: [] };
+    const current = groups.get(group) ?? { commands: [], items: [] };
     current.description = current.description ?? readString(cli?.group_description) ?? readString(cli?.group_summary);
     current.commands.push(label);
+    current.items.push({
+      label,
+      command: command ?? label,
+      summary: readString(cli?.description) ?? entity.summary,
+      importance: readString(cli?.importance),
+      lifecycle: readStringList(cli?.lifecycle) ?? inferCliLifecycle(`${command ?? ''} ${group} ${entity.summary}`),
+      audience: readStringList(cli?.audience) ?? ['human', 'agent'],
+      tasks: readStringList(cli?.tasks) ?? [entity.summary],
+    });
     groups.set(group, current);
   }
 
@@ -1047,6 +1105,7 @@ function groupCliInterfaces(interfaces: AtlasEntity[]): CliInterfaceGroup[] {
       title,
       description: group.description,
       commands: [...new Set(group.commands)].sort((left, right) => left.localeCompare(right)),
+      items: dedupeCliItems(group.items).sort((left, right) => left.label.localeCompare(right.label)),
     }));
 }
 
@@ -1073,6 +1132,84 @@ function groupCliInterfaceLinks(
       description: group.description,
       items: group.items.sort((left, right) => left.label.localeCompare(right.label)),
     }));
+}
+
+function rankCliEntryPoints(groups: CliInterfaceGroup[]): CliInterfaceItem[] {
+  return groups
+    .flatMap((group) => group.items.map((item) => ({ ...item, groupTitle: group.title })))
+    .filter((item) => item.importance !== 'internal')
+    .sort((left, right) => cliEntryPointScore(right) - cliEntryPointScore(left) || left.label.localeCompare(right.label));
+}
+
+function cliEntryPointScore(item: CliInterfaceItem & { groupTitle?: string }): number {
+  const text = `${item.command} ${item.label} ${item.groupTitle ?? ''} ${item.summary}`.toLowerCase();
+  const commandText = `${item.command} ${item.label}`.toLowerCase();
+  const importanceScore: Record<string, number> = {
+    primary: 100,
+    common: 80,
+    specialist: 20,
+    maintenance: 10,
+    internal: -100,
+  };
+  let score = importanceScore[item.importance ?? ''] ?? 40;
+  if (item.lifecycle.includes('orient')) score += 18;
+  if (item.lifecycle.includes('verify')) score += 14;
+  if (item.lifecycle.includes('plan')) score += 10;
+  if (item.lifecycle.includes('maintain')) score -= 8;
+  if (/(^|\s)(session:start|context-pack|resolve-path|project:status|verify:session)(\s|$)/.test(commandText)) score += 30;
+  if (/\b(overview|doctor|validate|maintain:check|maintain check)\b/.test(commandText)) score += 12;
+  if (/\b(generate|docs|migrate|benchmark|proposal|apply|fix|record|ingest)\b/.test(text)) score -= 16;
+  return score;
+}
+
+function commandTaskLabel(item: CliInterfaceItem): string {
+  const task = item.tasks[0] ?? item.summary;
+  const normalizedTask = task.replace(/^to\s+/i, '');
+  const label = isCommandLikeTask(normalizedTask, item.command)
+    ? humanizeCommandTask(item.command)
+    : normalizedTask;
+  return sentenceFromSummary(uppercaseFirst(label));
+}
+
+function isCommandLikeTask(task: string, command: string): boolean {
+  const normalizedTask = task.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const normalizedCommand = command.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return normalizedTask.length > 0 && normalizedTask === normalizedCommand;
+}
+
+function humanizeCommandTask(command: string): string {
+  const tokens = command.toLowerCase().split(/[^a-z0-9]+/g).filter(Boolean);
+  if (tokens.length === 0) {
+    return 'Run command';
+  }
+  if (tokens[0] === 'session' && tokens[1] === 'start') return 'start a repo session';
+  if (tokens[0] === 'verify' && tokens[1] === 'session') return 'run session verification';
+  if (tokens[0] === 'project' && tokens[1] === 'status') return 'read project status';
+  if (tokens.at(-1) === 'record') return `record ${tokens.slice(0, -1).join(' ')}`;
+  if (tokens[0] === 'check' || tokens.at(-1) === 'check') return `check ${tokens.filter((token) => token !== 'check').join(' ')}`;
+  if (tokens[0] === 'sync' || tokens.at(-1) === 'sync') return `sync ${tokens.filter((token) => token !== 'sync').join(' ')}`;
+  if (tokens[0] === 'create' || tokens.at(-1) === 'create') return `create ${tokens.filter((token) => token !== 'create').join(' ')}`;
+  if (tokens[0] === 'launch' || tokens.at(-1) === 'launch') return `launch ${tokens.filter((token) => token !== 'launch').join(' ')}`;
+  return `run ${tokens.join(' ')}`;
+}
+
+function dedupeCliItems(items: CliInterfaceItem[]): CliInterfaceItem[] {
+  const byLabel = new Map<string, CliInterfaceItem>();
+  for (const item of items) {
+    byLabel.set(item.label, item);
+  }
+  return [...byLabel.values()];
+}
+
+function inferCliLifecycle(text: string): string[] {
+  const normalized = text.toLowerCase();
+  const lifecycle: string[] = [];
+  if (/\b(status|show|list|overview|resolve|context|inspect|doctor|preview|diff|discover)\b/.test(normalized)) lifecycle.push('orient');
+  if (/\b(plan|proposal|propose|packet|contract)\b/.test(normalized)) lifecycle.push('plan');
+  if (/\b(start|run|launch|apply|create|record|sync|ingest|serve)\b/.test(normalized)) lifecycle.push('execute');
+  if (/\b(verify|validate|test|check|lint|smoke)\b/.test(normalized)) lifecycle.push('verify');
+  if (/\b(maintain|maintenance|generate|generated|docs|refresh|migrate|fix|benchmark|evaluate)\b/.test(normalized)) lifecycle.push('maintain');
+  return lifecycle.length > 0 ? [...new Set(lifecycle)] : ['execute'];
 }
 
 function normalizeCliGroupTitle(group: string): string {

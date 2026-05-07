@@ -40,6 +40,29 @@ export interface AtlasCliCommandArgument {
   variadic: boolean;
 }
 
+export type AtlasCommandImportance = 'primary' | 'common' | 'specialist' | 'maintenance' | 'internal';
+export type AtlasCommandLifecycle = 'orient' | 'plan' | 'execute' | 'verify' | 'maintain';
+export type AtlasCommandAudience = 'human' | 'agent' | 'automation';
+
+export interface AtlasCommandMetadata {
+  importance?: AtlasCommandImportance;
+  lifecycle?: AtlasCommandLifecycle[];
+  audience?: AtlasCommandAudience[];
+  tasks?: string[];
+  relatedDocs?: string[];
+}
+
+export const ATLAS_COMMAND_METADATA = Symbol.for('agent-atlas.commandMetadata');
+
+export function withAtlasCommandMetadata<T extends object>(command: T, metadata: AtlasCommandMetadata): T {
+  Object.defineProperty(command, ATLAS_COMMAND_METADATA, {
+    value: normalizeAtlasCommandMetadata(metadata),
+    enumerable: false,
+    configurable: true,
+  });
+  return command;
+}
+
 export interface AtlasCliCommandRecord {
   id: string;
   entityId: AtlasEntityId;
@@ -58,6 +81,7 @@ export interface AtlasCliCommandRecord {
   visibility: AtlasVisibility;
   ownerComponentId: AtlasEntityId;
   workflowId?: AtlasEntityId;
+  metadata: AtlasCommandMetadata;
 }
 
 export interface GeneratedCliLoadResult {
@@ -156,6 +180,8 @@ export function extractCommanderCliCommands(
       const entityId = `interface:${source.command_id_prefix}.${slugify(commandId)}` as AtlasEntityId;
       const group = readHelpGroup(command) ?? `${commandPath[0]} commands`;
       const groupInfo = groupMetadata.get(normalizeGroupTitle(group));
+      const summary = readSummary(command);
+      const description = readDescription(command);
       records.push({
         id: `${source.command_id_prefix}.${slugify(commandId)}`,
         entityId,
@@ -163,8 +189,8 @@ export function extractCommanderCliCommands(
         name,
         cliName,
         usage: renderUsage(cliName, commandPath, command),
-        summary: readSummary(command),
-        description: readDescription(command),
+        summary,
+        description,
         aliases: readAliases(command),
         options: readOptions(command),
         arguments: readArguments(command),
@@ -174,6 +200,13 @@ export function extractCommanderCliCommands(
         visibility: defaultVisibility,
         ownerComponentId: source.owner_component,
         workflowId: source.workflow_relations?.[commandPath.join(' ')],
+        metadata: inferAtlasCommandMetadata({
+          commandPath,
+          group,
+          summary,
+          description,
+          explicit: readAtlasCommandMetadata(command),
+        }),
       });
     }
 
@@ -210,6 +243,10 @@ export function renderCliReferenceMarkdown(records: AtlasCliCommandRecord[]): st
     if (record.aliases.length > 0) {
       lines.push(`Aliases: ${record.aliases.map((alias) => `\`${alias}\``).join(', ')}`, '');
     }
+    lines.push(
+      `Relevance: \`${record.metadata.importance ?? 'specialist'}\`${record.metadata.lifecycle?.length ? `; lifecycle: ${record.metadata.lifecycle.map((item) => `\`${item}\``).join(', ')}` : ''}`,
+      '',
+    );
     if (record.arguments.length > 0) {
       lines.push('Arguments:');
       for (const argument of record.arguments) {
@@ -258,9 +295,125 @@ function commandRecordToEntity(record: AtlasCliCommandRecord): AtlasEntity {
         aliases: record.aliases,
         arguments: record.arguments,
         options: record.options,
+        importance: record.metadata.importance,
+        lifecycle: record.metadata.lifecycle,
+        audience: record.metadata.audience,
+        tasks: record.metadata.tasks,
+        related_docs: record.metadata.relatedDocs,
         generated: true,
       },
     },
+  };
+}
+
+function readAtlasCommandMetadata(command: CommanderLike): AtlasCommandMetadata | undefined {
+  const value = (command as unknown as Record<PropertyKey, unknown>)[ATLAS_COMMAND_METADATA];
+  return normalizeAtlasCommandMetadata(value);
+}
+
+function inferAtlasCommandMetadata(input: {
+  commandPath: string[];
+  group: string;
+  summary: string;
+  description: string;
+  explicit?: AtlasCommandMetadata;
+}): AtlasCommandMetadata {
+  const command = input.commandPath.join(' ');
+  const text = `${command} ${input.group} ${input.summary} ${input.description}`.toLowerCase();
+  const lifecycle = input.explicit?.lifecycle ?? inferLifecycle(text);
+  const importance = input.explicit?.importance ?? inferImportance(command, input.group, text, lifecycle);
+  const audience = input.explicit?.audience ?? inferAudience(importance, lifecycle);
+  const tasks = input.explicit?.tasks ?? [normalizeTaskSummary(input.summary)].filter((item) => item.length > 0);
+  const metadata = normalizeAtlasCommandMetadata({
+    ...input.explicit,
+    importance,
+    lifecycle,
+    audience,
+    tasks,
+  });
+  if (input.explicit?.relatedDocs?.length) {
+    metadata.relatedDocs = input.explicit.relatedDocs;
+  }
+  return metadata;
+}
+
+function inferLifecycle(text: string): AtlasCommandLifecycle[] {
+  const lifecycle: AtlasCommandLifecycle[] = [];
+  if (/\b(status|show|list|overview|resolve|context|inspect|doctor|preview|diff|discover)\b/.test(text)) {
+    lifecycle.push('orient');
+  }
+  if (/\b(plan|proposal|propose|packet|contract)\b/.test(text)) {
+    lifecycle.push('plan');
+  }
+  if (/\b(start|run|launch|apply|create|record|sync|ingest|serve)\b/.test(text)) {
+    lifecycle.push('execute');
+  }
+  if (/\b(verify|validate|test|check|lint|smoke)\b/.test(text)) {
+    lifecycle.push('verify');
+  }
+  if (/\b(maintain|maintenance|generate|generated|docs|refresh|migrate|fix|benchmark|evaluate)\b/.test(text)) {
+    lifecycle.push('maintain');
+  }
+  return lifecycle.length > 0 ? [...new Set(lifecycle)] : ['execute'];
+}
+
+function inferImportance(
+  command: string,
+  group: string,
+  text: string,
+  lifecycle: AtlasCommandLifecycle[],
+): AtlasCommandImportance {
+  const normalizedCommand = command.replace(/\s+/g, ':');
+  if (/\b(internal|hidden|debug)\b/.test(text)) {
+    return 'internal';
+  }
+  if (/^(session:start|context-pack|resolve-path|project:status|verify:session)$/.test(normalizedCommand)) {
+    return 'primary';
+  }
+  if (/^(validate|overview|doctor|maintain:check|maintain:fix)$/.test(normalizedCommand)) {
+    return 'common';
+  }
+  if (/\b(maintenance|generated artifact|migration|benchmark|evaluation)\b/i.test(group)) {
+    return lifecycle.includes('orient') || lifecycle.includes('verify') ? 'common' : 'maintenance';
+  }
+  if (lifecycle.includes('orient') || lifecycle.includes('verify')) {
+    return 'common';
+  }
+  return 'specialist';
+}
+
+function inferAudience(
+  importance: AtlasCommandImportance,
+  lifecycle: AtlasCommandLifecycle[],
+): AtlasCommandAudience[] {
+  if (importance === 'internal') {
+    return ['automation'];
+  }
+  if (lifecycle.includes('maintain') && !lifecycle.includes('orient')) {
+    return ['agent', 'automation'];
+  }
+  return ['human', 'agent'];
+}
+
+function normalizeTaskSummary(value: string): string {
+  return value.trim().replace(/\.$/, '');
+}
+
+function normalizeAtlasCommandMetadata(value: unknown): AtlasCommandMetadata {
+  if (!isRecord(value)) {
+    return {};
+  }
+  const importance = readCommandImportance(value.importance);
+  const lifecycle = readCommandLifecycleList(value.lifecycle);
+  const audience = readCommandAudienceList(value.audience);
+  const tasks = readStringList(value.tasks);
+  const relatedDocs = readStringList(value.relatedDocs ?? value.related_docs);
+  return {
+    ...(importance ? { importance } : {}),
+    ...(lifecycle?.length ? { lifecycle } : {}),
+    ...(audience?.length ? { audience } : {}),
+    ...(tasks?.length ? { tasks } : {}),
+    ...(relatedDocs?.length ? { relatedDocs } : {}),
   };
 }
 
@@ -455,6 +608,44 @@ function readVisibility(value: unknown): AtlasVisibility | undefined {
   return value === 'public' || value === 'private' || value === 'internal' || value === 'restricted'
     ? value
     : undefined;
+}
+
+function readCommandImportance(value: unknown): AtlasCommandImportance | undefined {
+  return value === 'primary' ||
+    value === 'common' ||
+    value === 'specialist' ||
+    value === 'maintenance' ||
+    value === 'internal'
+    ? value
+    : undefined;
+}
+
+function readCommandLifecycleList(value: unknown): AtlasCommandLifecycle[] | undefined {
+  const allowed = new Set<AtlasCommandLifecycle>(['orient', 'plan', 'execute', 'verify', 'maintain']);
+  return readTypedStringList(value, allowed);
+}
+
+function readCommandAudienceList(value: unknown): AtlasCommandAudience[] | undefined {
+  const allowed = new Set<AtlasCommandAudience>(['human', 'agent', 'automation']);
+  return readTypedStringList(value, allowed);
+}
+
+function readTypedStringList<T extends string>(value: unknown, allowed: Set<T>): T[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+  const items = value.filter((item): item is T => typeof item === 'string' && allowed.has(item as T));
+  const unique = [...new Set(items)];
+  return unique.length > 0 ? unique : undefined;
+}
+
+function readStringList(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+  const items = value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+  const unique = [...new Set(items.map((item) => item.trim()))];
+  return unique.length > 0 ? unique : undefined;
 }
 
 function readString(value: unknown, fallback: string | undefined): string {

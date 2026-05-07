@@ -1,5 +1,19 @@
 import { Command } from 'commander';
 
+type AtlasCommandImportance = 'primary' | 'common' | 'specialist' | 'maintenance' | 'internal';
+type AtlasCommandLifecycle = 'orient' | 'plan' | 'execute' | 'verify' | 'maintain';
+type AtlasCommandAudience = 'human' | 'agent' | 'automation';
+
+interface AtlasCommandMetadata {
+  importance?: AtlasCommandImportance;
+  lifecycle?: AtlasCommandLifecycle[];
+  audience?: AtlasCommandAudience[];
+  tasks?: string[];
+  relatedDocs?: string[];
+}
+
+const ATLAS_COMMAND_METADATA = Symbol.for('agent-atlas.commandMetadata');
+
 interface AtlasCliCommandDefinition {
   path: string[];
   summary: string;
@@ -8,6 +22,7 @@ interface AtlasCliCommandDefinition {
   arguments?: string[];
   options?: Array<{ flags: string; description: string }>;
   group?: string;
+  atlas?: AtlasCommandMetadata;
 }
 
 const COMMON_ROOT_OPTIONS = [
@@ -25,6 +40,7 @@ const COMMANDS: AtlasCliCommandDefinition[] = [
     arguments: ['[path]'],
     options: COMMON_ROOT_OPTIONS,
     group: 'Graph Commands',
+    atlas: { importance: 'common', lifecycle: ['verify'], tasks: ['validate atlas metadata'] },
   },
   {
     path: ['overview'],
@@ -34,6 +50,7 @@ const COMMANDS: AtlasCliCommandDefinition[] = [
     arguments: ['[path]'],
     options: COMMON_ROOT_OPTIONS,
     group: 'Graph Commands',
+    atlas: { importance: 'common', lifecycle: ['orient'], tasks: ['inspect the atlas graph overview'] },
   },
   {
     path: ['show'],
@@ -65,6 +82,7 @@ const COMMANDS: AtlasCliCommandDefinition[] = [
     arguments: ['<file-path>', '[path]'],
     options: [...COMMON_ROOT_OPTIONS, { flags: '--depth <n>', description: 'Related-context traversal depth.' }],
     group: 'Graph Commands',
+    atlas: { importance: 'primary', lifecycle: ['orient'], tasks: ['resolve a file path to atlas owners'] },
   },
   {
     path: ['context-pack'],
@@ -78,6 +96,7 @@ const COMMANDS: AtlasCliCommandDefinition[] = [
       { flags: '--deterministic', description: 'Use deterministic selection.' },
     ],
     group: 'Graph Commands',
+    atlas: { importance: 'primary', lifecycle: ['orient'], tasks: ['build a task-focused context pack'] },
   },
   {
     path: ['generate', 'markdown'],
@@ -146,6 +165,7 @@ const COMMANDS: AtlasCliCommandDefinition[] = [
     arguments: ['[path]'],
     options: [...COMMON_ROOT_OPTIONS, { flags: '--policy <path>', description: 'Maintenance policy path.' }],
     group: 'Maintenance Commands',
+    atlas: { importance: 'common', lifecycle: ['verify', 'maintain'], tasks: ['check Atlas maintenance state'] },
   },
   {
     path: ['maintain', 'fix'],
@@ -155,6 +175,7 @@ const COMMANDS: AtlasCliCommandDefinition[] = [
     arguments: ['[path]'],
     options: [...COMMON_ROOT_OPTIONS, { flags: '--policy <path>', description: 'Maintenance policy path.' }],
     group: 'Maintenance Commands',
+    atlas: { importance: 'common', lifecycle: ['maintain'], tasks: ['refresh maintained Atlas surfaces'] },
   },
   {
     path: ['maintain', 'agent-instructions'],
@@ -268,6 +289,7 @@ const COMMANDS: AtlasCliCommandDefinition[] = [
     arguments: ['[path]'],
     options: COMMON_ROOT_OPTIONS,
     group: 'Evaluation Commands',
+    atlas: { importance: 'common', lifecycle: ['orient', 'verify'], tasks: ['check local Agent Atlas setup'] },
   },
   {
     path: ['boundary-check'],
@@ -436,7 +458,20 @@ function addCommandDefinition(program: Command, definition: AtlasCliCommandDefin
     leaf.option(option.flags, option.description);
   }
 
+  if (definition.atlas) {
+    withAtlasCommandMetadata(leaf, definition.atlas);
+  }
+
   parent.addCommand(leaf);
+}
+
+function withAtlasCommandMetadata<T extends object>(command: T, metadata: AtlasCommandMetadata): T {
+  Object.defineProperty(command, ATLAS_COMMAND_METADATA, {
+    value: metadata,
+    enumerable: false,
+    configurable: true,
+  });
+  return command;
 }
 
 function ensureSubcommand(parent: Command, name: string): Command {

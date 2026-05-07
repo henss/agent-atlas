@@ -10,6 +10,8 @@ Benchmark Atlas context-pack selection.
 
 Runs context-pack benchmark iterations for the atlas graph.
 
+Relevance: `common`; lifecycle: `orient`, `maintain`
+
 Arguments:
 - `path`
 
@@ -24,6 +26,8 @@ Options:
 Check profile boundary safety.
 
 Scans atlas metadata and generated docs for public/private boundary issues and secret-shaped values.
+
+Relevance: `common`; lifecycle: `verify`, `maintain`
 
 Arguments:
 - `path`
@@ -41,6 +45,8 @@ Check local Agent Atlas setup.
 
 Reports CLI build state, package versions, supported commands, atlas input, generated docs, and MCP availability.
 
+Relevance: `common`; lifecycle: `orient`, `verify`
+
 Arguments:
 - `path`
 
@@ -54,6 +60,8 @@ Options:
 Evaluate Atlas usage evidence.
 
 Aggregates local usage receipts and reports recall and adoption evidence.
+
+Relevance: `maintenance`; lifecycle: `maintain`
 
 Arguments:
 - `path`
@@ -72,6 +80,8 @@ Options:
 Record local Atlas usage evidence.
 
 Writes a local usage receipt for context-pack, path-resolution, or fallback evidence.
+
+Relevance: `common`; lifecycle: `orient`, `execute`
 
 Arguments:
 - `task` (required)
@@ -96,6 +106,8 @@ Check the CLI command reference.
 
 Fails when the Commander-derived CLI reference is stale or missing.
 
+Relevance: `common`; lifecycle: `verify`, `maintain`
+
 Options:
 - `--output <path>` (value required) - Reference Markdown output path.
 
@@ -104,6 +116,8 @@ Options:
 Generate the CLI command reference.
 
 Writes the Commander-derived CLI reference Markdown.
+
+Relevance: `maintenance`; lifecycle: `maintain`
 
 Options:
 - `--output <path>` (value required) - Reference Markdown output path.
@@ -114,6 +128,8 @@ Options:
 Generate atlas Markdown views.
 
 Writes generated Markdown cards for the atlas graph and optionally checks for drift.
+
+Relevance: `maintenance`; lifecycle: `maintain`
 
 Arguments:
 - `path`
@@ -131,6 +147,8 @@ Check the source-derived Atlas reference.
 
 Fails when the source-derived reference is stale or missing.
 
+Relevance: `common`; lifecycle: `verify`, `maintain`
+
 Arguments:
 - `path`
 
@@ -144,6 +162,8 @@ Options:
 Generate the source-derived Atlas reference.
 
 Writes the reference for entities derived from package scripts, packages, tests, agent skills, docs, config, routes, and dependencies.
+
+Relevance: `maintenance`; lifecycle: `maintain`
 
 Arguments:
 - `path`
@@ -162,6 +182,8 @@ Build a global registry context pack.
 
 Selects task context across merged cross-repo Atlas imports.
 
+Relevance: `common`; lifecycle: `orient`
+
 Arguments:
 - `task` (required)
 - `path`
@@ -179,6 +201,8 @@ Generate global registry Markdown.
 
 Writes generated Markdown views for a merged global registry graph.
 
+Relevance: `specialist`; lifecycle: `maintain`
+
 Arguments:
 - `path`
 
@@ -195,6 +219,8 @@ List global Atlas registry entities.
 
 Prints entities from the merged cross-repo registry graph.
 
+Relevance: `common`; lifecycle: `orient`
+
 Arguments:
 - `path`
 
@@ -209,6 +235,8 @@ Print a global registry manifest.
 
 Renders a compact manifest for cross-repo registry imports.
 
+Relevance: `specialist`; lifecycle: `execute`
+
 Arguments:
 - `path`
 
@@ -222,6 +250,8 @@ Options:
 Validate a global Atlas registry.
 
 Loads registry imports and validates the merged cross-repo graph.
+
+Relevance: `common`; lifecycle: `verify`
 
 Arguments:
 - `path`
@@ -238,6 +268,8 @@ Options:
 Build a task-focused context pack.
 
 Selects task-relevant entities, source reads, external references, verification commands, and risk notes within a token budget.
+
+Relevance: `primary`; lifecycle: `orient`
 
 Arguments:
 - `task` (required)
@@ -256,6 +288,8 @@ Traverse nearby graph context.
 
 Walks relations around an entity for a bounded depth and optional relation filter.
 
+Relevance: `common`; lifecycle: `orient`
+
 Arguments:
 - `entity-id` (required)
 - `path`
@@ -273,6 +307,8 @@ Print an overview of the atlas graph.
 
 Renders the high-level domain, workflow, component, document, and verification map for a repository.
 
+Relevance: `common`; lifecycle: `orient`
+
 Arguments:
 - `path`
 
@@ -286,6 +322,8 @@ Options:
 Resolve a file path to atlas owners.
 
 Matches a source path against component paths and entrypoints, then returns relevant surrounding context.
+
+Relevance: `primary`; lifecycle: `orient`
 
 Arguments:
 - `file-path` (required)
@@ -303,6 +341,8 @@ Show one atlas entity.
 
 Prints one entity with incoming and outgoing relations.
 
+Relevance: `common`; lifecycle: `orient`
+
 Arguments:
 - `entity-id` (required)
 - `path`
@@ -317,6 +357,8 @@ Options:
 Validate atlas metadata.
 
 Loads atlas YAML, applies the selected profile, and reports schema, relation, and safety diagnostics.
+
+Relevance: `common`; lifecycle: `verify`
 
 Arguments:
 - `path`
@@ -333,6 +375,8 @@ Options:
 Run MCP smoke tests.
 
 Checks the read-only MCP path-resolution and context-pack tools against the atlas.
+
+Relevance: `common`; lifecycle: `orient`, `execute`, `verify`
 
 Arguments:
 - `path`
@@ -351,6 +395,8 @@ Start the local Atlas review UI.
 
 Serves the read-only local UI for graph browsing, diagnostics, path resolution, and context-pack previews.
 
+Relevance: `common`; lifecycle: `orient`, `execute`
+
 Arguments:
 - `path`
 
@@ -368,6 +414,8 @@ Report stale Atlas metadata and generated artifacts.
 
 Compares source files, atlas metadata, generated docs, README, and generated CLI reference for drift.
 
+Relevance: `common`; lifecycle: `orient`, `maintain`
+
 Arguments:
 - `path`
 
@@ -381,6 +429,8 @@ Options:
 Discover Atlas coverage gaps.
 
 Reports missing cards, misleading cards, broad-search fallback evidence, stale references, and under-modeled CLI capabilities.
+
+Relevance: `common`; lifecycle: `orient`, `maintain`
 
 Arguments:
 - `path`
@@ -400,6 +450,8 @@ Print maintenance instructions.
 
 Prints the effective maintenance policy as agent-facing instructions.
 
+Relevance: `maintenance`; lifecycle: `maintain`
+
 Arguments:
 - `path`
 
@@ -414,6 +466,8 @@ Options:
 Check Atlas maintenance state.
 
 Runs validation, optional boundary checks, metadata drift checks, generated docs checks, README checks, and generated CLI reference checks.
+
+Relevance: `common`; lifecycle: `verify`, `maintain`
 
 Arguments:
 - `path`
@@ -430,6 +484,8 @@ Refresh maintained Atlas surfaces.
 
 Applies allowed metadata fixes and regenerates configured docs, README, and CLI reference artifacts.
 
+Relevance: `common`; lifecycle: `maintain`
+
 Arguments:
 - `path`
 
@@ -445,6 +501,8 @@ Run Atlas metadata migrations.
 
 Reports or writes metadata migrations for a repository atlas.
 
+Relevance: `maintenance`; lifecycle: `execute`, `maintain`
+
 Arguments:
 - `path`
 
@@ -459,6 +517,8 @@ Apply selected Atlas proposal entities.
 
 Writes selected proposed card metadata into the atlas.
 
+Relevance: `maintenance`; lifecycle: `plan`, `execute`, `maintain`
+
 Arguments:
 - `proposal` (required)
 
@@ -471,6 +531,8 @@ Options:
 Validate an Atlas card proposal.
 
 Checks a proposal file before applying generated card metadata.
+
+Relevance: `common`; lifecycle: `plan`, `verify`, `maintain`
 
 Arguments:
 - `proposal` (required)
@@ -486,6 +548,8 @@ Generate card proposals from a gap report.
 
 Creates deterministic Atlas card proposals from a discovery report.
 
+Relevance: `maintenance`; lifecycle: `plan`, `maintain`
+
 Options:
 - `--report <file>` (value required) - Gap report JSON path.
 - `--output <dir>` (value required) - Proposal output directory.
@@ -498,6 +562,8 @@ Options:
 Suggest an atlas card for a file.
 
 Drafts a small component or test-scope card for a source file.
+
+Relevance: `common`; lifecycle: `verify`, `maintain`
 
 Options:
 - `--path <file>` (value required) - File path to cover.

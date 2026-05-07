@@ -220,6 +220,9 @@ describe('generateMarkdownViews', () => {
                 usage: 'example validate [--json]',
                 group: 'Validation Commands',
                 group_description: 'Commands for validating repository metadata and generated artifacts.',
+                importance: 'common',
+                lifecycle: ['verify'],
+                tasks: ['validate repository metadata'],
               },
             },
           },
@@ -250,6 +253,8 @@ describe('generateMarkdownViews', () => {
     expect(markdown).toContain('- [Agent Rules](AGENTS.md) - Agent guidance.');
     expect(markdown).toContain('- `registry/` - Registry data.');
     expect(markdown).toContain('## Operational Notes');
+    expect(markdown).toContain('## Common Entry Points');
+    expect(markdown).toContain('| Validate repository metadata. | `example validate` |');
     expect(markdown).toContain('## CLI');
     expect(markdown).toContain('- Use `example` for repository automation.');
     expect(markdown).toContain(
@@ -372,12 +377,14 @@ describe('generateMarkdownViews', () => {
     expect(markdown).toContain('- Turns current evidence into bounded work packets.');
     expect(markdown).toContain('## Normal Use');
     expect(markdown).toContain('- Start with `pnpm session:start` to start a normal repo session.');
-    expect(markdown).toContain('- Use `pnpm orch <command>` for the repo-supported workflows listed in the command groups below.');
+    expect(markdown).toContain('- Use `example <command>` for the repo-supported workflows listed in the command groups below.');
     expect(markdown).toContain('## Key Docs');
     expect(markdown).toContain('- [AGENTS.md](AGENTS.md) - Repo-local operating instructions and agent guidance.');
     expect(markdown).toContain('- [Docs Index](docs/index.md) - Documentation map and deeper docs entrypoint.');
     expect(markdown).toContain('## Where Things Live');
     expect(markdown).toContain('- `packages/` - Workspace packages and implementation surfaces.');
+    expect(markdown).toContain('## Common Entry Points');
+    expect(markdown).toContain('| Create packets. | `example packet:create` |');
     expect(markdown).toContain('| Packet Commands (1) | Commands for creating and routing work packets. | `example packet:create` |');
     expect(markdown).toContain('- `pnpm verify:session` - Run closeout verification.');
   });
