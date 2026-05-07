@@ -1236,7 +1236,9 @@ function groupCliInterfaceLinks(
     const group = normalizeCliGroupTitle(readString(cli?.group) ?? 'CLI Commands');
     const current = groups.get(group) ?? { items: [] };
     current.description = current.description ?? readString(cli?.group_description) ?? readString(cli?.group_summary);
-    current.items.push({ label, path: `${entitySlug(entity.id)}.md` });
+    if (!current.items.some((item) => item.label === label)) {
+      current.items.push({ label, path: `${entitySlug(entity.id)}.md` });
+    }
     groups.set(group, current);
   }
 

@@ -43,6 +43,56 @@ describe('generateMarkdownViews', () => {
     );
   });
 
+  it('deduplicates matching CLI command labels in interface indexes', () => {
+    const files = generateMarkdownViews(
+      {
+        rootPath: '.',
+        index: {
+          entitiesById: new Map(),
+          outgoingById: new Map(),
+          incomingById: new Map(),
+        },
+        diagnostics: [],
+        entities: [
+          {
+            id: 'interface:root.browser-status',
+            kind: 'interface',
+            title: 'pnpm orch browser:probe:status',
+            summary: 'Check browser status from the root CLI.',
+            visibility: 'public',
+            metadata: {
+              cli: {
+                cli_name: 'pnpm orch',
+                command: 'browser:probe:status',
+                group: 'Browser Commands',
+              },
+            },
+          },
+          {
+            id: 'interface:package.browser-status',
+            kind: 'interface',
+            title: 'pnpm orch browser:probe:status',
+            summary: 'Check browser status from the package CLI contribution.',
+            visibility: 'public',
+            metadata: {
+              cli: {
+                cli_name: 'pnpm orch',
+                command: 'browser:probe:status',
+                group: 'Browser Commands',
+              },
+            },
+          },
+        ],
+        edges: [],
+      },
+      { profile: 'public' },
+    );
+
+    const index = files.find((file) => file.path === 'interfaces/index.md')?.content ?? '';
+
+    expect(index.match(/pnpm orch browser:probe:status/g)).toHaveLength(1);
+  });
+
   it('redacts private references from public markdown cards', () => {
     const markdown = renderEntityCard(
       {
