@@ -24,6 +24,20 @@ generated_readme:
   auto_regenerate: true
 ```
 
+Repos may also opt into generated workspace-package READMEs:
+
+```yaml
+generated_package_readmes:
+  enabled: true
+  auto_regenerate: true
+  overwrite_existing: false
+```
+
+Package READMEs are written to each generated package component root, such as
+`packages/core/README.md`. With `overwrite_existing: false`, Agent Atlas creates
+missing package READMEs and refreshes files that already carry the generated
+header, but preserves existing human-written package READMEs.
+
 Repos may configure a Commander-derived CLI reference and generated command
 interfaces through `agent-atlas.maintenance.yaml`:
 

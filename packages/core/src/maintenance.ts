@@ -34,6 +34,11 @@ export interface AtlasMaintenancePolicy {
     path: string;
     auto_regenerate: boolean;
   };
+  generated_package_readmes?: {
+    enabled: boolean;
+    auto_regenerate: boolean;
+    overwrite_existing: boolean;
+  };
   generated_cli?: GeneratedCliPolicy;
   generated_sources?: GeneratedSourcesPolicy;
   metadata: {
@@ -267,6 +272,7 @@ function normalizeMaintenancePolicy(
   const profile = readProfile(value.profile, defaults.profile);
   const generatedDocs = isRecord(value.generated_docs) ? value.generated_docs : {};
   const generatedReadme = isRecord(value.generated_readme) ? value.generated_readme : undefined;
+  const generatedPackageReadmes = isRecord(value.generated_package_readmes) ? value.generated_package_readmes : undefined;
   const generatedCli = readGeneratedCliPolicy(value.generated_cli);
   const generatedSources = readGeneratedSourcesPolicy(value.generated_sources, generatedCli, profile);
   const metadata = isRecord(value.metadata) ? value.metadata : {};
@@ -287,6 +293,13 @@ function normalizeMaintenancePolicy(
       ? {
           path: readString(generatedReadme.path, 'README.md'),
           auto_regenerate: readBoolean(generatedReadme.auto_regenerate, mode !== 'review-only'),
+        }
+      : undefined,
+    generated_package_readmes: generatedPackageReadmes
+      ? {
+          enabled: readBoolean(generatedPackageReadmes.enabled, true),
+          auto_regenerate: readBoolean(generatedPackageReadmes.auto_regenerate, mode !== 'review-only'),
+          overwrite_existing: readBoolean(generatedPackageReadmes.overwrite_existing, false),
         }
       : undefined,
     generated_cli: generatedCli,

@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadAtlasGraph } from '@agent-atlas/core';
-import { generateMarkdownViews, renderEntityCard, renderRepositoryReadme } from './index.js';
+import { generateMarkdownViews, renderEntityCard, renderPackageReadmes, renderRepositoryReadme } from './index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const examplesRoot = path.resolve(__dirname, '../../../examples');
@@ -281,6 +281,72 @@ describe('generateMarkdownViews', () => {
     expect(markdown).not.toContain('## Source-Derived Surfaces');
     expect(markdown).not.toContain('Private Runbook');
     expect(markdown).not.toContain('notion://page/private');
+  });
+
+  it('renders package README entrypoints for workspace packages', () => {
+    const files = renderPackageReadmes(
+      {
+        rootPath: '.',
+        index: {
+          entitiesById: new Map(),
+          outgoingById: new Map(),
+          incomingById: new Map(),
+        },
+        diagnostics: [],
+        entities: [
+          {
+            id: 'component:package.example-core',
+            kind: 'component',
+            title: '@example/core',
+            summary: 'Core package for graph loading.',
+            visibility: 'public',
+            uri: 'packages/core/package.json',
+            code: { paths: ['packages/core/**'], entrypoints: ['packages/core/package.json'] },
+            commands: [
+              { command: 'pnpm --dir packages/core build', purpose: 'Build the package.' },
+              { command: 'pnpm --dir packages/core test', purpose: 'Run package tests.' },
+            ],
+            metadata: {
+              package: {
+                name: '@example/core',
+                root: 'packages/core',
+                path: 'packages/core/package.json',
+                scripts: ['build', 'test'],
+                exports: ['.', './cli'],
+              },
+            },
+          },
+          {
+            id: 'interface:package-script.example-core.test',
+            kind: 'interface',
+            title: '@example/core test',
+            summary: 'Run package tests.',
+            visibility: 'public',
+          },
+          {
+            id: 'test-scope:generated.package.example-core',
+            kind: 'test-scope',
+            title: '@example/core tests',
+            summary: 'Generated package test scope.',
+            visibility: 'public',
+          },
+        ],
+        edges: [
+          { source: 'interface:package-script.example-core.test', target: 'component:package.example-core', type: 'part-of', provenance: 'generated' },
+          { source: 'test-scope:generated.package.example-core', target: 'component:package.example-core', type: 'part-of', provenance: 'generated' },
+        ],
+      },
+      { profile: 'public' },
+    );
+
+    expect(files).toHaveLength(1);
+    expect(files[0]?.path).toBe('packages/core/README.md');
+    expect(files[0]?.content).toContain('# @example/core');
+    expect(files[0]?.content).toContain('- Package root: `packages/core`.');
+    expect(files[0]?.content).toContain('## Code');
+    expect(files[0]?.content).toContain('- `pnpm --dir packages/core test` - Run package tests.');
+    expect(files[0]?.content).toContain('## Interfaces');
+    expect(files[0]?.content).toContain('## Verification');
   });
 
   it('infers useful README orientation without repository readme prose', () => {

@@ -36,6 +36,10 @@ generated_docs:
 generated_readme:
   path: README.md
   auto_regenerate: true
+generated_package_readmes:
+  enabled: true
+  auto_regenerate: true
+  overwrite_existing: false
 metadata:
   allow_delete: false
 `,
@@ -48,6 +52,11 @@ metadata:
     expect(policy.generated_readme).toEqual({
       path: 'README.md',
       auto_regenerate: true,
+    });
+    expect(policy.generated_package_readmes).toEqual({
+      enabled: true,
+      auto_regenerate: true,
+      overwrite_existing: false,
     });
     expect(policy.metadata.auto_apply).toBe(true);
     expect(policy.metadata.allow_add).toBe(true);

@@ -203,6 +203,29 @@ export function renderRepositoryReadme(
   return `${lines.join('\n')}\n`;
 }
 
+export function renderPackageReadmes(
+  graph: AtlasGraph,
+  options: MarkdownGenerationOptions = {},
+): GeneratedMarkdownFile[] {
+  const profile = options.profile ?? 'public';
+  const entities = filterEntitiesByProfile(graph.entities, profile);
+  const entityIds = new Set(entities.map((entity) => entity.id));
+  const edges = graph.edges.filter((edge) => entityIds.has(edge.source) && entityIds.has(edge.target));
+  return entities
+    .filter(isPackageComponent)
+    .map((entity) => {
+      const metadata = readPackageMetadata(entity);
+      return metadata.root && metadata.root !== '.'
+        ? {
+            path: `${metadata.root}/README.md`,
+            content: renderPackageReadme(entity, entities, edges, profile),
+          }
+        : undefined;
+    })
+    .filter((file): file is GeneratedMarkdownFile => file !== undefined)
+    .sort((left, right) => left.path.localeCompare(right.path));
+}
+
 export function renderEntityCard(
   entity: AtlasEntity,
   edges: AtlasGraphEdge[] = [],
@@ -460,6 +483,98 @@ function renderPackageDrillDown(entity: AtlasEntity, edges: AtlasGraphEdge[]): s
   appendPackageDrillDownGroup(lines, 'Config', relatedEntities(entity.id, 'contains', 'resource', edges));
   appendPackageDrillDownGroup(lines, 'Tests', relatedEntities(entity.id, 'contains', 'test-scope', edges));
   return lines.filter((line, index, all) => !(line === '' && all[index - 1] === ''));
+}
+
+function renderPackageReadme(
+  entity: AtlasEntity,
+  entities: AtlasEntity[],
+  edges: AtlasGraphEdge[],
+  profile: MarkdownProfile,
+): string {
+  const metadata = readPackageMetadata(entity);
+  const related = collectPackageReadmeRelated(entity, entities, edges);
+  const commands = prioritizePackageCommands(entity.commands ?? []);
+  const lines = [
+    GENERATED_HEADER,
+    '',
+    `# ${entity.title}`,
+    '',
+    entity.summary,
+    '',
+    '## Quick Orientation',
+    '',
+    `- Package root: \`${metadata.root ?? '.'}\`.`,
+    `- Manifest: \`${metadata.path ?? entity.uri ?? 'package.json'}\`.`,
+    '- Use this README for package-local orientation; use the repo README and `docs/agents/atlas.md` for cross-package context.',
+  ];
+
+  const facts = [
+    metadata.exports?.length ? `exports: ${metadata.exports.map((item) => `\`${item}\``).join(', ')}` : undefined,
+    metadata.scripts?.length ? `scripts: ${metadata.scripts.map((item) => `\`${item}\``).join(', ')}` : undefined,
+  ].filter((item): item is string => Boolean(item));
+  if (facts.length > 0) {
+    lines.push('', '## Package Facts', '', ...facts.map((fact) => `- ${fact}`));
+  }
+
+  const codeFacts = [
+    ...(entity.code?.paths ?? []).map((item) => `path: \`${item}\``),
+    ...(entity.code?.entrypoints ?? []).map((item) => `entrypoint: \`${item}\``),
+  ];
+  if (codeFacts.length > 0) {
+    lines.push('', '## Code', '', ...codeFacts.map((fact) => `- ${fact}`));
+  }
+
+  if (commands.length > 0) {
+    lines.push('', '## Normal Use', '');
+    for (const command of commands.slice(0, 8)) {
+      lines.push(`- \`${command.command}\`${command.purpose ? ` - ${command.purpose}` : ''}`);
+    }
+  }
+
+  if (related.interfaces.length > 0) {
+    lines.push('', '## Interfaces', '', ...related.interfaces.slice(0, 10).map((item) => `- \`${item.id}\` - ${item.summary}`));
+  }
+  if (related.tests.length > 0) {
+    lines.push('', '## Verification', '', ...related.tests.slice(0, 6).map((item) => `- \`${item.id}\` - ${item.summary}`));
+  }
+  if (related.documents.length > 0) {
+    lines.push('', '## Docs', '');
+    for (const document of related.documents.slice(0, 8)) {
+      const target = document.uri && !isPrivateUri(document.uri) ? ` ([source](${renderUri(document.uri, profile)}))` : '';
+      lines.push(`- \`${document.id}\` - ${document.title}: ${document.summary}${target}`);
+    }
+  }
+
+  lines.push('', '## Generated Source', '', '- This package README is generated from Agent Atlas metadata and source-derived package surfaces.');
+  return `${lines.join('\n')}\n`;
+}
+
+function collectPackageReadmeRelated(
+  entity: AtlasEntity,
+  entities: AtlasEntity[],
+  edges: AtlasGraphEdge[],
+): { interfaces: AtlasEntity[]; tests: AtlasEntity[]; documents: AtlasEntity[] } {
+  const relatedIds = new Set(
+    edges
+      .filter((edge) => edge.source === entity.id || edge.target === entity.id)
+      .flatMap((edge) => [edge.source, edge.target])
+      .filter((id) => id !== entity.id),
+  );
+  const related = entities.filter((candidate) => relatedIds.has(candidate.id)).sort(compareEntities);
+  return {
+    interfaces: related.filter((candidate) => candidate.kind === 'interface'),
+    tests: related.filter((candidate) => candidate.kind === 'test-scope'),
+    documents: related.filter((candidate) => candidate.kind === 'document' && !isAgentSkillDocument(candidate)),
+  };
+}
+
+function prioritizePackageCommands(commands: NonNullable<AtlasEntity['commands']>): NonNullable<AtlasEntity['commands']> {
+  const preferred = ['test', 'build', 'typecheck', 'lint', 'check', 'verify', 'start', 'dev'];
+  return [...commands].sort((left, right) => {
+    const leftName = left.command.split(/\s+/).at(-1) ?? left.command;
+    const rightName = right.command.split(/\s+/).at(-1) ?? right.command;
+    return preferredIndex(preferred, leftName) - preferredIndex(preferred, rightName) || left.command.localeCompare(right.command);
+  });
 }
 
 function appendPackageDrillDownGroup(lines: string[], title: string, ids: AtlasEntityId[]): void {

@@ -11,6 +11,7 @@ Implemented outputs:
 - resource/document cards when visible in the selected profile
 - verification guide
 - optional root README entrypoint
+- optional workspace-package README entrypoints
 
 The README renderer infers a human-first default orientation from the graph:
 repository purpose, major workflows, common CLI entry points, command groups,
@@ -19,6 +20,11 @@ points come from generated command metadata when present and name/summary
 inference otherwise. Agent-specific startup rules should stay in `AGENTS.md`;
 `repository.metadata.readme` can still override or extend sections when a repo
 needs project-specific wording.
+
+When enabled by maintenance policy, package README generation writes package-local
+entrypoints from generated package components. Existing human-written package
+READMEs are preserved unless the policy explicitly allows overwrites; generated
+package READMEs are refreshed by their generated header.
 
 Generated files start with:
 
