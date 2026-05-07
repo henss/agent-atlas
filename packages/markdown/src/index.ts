@@ -554,9 +554,15 @@ function renderPackageInterfaceReadmeItem(entity: AtlasEntity): string {
   const usage = readString(cli?.usage);
   const cliName = readString(cli?.cli_name);
   const command = readString(cli?.command);
+  const description = readString(cli?.description);
   const executable = usage ?? [cliName, command].filter(Boolean).join(' ');
   if (executable) {
-    return `- \`${executable}\` - ${entity.summary} (\`${entity.id}\`)`;
+    return [
+      `- \`${executable}\``,
+      `  - Summary: ${entity.summary}`,
+      ...(description && description !== entity.summary ? [`  - Details: ${description}`] : []),
+      `  - Atlas: \`${entity.id}\``,
+    ].join('\n');
   }
   return `- \`${entity.id}\` - ${entity.summary}`;
 }

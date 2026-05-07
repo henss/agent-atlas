@@ -383,6 +383,7 @@ describe('generateMarkdownViews', () => {
               cli: {
                 cli_name: 'example',
                 command: 'core:inspect',
+                description: 'Inspect package internals and emit JSON for automation.',
                 usage: 'example core:inspect --json',
               },
             },
@@ -412,7 +413,12 @@ describe('generateMarkdownViews', () => {
     expect(files[0]?.content).toContain('- `pnpm --dir packages/core test` - Run package tests.');
     expect(files[0]?.content).toContain('## Interfaces');
     expect(files[0]?.content).toContain(
-      '- `example core:inspect --json` - Inspect core package state. (`interface:example-core-cli.inspect`)',
+      [
+        '- `example core:inspect --json`',
+        '  - Summary: Inspect core package state.',
+        '  - Details: Inspect package internals and emit JSON for automation.',
+        '  - Atlas: `interface:example-core-cli.inspect`',
+      ].join('\n'),
     );
     expect(files[0]?.content).toContain('- `interface:package-script.example-core.test` - Run package tests.');
     expect(files[0]?.content).toContain('## Verification');
