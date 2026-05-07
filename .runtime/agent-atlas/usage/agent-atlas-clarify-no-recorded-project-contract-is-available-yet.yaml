@@ -1,0 +1,11 @@
+version: 1
+recorded_at: 2026-05-07T21:30:12.985Z
+task: "Agent Atlas: Clarify No recorded project contract is available yet"
+command: context-pack
+profile: public
+selected_entities: []
+selected_files: []
+selected_tests: []
+broad_search_fallback: false
+missing_cards: []
+misleading_cards: []
