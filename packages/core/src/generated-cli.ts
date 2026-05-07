@@ -174,7 +174,7 @@ export function extractCommanderCliCommands(
       return;
     }
     const commandPath = [...parentPath, name];
-    const hasExecutableShape = (command.registeredArguments?.length ?? 0) > 0 || (command.options?.length ?? 0) > 0;
+    const hasExecutableShape = isExecutableCommanderCommand(command);
     if (command !== program && !isHiddenCommand(command) && hasExecutableShape) {
       const commandId = commandPath.join('-');
       const entityId = `interface:${source.command_id_prefix}.${slugify(commandId)}` as AtlasEntityId;
@@ -506,6 +506,19 @@ function readUsageSuffix(command: CommanderLike): string {
   return safeRead(() => command.usage?.()) || '';
 }
 
+function readExplicitUsageSuffix(command: CommanderLike): string {
+  const value = (command as unknown as { _usage?: unknown })._usage;
+  return typeof value === 'string' ? value : '';
+}
+
+function isExecutableCommanderCommand(command: CommanderLike): boolean {
+  return (
+    (command.registeredArguments?.length ?? 0) > 0 ||
+    (command.options?.length ?? 0) > 0 ||
+    readExplicitUsageSuffix(command).trim().length > 0
+  );
+}
+
 function readAliases(command: CommanderLike): string[] {
   const aliases = safeRead(() => command.aliases?.());
   return Array.isArray(aliases) ? aliases.filter((alias) => typeof alias === 'string' && alias.length > 0) : [];
@@ -556,7 +569,7 @@ function collectCommanderGroupMetadata(program: CommanderLike): Map<string, { su
   function visit(command: CommanderLike): void {
     if (command !== program && !isHiddenCommand(command)) {
       const group = readHelpGroup(command);
-      const hasExecutableShape = (command.registeredArguments?.length ?? 0) > 0 || (command.options?.length ?? 0) > 0;
+      const hasExecutableShape = isExecutableCommanderCommand(command);
       if (group && !hasExecutableShape) {
         const summary = readOptionalSummary(command);
         const description = readDescription(command);

@@ -139,4 +139,33 @@ describe('Commander-derived Atlas CLI catalog', () => {
     expect(markdown).toContain('## Extraction Commands');
     expect(markdown).toContain('Commands for extracting code and docs into a separate repository.');
   });
+
+  it('extracts commands that declare executable usage without typed options', () => {
+    const program = new Command()
+      .name('example')
+      .exitOverride();
+    program
+      .command('extract:inventory')
+      .summary('Create an extraction inventory.')
+      .description('Inventory candidate files before extraction.')
+      .usage('-- --repo <path> [--output <path>]')
+      .helpGroup('Extraction Commands:');
+
+    const records = extractCommanderCliCommands(program, {
+      id: 'example-cli',
+      module: 'dist/program.js',
+      export: 'createProgram',
+      owner_component: 'component:cli-package',
+      command_id_prefix: 'example-cli',
+      cliName: 'example',
+      defaultVisibility: 'public',
+    });
+
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({
+      id: 'example-cli.extract-inventory',
+      usage: 'example extract:inventory -- --repo <path> [--output <path>]',
+      description: 'Inventory candidate files before extraction.',
+    });
+  });
 });
