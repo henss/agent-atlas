@@ -9,6 +9,17 @@ This guide describes how coding agents should use an atlas-enabled repository.
 3. Use `atlas context-pack` when the task is broad.
 4. Use `atlas resolve-path` when starting from a source file.
 
+## Task authority
+
+Atlas is navigation evidence, not task authority. When an agent is launched with
+a bounded task packet, that active packet remains the execution contract even if
+an archival ledger or registry has no recorded contract artifact for the work.
+
+If a local contract ledger is missing or stale, do not infer new product scope
+from that absence. Continue from the active packet when it is available, use
+Atlas only to route repo-local context, and record the missing archival evidence
+in the downstream-owned outcome or receipt.
+
 ## Top-down workflow
 
 For broad tasks:
