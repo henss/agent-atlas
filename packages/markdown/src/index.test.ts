@@ -268,10 +268,10 @@ describe('generateMarkdownViews', () => {
     expect(markdown).not.toContain('document:generated.agents-skills-ship-skill');
     expect(markdown).toContain('## Drill Down');
     expect(markdown).toContain('- Source-derived inventory: `docs/generated/source-derived-reference.md`.');
-    expect(markdown).toContain('Documentation entrypoint: [Docs Index](docs/index.md).');
-    expect(markdown).toContain('- Ship: Release the package.');
+    expect(markdown).toContain('Documentation map: [Docs Index](docs/index.md).');
+    expect(markdown).toContain('- Release the package.');
     expect(markdown).toContain('## Verification');
-    expect(markdown).toContain('`pnpm test` - Run the repository tests.');
+    expect(markdown).toContain('`pnpm test` - Run tests.');
     expect(markdown).toContain('- Scoped verification map: `docs/agents/verification.md`.');
     expect(markdown).not.toContain('## Source-Derived Surfaces');
     expect(markdown).not.toContain('Private Runbook');
@@ -365,18 +365,18 @@ describe('generateMarkdownViews', () => {
       { profile: 'public' },
     );
 
-    expect(markdown).toContain('- Use this repo for example control plane for routing work.');
-    expect(markdown).toContain('- Start normal sessions with `pnpm session:start`, then use Atlas before broad repository search.');
-    expect(markdown).toContain('- Use the CLI overview below for 1 command group.');
+    expect(markdown).toContain('example is an example control plane for routing work.');
+    expect(markdown).toContain('- Most repo workflows are exposed through the CLI overview below.');
+    expect(markdown).toContain('- Use [Docs Index](docs/index.md) as the documentation map for deeper architecture and operating-model context.');
     expect(markdown).toContain('## What This Repo Does');
-    expect(markdown).toContain('- Packet Routing: Turns current evidence into bounded work packets.');
+    expect(markdown).toContain('- Turns current evidence into bounded work packets.');
     expect(markdown).toContain('## Normal Use');
     expect(markdown).toContain('- Start with `pnpm session:start` to start a normal repo session.');
-    expect(markdown).toContain('- Use the main CLI command groups below to find the repo-supported workflows and exact entrypoints.');
+    expect(markdown).toContain('- Use `pnpm orch <command>` for the repo-supported workflows listed in the command groups below.');
     expect(markdown).toContain('## Key Docs');
     expect(markdown).toContain('- [AGENTS.md](AGENTS.md) - Repo-local operating instructions and agent guidance.');
     expect(markdown).toContain('- [Docs Index](docs/index.md) - Documentation map and deeper docs entrypoint.');
-    expect(markdown).toContain('## Durable State');
+    expect(markdown).toContain('## Where Things Live');
     expect(markdown).toContain('- `packages/` - Workspace packages and implementation surfaces.');
     expect(markdown).toContain('| Packet Commands (1) | Commands for creating and routing work packets. | `example packet:create` |');
     expect(markdown).toContain('- `pnpm verify:session` - Run closeout verification.');

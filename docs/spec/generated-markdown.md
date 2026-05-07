@@ -86,28 +86,29 @@ Generated Markdown is for routing, not total documentation. Link to source artif
 
 ## README renderer
 
-The generated README is a compact entrypoint over the same graph. It should use
-visible `repository:*` metadata for the title and purpose, route agents to Atlas
-commands before broad search, list the most relevant workflows, implementation
-surfaces, docs, and verification scopes, and state that README-worthy durable
-facts belong in Atlas metadata or referenced canonical docs instead of manual
-README prose.
+The generated README is a compact human-first entrypoint over the same graph. It
+should use visible `repository:*` metadata for the title and purpose, explain
+what the repo holds, summarize the major workflow and command surfaces, point to
+the most relevant docs and verification scopes, and state that README-worthy
+durable facts belong in Atlas metadata or referenced canonical docs instead of
+manual README prose.
 
 By default, the README renderer should infer useful orientation before requiring
 project-specific prose:
 
-- `Start Here` from repository summary, detected `session:start` commands, CLI
-  command groups, generated CLI reference, and Atlas traversal commands.
+- `Quick Orientation` from repository summary, generated CLI reference, docs
+  index, and generated-source guidance.
 - `What This Repo Does` from major workflow summaries, then component summaries
   or CLI command-group summaries when workflows are unavailable.
-- `Normal Use` from startup commands, CLI command groups, Atlas
-  `context-pack`/`resolve-path`, and verification commands.
-- `Key Docs` from visible document entities for common entrypoints such as
-  `AGENTS.md`, `docs/index.md`, coding standards, generated CLI references, and
-  architecture or concept docs.
-- `Durable State` from visible entity paths rooted in canonical directories such
+- `Normal Use` from startup commands, CLI command groups, and verification
+  commands while leaving detailed agent rules to `AGENTS.md`.
+- `CLI` from generated command groups and command-reference links.
+- `Where Things Live` from visible entity paths rooted in canonical directories
   as `.agent-atlas/`, `docs/agents/`, `docs/generated/`, `registry/`,
   `.agents/skills/`, `evals/`, `.runtime/`, and `packages/`.
+- `Key Docs` from visible document entities for common entrypoints such as
+  `docs/index.md`, generated CLI references, architecture or concept docs,
+  coding standards, and `AGENTS.md`.
 
 `repository.metadata.readme` remains an override and extension surface for
 project-specific language, ordering, or omitted details. It should not be

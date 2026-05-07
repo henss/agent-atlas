@@ -2,9 +2,9 @@
 
 # Agent Atlas
 
-Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
+Agent Atlas is an agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 
-## Start Here
+## Quick Orientation
 
 - Read `docs/agents/atlas.md` for the generated graph overview.
 - Use `atlas resolve-path <path> --path .` when starting from a source file.
@@ -12,27 +12,18 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 - Use `docs/generated/cli-command-reference.md` for exact CLI command syntax and options.
 - Update `.agent-atlas/**` or canonical docs when this README is missing or misleading; do not hand-edit generated output.
 
-## Agent Atlas
-
-- Root generated view: `docs/agents/atlas.md`.
-- Resolve a file: `atlas resolve-path <path> --path .`.
-- Build task context: `atlas context-pack "<task>" --path . --budget 4000`.
-- Refresh generated surfaces: `atlas maintain fix --path .`.
-- Check generated surfaces: `atlas maintain check --path .`.
-
 ## What This Repo Does
 
-- Audit Profile Boundaries: Checks public, private, and company profile outputs for policy violations, private markers, restricted URI schemes, and generated-doc leaks.
-- Create Context Pack: Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
-- Define Atlas Model: Evolves entity fields, relation types, validation behavior, and schema documentation together.
-- Expose Atlas MCP: Provides read-only MCP resources, tools, smoke tests, deployment notes, and safety assertions for listing entities, describing graph context, resolving paths, finding related entities, and creating context packs.
-- Generate Agent Docs: Produces compact generated Markdown views and optional root READMEs from canonical atlas YAML.
-- Maintain Atlas Metadata: Runs policy-driven maintenance, stale-reference diagnostics, generated Markdown checks, and incremental card suggestions so canonical YAML and generated docs stay aligned.
+- Checks public, private, and company profile outputs for policy violations, private markers, restricted URI schemes, and generated-doc leaks.
+- Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
+- Evolves entity fields, relation types, validation behavior, and schema documentation together.
+- Provides read-only MCP resources, tools, smoke tests, deployment notes, and safety assertions for listing entities, describing graph context, resolving paths, finding related entities, and creating context packs.
+- Produces compact generated Markdown views and optional root READMEs from canonical atlas YAML.
+- Runs policy-driven maintenance, stale-reference diagnostics, generated Markdown checks, and incremental card suggestions so canonical YAML and generated docs stay aligned.
 
 ## Normal Use
 
-- Use the main CLI command groups below to find the repo-supported workflows and exact entrypoints.
-- Use `atlas context-pack "<task>" --path . --budget 4000` or `atlas resolve-path <path> --path .` to choose task-specific reads before broad search.
+- Use `pnpm orch <command>` for the repo-supported workflows listed in the command groups below.
 - Verify meaningful changes with `pnpm test` to repo-local verification candidate.
 
 ## Core Idea
@@ -63,35 +54,6 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 
 - Apache-2.0; see `LICENSE`.
 
-## Key Docs
-
-- [Generated Atlas Overview](docs/agents/atlas.md) - Compact generated graph entrypoint for agents.
-- [CLI Command Reference](docs/generated/cli-command-reference.md) - Commander-derived command syntax, options, arguments, and descriptions.
-- [Authoring Guide](docs/guides/authoring-atlas-files.md) - How to author Atlas metadata.
-- [Local CLI Consumption](docs/guides/local-cli-consumption.md) - How downstream repos consume a sibling checkout or packaged CLI.
-- [Package Publish Readiness](docs/guides/package-publish-readiness.md) - Preview release gates and compatibility checks.
-- [Typed Context Graph](docs/concepts/typed-context-graph.md) - Core graph model and routing concept.
-- [Entity Specification](docs/spec/entities.md) - Entity kinds and field contract.
-- [Generated Markdown Spec](docs/spec/generated-markdown.md) - Generated docs, README, and CLI reference contract.
-
-## Durable State
-
-- `.agent-atlas/` - Canonical entity cards, overlays, and generated surface policy.
-- `docs/agents/` - Generated LLM-facing Markdown views.
-- `docs/generated/` - Generated references such as the CLI command reference.
-- `packages/schema/` - Entity types, relation vocabulary, and JSON Schema assets.
-- `packages/core/` - Graph loading, validation, traversal, context packs, maintenance, and diagnostics.
-- `packages/cli/` - Atlas command-line interface and Commander program metadata.
-- `packages/mcp-server/` - Read-only MCP resources and traversal tools.
-- `packages/markdown/` - Generated Markdown and README renderers.
-- `packages/adapters/` - Integration interfaces and reusable adapters.
-
-## Operational Notes
-
-- Generated Markdown and README output should route to authoritative metadata and docs instead of becoming a hand-maintained wiki.
-- Public metadata must not contain secrets, private URLs, customer data, or sensitive internal topology; use overlays for private context.
-- Keep command syntax in Commander definitions and regenerate the CLI reference instead of copying command flags into README.
-
 ## CLI
 
 - Full command reference: [CLI Command Reference](docs/generated/cli-command-reference.md) - Generated Commander-derived Markdown reference for Atlas CLI command syntax, options, arguments, and descriptions.
@@ -107,6 +69,29 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 | [Integration Commands](docs/generated/cli-command-reference.md#integration-commands) (2) | See the command reference for details. | `atlas mcp smoke-test` +1 more |
 | [Maintenance Commands](docs/generated/cli-command-reference.md#maintenance-commands) (10) | See the command reference for details. | `atlas diff` +9 more |
 
+## Where Things Live
+
+- `.agent-atlas/` - Canonical entity cards, overlays, and generated surface policy.
+- `docs/agents/` - Generated LLM-facing Markdown views.
+- `docs/generated/` - Generated references such as the CLI command reference.
+- `packages/schema/` - Entity types, relation vocabulary, and JSON Schema assets.
+- `packages/core/` - Graph loading, validation, traversal, context packs, maintenance, and diagnostics.
+- `packages/cli/` - Atlas command-line interface and Commander program metadata.
+- `packages/mcp-server/` - Read-only MCP resources and traversal tools.
+- `packages/markdown/` - Generated Markdown and README renderers.
+- `packages/adapters/` - Integration interfaces and reusable adapters.
+
+## Key Docs
+
+- [Generated Atlas Overview](docs/agents/atlas.md) - Compact generated graph entrypoint for agents.
+- [CLI Command Reference](docs/generated/cli-command-reference.md) - Commander-derived command syntax, options, arguments, and descriptions.
+- [Authoring Guide](docs/guides/authoring-atlas-files.md) - How to author Atlas metadata.
+- [Local CLI Consumption](docs/guides/local-cli-consumption.md) - How downstream repos consume a sibling checkout or packaged CLI.
+- [Package Publish Readiness](docs/guides/package-publish-readiness.md) - Preview release gates and compatibility checks.
+- [Typed Context Graph](docs/concepts/typed-context-graph.md) - Core graph model and routing concept.
+- [Entity Specification](docs/spec/entities.md) - Entity kinds and field contract.
+- [Generated Markdown Spec](docs/spec/generated-markdown.md) - Generated docs, README, and CLI reference contract.
+
 ## Domains
 
 - `domain:agent-atlas` - Agent Atlas: Typed context graph framework, CLI, MCP server, review UI, and adapter layer for helping coding agents navigate repositories and related context.
@@ -115,26 +100,25 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 ## Drill Down
 
 - Atlas overview: `docs/agents/atlas.md`.
+- Task-scoped Atlas navigation: `atlas context-pack "<task>" --path . --budget 4000` or `atlas resolve-path <path> --path .`.
 - Entity indexes: `docs/agents/domains/`, `docs/agents/workflows/`, `docs/agents/components/`, and `docs/agents/capabilities/`.
 - Source-derived inventory: `docs/generated/source-derived-reference.md`.
 - Documentation map: `docs/index.md` when present.
 
 ## Verification
 
-- `pnpm test` - Repo-local verification candidate.
+- `pnpm test` - Run package test suites.
+- `node packages/cli/dist/index.js maintain check --path . --profile public` - Check Atlas metadata, generated docs, README, and CLI reference for drift.
 - `pnpm build` - Repo-local verification candidate.
 - `pnpm lint` - Repo-local verification candidate.
 - Scoped verification map: `docs/agents/verification.md`.
-- Task-specific verification: `atlas context-pack "<task>" --path . --budget 4000`.
 
-## Commands
+## Operational Notes
 
-- `pnpm build` - Build all workspace packages.
-- `pnpm test` - Run package test suites.
-- `pnpm lint` - Typecheck all packages without emitting build output.
-- `node packages/cli/dist/index.js maintain fix --path . --profile public` - Regenerate Atlas docs, README, and CLI reference for this repository.
-- `node packages/cli/dist/index.js maintain check --path . --profile public` - Check Atlas metadata, generated docs, README, and CLI reference for drift.
+- Generated Markdown and README output should route to authoritative metadata and docs instead of becoming a hand-maintained wiki.
+- Public metadata must not contain secrets, private URLs, customer data, or sensitive internal topology; use overlays for private context.
+- Keep command syntax in Commander definitions and regenerate the CLI reference instead of copying command flags into README.
 
-## Source Of Truth
+## Generated Source
 
 - This README is generated from Agent Atlas metadata. Update `.agent-atlas/**` or the referenced canonical docs, then regenerate it.

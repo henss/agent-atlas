@@ -12,9 +12,10 @@ Implemented outputs:
 - verification guide
 - optional root README entrypoint
 
-The README renderer infers a useful default orientation from the graph: startup
-commands, major workflows, command groups, common docs, durable-state paths, and
-verification scopes. `repository.metadata.readme` can still override or extend
+The README renderer infers a human-first default orientation from the graph:
+repository purpose, major workflows, command groups, common docs, where durable
+state lives, and verification scopes. Agent-specific startup rules should stay
+in `AGENTS.md`; `repository.metadata.readme` can still override or extend
 sections when a repo needs project-specific wording.
 
 Generated files start with:
