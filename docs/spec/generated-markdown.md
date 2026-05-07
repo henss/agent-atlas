@@ -93,6 +93,27 @@ surfaces, docs, and verification scopes, and state that README-worthy durable
 facts belong in Atlas metadata or referenced canonical docs instead of manual
 README prose.
 
+By default, the README renderer should infer useful orientation before requiring
+project-specific prose:
+
+- `Start Here` from repository summary, detected `session:start` commands, CLI
+  command groups, generated CLI reference, and Atlas traversal commands.
+- `What This Repo Does` from major workflow summaries, then component summaries
+  or CLI command-group summaries when workflows are unavailable.
+- `Normal Use` from startup commands, CLI command groups, Atlas
+  `context-pack`/`resolve-path`, and verification commands.
+- `Key Docs` from visible document entities for common entrypoints such as
+  `AGENTS.md`, `docs/index.md`, coding standards, generated CLI references, and
+  architecture or concept docs.
+- `Durable State` from visible entity paths rooted in canonical directories such
+  as `.agent-atlas/`, `docs/agents/`, `docs/generated/`, `registry/`,
+  `.agents/skills/`, `evals/`, `.runtime/`, and `packages/`.
+
+`repository.metadata.readme` remains an override and extension surface for
+project-specific language, ordering, or omitted details. It should not be
+required for the generated README to explain what a typical repo does or how to
+start using it.
+
 ## Source-derived capabilities
 
 Agent skills are rendered as first-class `capability:*` entities, with their

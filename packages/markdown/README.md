@@ -12,6 +12,11 @@ Implemented outputs:
 - verification guide
 - optional root README entrypoint
 
+The README renderer infers a useful default orientation from the graph: startup
+commands, major workflows, command groups, common docs, durable-state paths, and
+verification scopes. `repository.metadata.readme` can still override or extend
+sections when a repo needs project-specific wording.
+
 Generated files start with:
 
 ```md

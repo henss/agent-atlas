@@ -269,12 +269,116 @@ describe('generateMarkdownViews', () => {
     expect(markdown).toContain('## Drill Down');
     expect(markdown).toContain('- Source-derived inventory: `docs/generated/source-derived-reference.md`.');
     expect(markdown).toContain('Documentation entrypoint: [Docs Index](docs/index.md).');
-    expect(markdown).toContain('`workflow:ship`');
+    expect(markdown).toContain('- Ship: Release the package.');
     expect(markdown).toContain('## Verification');
     expect(markdown).toContain('`pnpm test` - Run the repository tests.');
     expect(markdown).toContain('- Scoped verification map: `docs/agents/verification.md`.');
     expect(markdown).not.toContain('## Source-Derived Surfaces');
     expect(markdown).not.toContain('Private Runbook');
     expect(markdown).not.toContain('notion://page/private');
+  });
+
+  it('infers useful README orientation without repository readme prose', () => {
+    const markdown = renderRepositoryReadme(
+      {
+        rootPath: '.',
+        index: {
+          entitiesById: new Map(),
+          outgoingById: new Map(),
+          incomingById: new Map(),
+        },
+        diagnostics: [],
+        entities: [
+          {
+            id: 'repository:example',
+            kind: 'repository',
+            title: 'example',
+            summary: 'Example control plane for routing work.',
+            visibility: 'public',
+            commands: [
+              { command: 'pnpm session:start', purpose: 'Start a normal repo session.' },
+              { command: 'pnpm verify:session', purpose: 'Run closeout verification.' },
+            ],
+          },
+          {
+            id: 'workflow:packet-routing',
+            kind: 'workflow',
+            title: 'Packet Routing',
+            summary: 'Turns current evidence into bounded work packets.',
+            visibility: 'public',
+          },
+          {
+            id: 'component:orchestrator-cli',
+            kind: 'component',
+            title: 'Orchestrator CLI',
+            summary: 'Provides command-line workflows.',
+            visibility: 'public',
+            code: { paths: ['packages/orchestrator-cli/src/**'] },
+          },
+          {
+            id: 'document:agents',
+            kind: 'document',
+            title: 'AGENTS.md',
+            summary: 'Agent guidance.',
+            visibility: 'public',
+            uri: 'AGENTS.md',
+          },
+          {
+            id: 'document:docs-index',
+            kind: 'document',
+            title: 'Docs Index',
+            summary: 'Documentation map.',
+            visibility: 'public',
+            uri: 'docs/index.md',
+          },
+          {
+            id: 'interface:example-cli.packet-create',
+            kind: 'interface',
+            title: 'example packet:create',
+            summary: 'Create packets.',
+            visibility: 'public',
+            metadata: {
+              cli: {
+                cli_name: 'example',
+                command: 'packet:create',
+                group: 'Packet Commands',
+                group_description: 'Commands for creating and routing work packets.',
+              },
+            },
+          },
+          {
+            id: 'test-scope:session-verification',
+            kind: 'test-scope',
+            title: 'Session Verification',
+            summary: 'Closeout verification.',
+            visibility: 'public',
+            commands: [{ command: 'pnpm verify:session', purpose: 'Run closeout verification.' }],
+          },
+        ],
+        edges: [
+          { source: 'repository:example', target: 'workflow:packet-routing', type: 'contains', provenance: 'explicit' },
+          { source: 'repository:example', target: 'component:orchestrator-cli', type: 'contains', provenance: 'explicit' },
+          { source: 'repository:example', target: 'document:agents', type: 'documented-in', provenance: 'explicit' },
+          { source: 'repository:example', target: 'document:docs-index', type: 'documented-in', provenance: 'explicit' },
+        ],
+      },
+      { profile: 'public' },
+    );
+
+    expect(markdown).toContain('- Use this repo for example control plane for routing work.');
+    expect(markdown).toContain('- Start normal sessions with `pnpm session:start`, then use Atlas before broad repository search.');
+    expect(markdown).toContain('- Use the CLI overview below for 1 command group.');
+    expect(markdown).toContain('## What This Repo Does');
+    expect(markdown).toContain('- Packet Routing: Turns current evidence into bounded work packets.');
+    expect(markdown).toContain('## Normal Use');
+    expect(markdown).toContain('- Start with `pnpm session:start` to start a normal repo session.');
+    expect(markdown).toContain('- Use the main CLI command groups below to find the repo-supported workflows and exact entrypoints.');
+    expect(markdown).toContain('## Key Docs');
+    expect(markdown).toContain('- [AGENTS.md](AGENTS.md) - Repo-local operating instructions and agent guidance.');
+    expect(markdown).toContain('- [Docs Index](docs/index.md) - Documentation map and deeper docs entrypoint.');
+    expect(markdown).toContain('## Durable State');
+    expect(markdown).toContain('- `packages/` - Workspace packages and implementation surfaces.');
+    expect(markdown).toContain('| Packet Commands (1) | Commands for creating and routing work packets. | `example packet:create` |');
+    expect(markdown).toContain('- `pnpm verify:session` - Run closeout verification.');
   });
 });

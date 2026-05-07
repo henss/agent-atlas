@@ -20,6 +20,49 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 - Refresh generated surfaces: `atlas maintain fix --path .`.
 - Check generated surfaces: `atlas maintain check --path .`.
 
+## What This Repo Does
+
+- Audit Profile Boundaries: Checks public, private, and company profile outputs for policy violations, private markers, restricted URI schemes, and generated-doc leaks.
+- Create Context Pack: Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
+- Define Atlas Model: Evolves entity fields, relation types, validation behavior, and schema documentation together.
+- Expose Atlas MCP: Provides read-only MCP resources, tools, smoke tests, deployment notes, and safety assertions for listing entities, describing graph context, resolving paths, finding related entities, and creating context packs.
+- Generate Agent Docs: Produces compact generated Markdown views and optional root READMEs from canonical atlas YAML.
+- Maintain Atlas Metadata: Runs policy-driven maintenance, stale-reference diagnostics, generated Markdown checks, and incremental card suggestions so canonical YAML and generated docs stay aligned.
+
+## Normal Use
+
+- Use the main CLI command groups below to find the repo-supported workflows and exact entrypoints.
+- Use `atlas context-pack "<task>" --path . --budget 4000` or `atlas resolve-path <path> --path .` to choose task-specific reads before broad search.
+- Verify meaningful changes with `pnpm test` to repo-local verification candidate.
+
+## Core Idea
+
+- The atlas is a navigation layer, not a knowledge dump.
+- Start from a task or file, resolve an atlas entity, follow related domains/workflows/components/docs/tests, and load only task-relevant context.
+- Canonical source lives in `.agent-atlas/**`; hierarchical files such as `docs/agents/**`, `docs/generated/**`, and this README are generated views.
+
+## What This Project Should Not Become
+
+- A vector database pretending to be a source of truth.
+- A giant manually maintained wiki.
+- A replacement for Backstage, Port, Sourcegraph, DataHub, Notion, Confluence, Jira, or Google Workspace.
+- A dumping ground for secrets, private URLs, customer data, or operational live data.
+
+## Public Private Boundary
+
+- Open-source core includes schema, validators, traversal logic, generated docs, CLI/MCP interfaces, generic adapters, and sanitized examples.
+- Real deployments should keep actual company or personal atlas contents, sensitive repo topology, private page IDs, customer data, credentials, and sensitive secret names out of public metadata.
+- Use profile overlays for private context instead of contaminating public files.
+
+## Release And Compatibility
+
+- Current local compatibility contract is workspace package version `0.18.0`, entity `schema_version: 1`, usage receipt `version: 1`, boundary policy `version: 1`, and registry `version: 1`.
+- Public repos should pin exact preview CLI releases such as `@agent-atlas/cli@0.18.0` after the package publish readiness checklist passes.
+
+## License
+
+- Apache-2.0; see `LICENSE`.
+
 ## Key Docs
 
 - [Generated Atlas Overview](docs/agents/atlas.md) - Compact generated graph entrypoint for agents.
@@ -64,102 +107,25 @@ Agent Atlas is a typed context graph and traversal toolkit for AI coding agents.
 | [Integration Commands](docs/generated/cli-command-reference.md#integration-commands) (2) | See the command reference for details. | `atlas mcp smoke-test` +1 more |
 | [Maintenance Commands](docs/generated/cli-command-reference.md#maintenance-commands) (10) | See the command reference for details. | `atlas diff` +9 more |
 
-## Source-Derived Surfaces
-
-- Agent Skills: 5
-- Commander: 33
-- Config: 22
-- Dependencies: 6
-- Docs: 58
-- Package Scripts: 31
-- Routes: 1
-- Tests: 6
-- Workspace Packages: 8
-- Full generated reference: `docs/generated/source-derived-reference.md`.
-
-## Core Idea
-
-- The atlas is a navigation layer, not a knowledge dump.
-- Start from a task or file, resolve an atlas entity, follow related domains/workflows/components/docs/tests, and load only task-relevant context.
-- Canonical source lives in `.agent-atlas/**`; hierarchical files such as `docs/agents/**`, `docs/generated/**`, and this README are generated views.
-
-## What This Project Should Not Become
-
-- A vector database pretending to be a source of truth.
-- A giant manually maintained wiki.
-- A replacement for Backstage, Port, Sourcegraph, DataHub, Notion, Confluence, Jira, or Google Workspace.
-- A dumping ground for secrets, private URLs, customer data, or operational live data.
-
-## Public Private Boundary
-
-- Open-source core includes schema, validators, traversal logic, generated docs, CLI/MCP interfaces, generic adapters, and sanitized examples.
-- Real deployments should keep actual company or personal atlas contents, sensitive repo topology, private page IDs, customer data, credentials, and sensitive secret names out of public metadata.
-- Use profile overlays for private context instead of contaminating public files.
-
-## Release And Compatibility
-
-- Current local compatibility contract is workspace package version `0.18.0`, entity `schema_version: 1`, usage receipt `version: 1`, boundary policy `version: 1`, and registry `version: 1`.
-- Public repos should pin exact preview CLI releases such as `@agent-atlas/cli@0.18.0` after the package publish readiness checklist passes.
-
-## License
-
-- Apache-2.0; see `LICENSE`.
-
 ## Domains
 
 - `domain:agent-atlas` - Agent Atlas: Typed context graph framework, CLI, MCP server, review UI, and adapter layer for helping coding agents navigate repositories and related context.
 - `domain:agent-atlas-local` - agent-atlas Local Surface: Repo-local architecture, docs, and verification surfaces for agent-atlas.
 
-## Common Workflows
+## Drill Down
 
-- `workflow:audit-profile-boundaries` - Audit Profile Boundaries: Checks public, private, and company profile outputs for policy violations, private markers, restricted URI schemes, and generated-doc leaks.
-- `workflow:create-context-pack` - Create Context Pack: Selects task-relevant atlas entities, source reads, external references, verification commands, and risk notes within a token budget.
-- `workflow:define-atlas-model` - Define Atlas Model: Evolves entity fields, relation types, validation behavior, and schema documentation together.
-- `workflow:expose-atlas-mcp` - Expose Atlas MCP: Provides read-only MCP resources, tools, smoke tests, deployment notes, and safety assertions for listing entities, describing graph context, resolving paths, finding related entities, and creating context packs.
-- `workflow:generate-agent-docs` - Generate Agent Docs: Produces compact generated Markdown views and optional root READMEs from canonical atlas YAML.
-- `workflow:maintain-atlas-metadata` - Maintain Atlas Metadata: Runs policy-driven maintenance, stale-reference diagnostics, generated Markdown checks, and incremental card suggestions so canonical YAML and generated docs stay aligned.
-- `workflow:manage-overlays` - Manage Overlays: Applies profile-specific atlas overlays while keeping public-safe base metadata separate from private or company enrichments.
-- `workflow:measure-atlas-adoption` - Measure Atlas Adoption: Records local usage receipts and evaluates context-pack selection against completed sessions without adding hosted telemetry.
-
-## Agent Capabilities
-
-- `capability:agent-skill.add-adapter` - Add Adapter Skill: Adapters should connect Agent Atlas to existing systems without making the core vendor-specific. ([source](.agents/skills/add-adapter/SKILL.md))
-- `capability:agent-skill.add-atlas-entity` - Add Atlas Entity Skill: Use this skill when creating or modifying `.agent-atlas/**/*.yaml` files. ([source](.agents/skills/add-atlas-entity/SKILL.md))
-- `capability:agent-skill.design-context-pack` - Design Context Pack Skill: A context pack is a task-specific, token-budgeted map. It should route the agent, not become the entire source of truth. ([source](.agents/skills/design-context-pack/SKILL.md))
-- `capability:agent-skill.implement-cli-command` - Implement CLI Command Skill: CLI output should be concise Markdown by default and JSON only with `--json`. ([source](.agents/skills/implement-cli-command/SKILL.md))
-- `capability:agent-skill.update-schema` - Update Schema Skill: Schema changes must keep docs, TypeScript types, JSON Schema, and examples aligned. ([source](.agents/skills/update-schema/SKILL.md))
-
-## Packages
-
-- [@agent-atlas/adapters](docs/agents/components/package.agent-atlas-adapters.md) - Adapter interfaces and generic adapters for Agent Atlas. Root: `packages/adapters`. Scripts: `build`, `test`, `lint`.
-- [@agent-atlas/cli](docs/agents/components/package.agent-atlas-cli.md) - Command-line interface for Agent Atlas. Root: `packages/cli`. Scripts: `build`, `test`, `lint`, `prepack`, `atlas`.
-- [@agent-atlas/core](docs/agents/components/package.agent-atlas-core.md) - Core graph loading, validation, traversal, and context pack logic for Agent Atlas. Root: `packages/core`. Scripts: `build`, `test`, `lint`.
-- [@agent-atlas/markdown](docs/agents/components/package.agent-atlas-markdown.md) - Generated Markdown views for Agent Atlas. Root: `packages/markdown`. Scripts: `build`, `test`, `lint`.
-- [@agent-atlas/mcp-server](docs/agents/components/package.agent-atlas-mcp-server.md) - Read-only MCP server for Agent Atlas. Root: `packages/mcp-server`. Scripts: `build`, `test`, `lint`.
-- [agent-atlas-root](docs/agents/components/package.agent-atlas-root.md) - Typed context graph and traversal toolkit for AI coding agents. Root: `.`. Scripts: `build`, `test`, `lint`, `atlas:help`, `atlas:ui`, `format`.
-- [@agent-atlas/schema](docs/agents/components/package.agent-atlas-schema.md) - Types and JSON Schema for Agent Atlas entities. Root: `packages/schema`. Scripts: `build`, `test`, `lint`.
-- [@agent-atlas/ui](docs/agents/components/package.agent-atlas-ui.md) - Local read-only review UI for Agent Atlas graphs. Root: `packages/ui`. Scripts: `build`, `test`, `lint`.
-
-## Documentation
-
-- `document:agent-atlas-readme` - agent-atlas README: Primary repo entrypoint for setup, usage, architecture, and maintenance notes.
-- `document:cli-command-reference` - CLI Command Reference: Generated Commander-derived Markdown reference for Atlas CLI command syntax, options, arguments, and descriptions. ([source](docs/generated/cli-command-reference.md))
-- `document:generated.agents` - Agent guidance for Agent Atlas: Markdown document at AGENTS.md. ([source](AGENTS.md))
-- `document:generated.contributing` - Contributing: Markdown document at CONTRIBUTING.md. ([source](CONTRIBUTING.md))
-- `document:generated.docs-adr-0001-atlas-as-typed-context-graph` - ADR 0001: Model the atlas as a typed context graph: Markdown document at docs/adr/0001-atlas-as-typed-context-graph.md. ([source](docs/adr/0001-atlas-as-typed-context-graph.md))
-- `document:generated.docs-adr-0002-public-core-private-overlays` - ADR 0002: Public core with private overlays: Markdown document at docs/adr/0002-public-core-private-overlays.md. ([source](docs/adr/0002-public-core-private-overlays.md))
-- `document:generated.docs-architecture` - Architecture: Markdown document at docs/architecture.md. ([source](docs/architecture.md))
-- `document:generated.docs-concepts-progressive-disclosure` - Progressive Disclosure: Markdown document at docs/concepts/progressive-disclosure.md. ([source](docs/concepts/progressive-disclosure.md))
+- Atlas overview: `docs/agents/atlas.md`.
+- Entity indexes: `docs/agents/domains/`, `docs/agents/workflows/`, `docs/agents/components/`, and `docs/agents/capabilities/`.
+- Source-derived inventory: `docs/generated/source-derived-reference.md`.
+- Documentation map: `docs/index.md` when present.
 
 ## Verification
 
-- `test-scope:agent-atlas-verification` - agent-atlas Verification: Narrow default verification commands for repo-local changes; prefer more specific tests when the task identifies them.
-- `test-scope:generated.package.agent-atlas-adapters` - @agent-atlas/adapters tests: 1 discovered test file under packages/adapters.
-- `test-scope:generated.package.agent-atlas-cli` - @agent-atlas/cli tests: 2 discovered test files under packages/cli.
-- `test-scope:generated.package.agent-atlas-core` - @agent-atlas/core tests: 15 discovered test files under packages/core.
-- `test-scope:generated.package.agent-atlas-markdown` - @agent-atlas/markdown tests: 1 discovered test file under packages/markdown.
-- `test-scope:generated.package.agent-atlas-mcp-server` - @agent-atlas/mcp-server tests: 1 discovered test file under packages/mcp-server.
-- `test-scope:generated.package.agent-atlas-ui` - @agent-atlas/ui tests: 1 discovered test file under packages/ui.
+- `pnpm test` - Repo-local verification candidate.
+- `pnpm build` - Repo-local verification candidate.
+- `pnpm lint` - Repo-local verification candidate.
+- Scoped verification map: `docs/agents/verification.md`.
+- Task-specific verification: `atlas context-pack "<task>" --path . --budget 4000`.
 
 ## Commands
 

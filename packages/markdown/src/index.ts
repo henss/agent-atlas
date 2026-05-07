@@ -40,6 +40,12 @@ interface ReadmeCliMetadata {
   reference?: ReadmeLinkItem;
 }
 
+interface CliInterfaceGroup {
+  title: string;
+  description?: string;
+  commands: string[];
+}
+
 interface RepositoryReadmeMetadata {
   start_here?: string[];
   current_truth_order?: string[];
@@ -124,15 +130,21 @@ export function renderRepositoryReadme(
   const components = collectReadmeEntities(repository?.id, 'component', entities, edges)
     .filter((entity) => !isPackageComponent(entity))
     .slice(0, 10);
-  const documents = collectReadmeEntities(repository?.id, 'document', entities, edges)
-    .filter((entity) => !isAgentSkillDocument(entity))
-    .slice(0, 8);
+  const allDocuments = collectReadmeEntities(repository?.id, 'document', entities, edges)
+    .filter((entity) => !isAgentSkillDocument(entity));
+  const globalDocuments = entities
+    .filter((entity) => entity.kind === 'document')
+    .filter((entity) => !isAgentSkillDocument(entity));
+  const documents = allDocuments.slice(0, 8);
   const tests = collectReadmeEntities(repository?.id, 'test-scope', entities, edges).slice(0, 8);
   const commands = collectReadmeCommands(repository, tests);
   const cliInterfaces = collectReadmeCliInterfaces(repository?.id, entities, edges);
   const readmeMetadata = readRepositoryReadmeMetadata(repository);
-  const docsIndex = documents.find((document) => document.uri === 'docs/index.md');
-  const cliReference = readmeMetadata.cli?.reference ?? findCliReference(documents);
+  const docsIndex = allDocuments.find((document) => document.uri === 'docs/index.md');
+  const cliReference = readmeMetadata.cli?.reference ?? findCliReference(allDocuments) ?? findCliReference(globalDocuments);
+  const cliGroups = groupCliInterfaces(cliInterfaces);
+  const defaultKeyDocs = collectDefaultKeyDocs([...allDocuments, ...globalDocuments], cliReference);
+  const defaultDurableState = collectDefaultDurableState(entities);
   const sourceNotes = [
     ...(repository?.agent?.risk_notes ?? []),
     'This README is generated from Agent Atlas metadata. Update `.agent-atlas/**` or the referenced canonical docs, then regenerate it.',
@@ -147,11 +159,7 @@ export function renderRepositoryReadme(
     '## Start Here',
     '',
     ...renderReadmeList(
-      readmeMetadata.start_here ?? [
-        'Use Agent Atlas before broad repository search.',
-        'Read this README as a compact entrypoint, then load only the specific Atlas entities or docs needed for the task.',
-        'If Atlas output is missing or misleading, update the Atlas metadata instead of hand-editing this README.',
-      ],
+      readmeMetadata.start_here ?? buildDefaultStartHere(repository, commands, cliGroups, cliReference),
     ),
     ...(docsIndex ? [`- Documentation entrypoint: [${docsIndex.title}](${docsIndex.uri}).`] : []),
     '',
@@ -164,14 +172,15 @@ export function renderRepositoryReadme(
     '- Check generated surfaces: `atlas maintain check --path .`.',
   ];
 
+  appendGeneratedOverviewSection(lines, readmeMetadata, workflows, components, cliGroups);
+  appendNormalUseSection(lines, readmeMetadata, commands, cliGroups, tests);
   appendConfiguredSections(lines, readmeMetadata.sections);
   appendReadmeTextSection(lines, 'Current Truth Order', readmeMetadata.current_truth_order);
-  appendReadmeLinkSection(lines, 'Key Docs', readmeMetadata.key_docs);
-  appendReadmePathSection(lines, 'Durable State', readmeMetadata.durable_state);
+  appendReadmeLinkSection(lines, 'Key Docs', readmeMetadata.key_docs ?? defaultKeyDocs);
+  appendReadmePathSection(lines, 'Durable State', readmeMetadata.durable_state ?? defaultDurableState);
   appendReadmeTextSection(lines, 'Operational Notes', readmeMetadata.operational_notes);
-  appendCliSection(lines, readmeMetadata.cli, cliReference, cliInterfaces);
+  appendCliSection(lines, readmeMetadata.cli, cliReference, cliGroups);
   appendReadmeSection(lines, 'Domains', domains);
-  appendReadmeSection(lines, 'Common Workflows', workflows);
   appendReadmeSection(lines, 'Key Implementation Surfaces', components);
   appendDrillDownSection(lines, documents);
   appendVerificationSection(lines, tests);
@@ -595,6 +604,172 @@ function collectReadmeCliInterfaces(
   return (directlyRelated.length > 0 ? directlyRelated : cliInterfaces).sort(compareCliInterfaces);
 }
 
+function buildDefaultStartHere(
+  repository: AtlasEntity | undefined,
+  commands: NonNullable<AtlasEntity['commands']>,
+  cliGroups: CliInterfaceGroup[],
+  cliReference: ReadmeLinkItem | undefined,
+): string[] {
+  const lines: string[] = [];
+  lines.push(`Use this repo for ${summaryFragment(repository?.summary ?? 'the capabilities described below')}.`);
+  const sessionStart = findSessionStartCommand(commands, cliGroups);
+  if (sessionStart) {
+    lines.push(`Start normal sessions with \`${sessionStart.command}\`, then use Atlas before broad repository search.`);
+  } else {
+    lines.push('Use Agent Atlas before broad repository search, then load only task-relevant entities or docs.');
+  }
+  if (cliGroups.length > 0) {
+    lines.push(
+      `Use the CLI overview below for ${cliGroups.length} command ${cliGroups.length === 1 ? 'group' : 'groups'}${cliReference ? `, with exact syntax in [${cliReference.label}](${cliReference.path})` : ''}.`,
+    );
+  }
+  lines.push('If generated README or Atlas output is missing or misleading, update `.agent-atlas/**` or the referenced canonical docs, then regenerate.');
+  return lines;
+}
+
+function appendGeneratedOverviewSection(
+  lines: string[],
+  readmeMetadata: RepositoryReadmeMetadata,
+  workflows: AtlasEntity[],
+  components: AtlasEntity[],
+  cliGroups: CliInterfaceGroup[],
+): void {
+  const hasConfiguredOverview = readmeMetadata.sections?.some((section) => section.title.toLowerCase() === 'what this repo does');
+  if (hasConfiguredOverview) {
+    return;
+  }
+  const items = [
+    ...workflows.slice(0, 6).map((workflow) => `${workflow.title}: ${workflow.summary}`),
+    ...components.slice(0, Math.max(0, 6 - workflows.length)).map((component) => `${component.title}: ${component.summary}`),
+  ];
+  if (items.length === 0 && cliGroups.length > 0) {
+    items.push(...cliGroups.slice(0, 6).map((group) => `${group.title}: ${group.description ?? 'Command group exposed by the generated CLI catalog.'}`));
+  }
+  appendReadmeTextSection(lines, 'What This Repo Does', items);
+}
+
+function appendNormalUseSection(
+  lines: string[],
+  readmeMetadata: RepositoryReadmeMetadata,
+  commands: NonNullable<AtlasEntity['commands']>,
+  cliGroups: CliInterfaceGroup[],
+  tests: AtlasEntity[],
+): void {
+  const configuredNormalUse = readmeMetadata.sections?.some((section) => section.title.toLowerCase() === 'normal use');
+  if (configuredNormalUse) {
+    return;
+  }
+  const items: string[] = [];
+  const sessionStart = findSessionStartCommand(commands, cliGroups);
+  if (sessionStart) {
+    items.push(`Start with \`${sessionStart.command}\`${sessionStart.purpose ? ` to ${lowercaseFirst(sessionStart.purpose)}` : ' for repo orientation'}.`);
+  }
+  if (cliGroups.length > 0) {
+    items.push('Use the main CLI command groups below to find the repo-supported workflows and exact entrypoints.');
+  }
+  items.push('Use `atlas context-pack "<task>" --path . --budget 4000` or `atlas resolve-path <path> --path .` to choose task-specific reads before broad search.');
+  const verificationCommand =
+    commands.find((command) => /\bverify:session\b/.test(command.command)) ??
+    commands.find((command) => /verify/i.test(command.command)) ??
+    collectTestCommands(tests)[0] ??
+    commands.find((command) => /test|check/i.test(command.command));
+  if (verificationCommand) {
+    items.push(`Verify meaningful changes with \`${verificationCommand.command}\`${verificationCommand.purpose ? ` to ${lowercaseFirst(verificationCommand.purpose)}` : ''}.`);
+  }
+  appendReadmeTextSection(lines, 'Normal Use', items);
+}
+
+function collectDefaultKeyDocs(documents: AtlasEntity[], cliReference: ReadmeLinkItem | undefined): ReadmeLinkItem[] | undefined {
+  const candidates = [
+    findDocumentLink(documents, 'AGENTS.md', 'Repo-local operating instructions and agent guidance.'),
+    findDocumentLink(documents, 'docs/index.md', 'Documentation map and deeper docs entrypoint.'),
+    findDocumentByPathPattern(documents, /coding-standard/i, 'Default coding or contribution standard.'),
+    cliReference,
+    findDocumentByPathPattern(documents, /docs\/(vision|principles|non-goals|architecture|concepts)\b/i, 'Project direction, architecture, or scope context.'),
+  ].filter((item): item is ReadmeLinkItem => Boolean(item));
+  const deduped = dedupeLinkItems(candidates);
+  return deduped.length > 0 ? deduped : undefined;
+}
+
+function findSessionStartCommand(
+  commands: NonNullable<AtlasEntity['commands']>,
+  cliGroups: CliInterfaceGroup[],
+): { command: string; purpose?: string } | undefined {
+  const repositoryCommand = commands.find((command) => /session:start\b/.test(command.command));
+  if (repositoryCommand) {
+    return repositoryCommand;
+  }
+  const cliCommand = cliGroups.flatMap((group) => group.commands).find((command) => /session:start\b/.test(command));
+  return cliCommand ? { command: cliCommand } : undefined;
+}
+
+function collectDefaultDurableState(entities: AtlasEntity[]): ReadmePathItem[] | undefined {
+  const paths = new Map<string, string>();
+  for (const entity of entities) {
+    for (const pathValue of collectEntityPaths(entity)) {
+      const root = durableRootForPath(pathValue);
+      if (root) {
+        paths.set(root.path, paths.get(root.path) ?? root.note ?? '');
+      }
+    }
+  }
+  const preferredOrder = ['.agent-atlas/', 'docs/agents/', 'docs/generated/', 'registry/', '.agents/skills/', 'evals/', '.runtime/', 'packages/'];
+  const items = [...paths.entries()].map(([pathValue, note]) => ({ path: pathValue, note }));
+  items.sort((left, right) => preferredIndex(preferredOrder, left.path) - preferredIndex(preferredOrder, right.path) || left.path.localeCompare(right.path));
+  return items.slice(0, 8).length > 0 ? items.slice(0, 8) : undefined;
+}
+
+function collectEntityPaths(entity: AtlasEntity): string[] {
+  return [entity.uri, ...(entity.code?.paths ?? []), ...(entity.code?.entrypoints ?? [])].filter((pathValue): pathValue is string => Boolean(pathValue));
+}
+
+function durableRootForPath(pathValue: string): ReadmePathItem | undefined {
+  const normalized = pathValue.replaceAll('\\', '/');
+  const root = normalized.split('/')[0];
+  if (normalized.startsWith('.agent-atlas/')) return { path: '.agent-atlas/', note: 'Canonical Atlas metadata and overlays.' };
+  if (normalized.startsWith('docs/agents/')) return { path: 'docs/agents/', note: 'Generated Atlas Markdown views.' };
+  if (normalized.startsWith('docs/generated/')) return { path: 'docs/generated/', note: 'Generated references and inventories.' };
+  if (normalized.startsWith('registry/')) return { path: 'registry/', note: 'Registry and tracked operational definitions.' };
+  if (normalized.startsWith('.agents/skills/')) return { path: '.agents/skills/', note: 'Reusable agent workflows.' };
+  if (normalized.startsWith('evals/')) return { path: 'evals/', note: 'Workflow protections and regression checks.' };
+  if (normalized.startsWith('.runtime/')) return { path: '.runtime/', note: 'Generated runtime and current-state artifacts.' };
+  if (normalized.startsWith('packages/')) return { path: 'packages/', note: 'Workspace packages and implementation surfaces.' };
+  if (['docs', 'examples', 'apps', 'scripts'].includes(root)) return { path: `${root}/`, note: titleCase(`${root} surfaces.`) };
+  return undefined;
+}
+
+function findDocumentLink(documents: AtlasEntity[], pathValue: string, note: string): ReadmeLinkItem | undefined {
+  const document = documents.find((entity) => entity.uri === pathValue);
+  return document?.uri ? { label: document.title, path: document.uri, note } : undefined;
+}
+
+function findDocumentByPathPattern(documents: AtlasEntity[], pattern: RegExp, note: string): ReadmeLinkItem | undefined {
+  const document = documents.find((entity) => Boolean(entity.uri && pattern.test(entity.uri)));
+  return document?.uri && !isPrivateUri(document.uri) ? { label: document.title, path: document.uri, note } : undefined;
+}
+
+function dedupeLinkItems(items: ReadmeLinkItem[]): ReadmeLinkItem[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.path)) return false;
+    seen.add(item.path);
+    return true;
+  });
+}
+
+function preferredIndex(order: string[], value: string): number {
+  const index = order.indexOf(value);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+function lowercaseFirst(value: string): string {
+  return value.length > 0 ? `${value.charAt(0).toLowerCase()}${value.slice(1).replace(/\.$/, '')}` : value;
+}
+
+function summaryFragment(value: string): string {
+  return lowercaseFirst(value.trim());
+}
+
 function readRepositoryReadmeMetadata(repository: AtlasEntity | undefined): RepositoryReadmeMetadata {
   const metadata = isRecord(repository?.metadata) ? repository?.metadata : undefined;
   const readme = isRecord(metadata?.readme) ? metadata?.readme : undefined;
@@ -646,9 +821,8 @@ function appendCliSection(
   lines: string[],
   cliMetadata: ReadmeCliMetadata | undefined,
   reference: ReadmeLinkItem | undefined,
-  cliInterfaces: AtlasEntity[],
+  interfaceGroups: CliInterfaceGroup[],
 ): void {
-  const interfaceGroups = groupCliInterfaces(cliInterfaces);
   if (!cliMetadata?.overview?.length && !reference && interfaceGroups.length === 0) {
     return;
   }
@@ -788,7 +962,7 @@ function findCliReference(documents: AtlasEntity[]): ReadmeLinkItem | undefined 
   };
 }
 
-function groupCliInterfaces(interfaces: AtlasEntity[]): Array<{ title: string; description?: string; commands: string[] }> {
+function groupCliInterfaces(interfaces: AtlasEntity[]): CliInterfaceGroup[] {
   const groups = new Map<string, { description?: string; commands: string[] }>();
   for (const entity of interfaces) {
     const cli = isRecord(entity.metadata?.cli) ? entity.metadata.cli : undefined;
