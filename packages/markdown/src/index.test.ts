@@ -1,11 +1,15 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadAtlasGraph } from '@agent-atlas/core';
 import { generateMarkdownViews, renderEntityCard, renderRepositoryReadme } from './index.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const examplesRoot = path.resolve(__dirname, '../../../examples');
+
 describe('generateMarkdownViews', () => {
   it('generates compact public markdown views', async () => {
-    const graph = await loadAtlasGraph(path.resolve('../../examples/personal-ops-sanitized'));
+    const graph = await loadAtlasGraph(path.join(examplesRoot, 'personal-ops-sanitized'));
     const files = generateMarkdownViews(graph, { profile: 'public' });
     const filePaths = files.map((file) => file.path);
 
@@ -28,7 +32,7 @@ describe('generateMarkdownViews', () => {
   });
 
   it('includes private-profile files when requested', async () => {
-    const graph = await loadAtlasGraph(path.resolve('../../examples/personal-ops-sanitized'), {
+    const graph = await loadAtlasGraph(path.join(examplesRoot, 'personal-ops-sanitized'), {
       profile: 'private',
     });
     const files = generateMarkdownViews(graph, { profile: 'private' });
@@ -163,6 +167,14 @@ describe('generateMarkdownViews', () => {
             uri: 'docs/index.md',
           },
           {
+            id: 'test-scope:repo-tests',
+            kind: 'test-scope',
+            title: 'Repo Tests',
+            summary: 'Repository verification commands.',
+            visibility: 'public',
+            commands: [{ command: 'pnpm test', purpose: 'Run the repository tests.' }],
+          },
+          {
             id: 'capability:agent-skill.ship',
             kind: 'capability',
             title: 'Ship skill',
@@ -251,14 +263,17 @@ describe('generateMarkdownViews', () => {
     expect(markdown).toContain('## Custom Section');
     expect(markdown).toContain('## Domains');
     expect(markdown).toContain('`domain:example-domain` - Example Domain: Top-level domain context.');
-    expect(markdown).toContain('## Agent Capabilities');
-    expect(markdown).toContain('`capability:agent-skill.ship` - Ship skill: Use when releasing the package.');
-    expect(markdown).toContain('## Packages');
-    expect(markdown).toContain('[@example/core](docs/agents/components/package.example-core.md) - Core package. Root: `packages/core`. Scripts: `build`, `test`.');
+    expect(markdown).not.toContain('## Agent Capabilities');
+    expect(markdown).not.toContain('## Packages');
     expect(markdown).not.toContain('document:generated.agents-skills-ship-skill');
+    expect(markdown).toContain('## Drill Down');
+    expect(markdown).toContain('- Source-derived inventory: `docs/generated/source-derived-reference.md`.');
     expect(markdown).toContain('Documentation entrypoint: [Docs Index](docs/index.md).');
     expect(markdown).toContain('`workflow:ship`');
-    expect(markdown).toContain('`pnpm test` - Run tests.');
+    expect(markdown).toContain('## Verification');
+    expect(markdown).toContain('`pnpm test` - Run the repository tests.');
+    expect(markdown).toContain('- Scoped verification map: `docs/agents/verification.md`.');
+    expect(markdown).not.toContain('## Source-Derived Surfaces');
     expect(markdown).not.toContain('Private Runbook');
     expect(markdown).not.toContain('notion://page/private');
   });

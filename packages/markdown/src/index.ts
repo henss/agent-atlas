@@ -121,20 +121,15 @@ export function renderRepositoryReadme(
   const summary = repository?.summary ?? 'Atlas-generated repository orientation.';
   const domains = collectReadmeEntities(undefined, 'domain', entities, edges).slice(0, 6);
   const workflows = collectReadmeEntities(repository?.id, 'workflow', entities, edges).slice(0, 8);
-  const packageComponents = collectReadmeEntities(repository?.id, 'component', entities, edges)
-    .filter(isPackageComponent)
-    .slice(0, 12);
   const components = collectReadmeEntities(repository?.id, 'component', entities, edges)
     .filter((entity) => !isPackageComponent(entity))
     .slice(0, 10);
-  const capabilities = collectReadmeEntities(repository?.id, 'capability', entities, edges).slice(0, 10);
   const documents = collectReadmeEntities(repository?.id, 'document', entities, edges)
     .filter((entity) => !isAgentSkillDocument(entity))
     .slice(0, 8);
   const tests = collectReadmeEntities(repository?.id, 'test-scope', entities, edges).slice(0, 8);
   const commands = collectReadmeCommands(repository, tests);
   const cliInterfaces = collectReadmeCliInterfaces(repository?.id, entities, edges);
-  const generatedSourceSummary = summarizeGeneratedSources(entities);
   const readmeMetadata = readRepositoryReadmeMetadata(repository);
   const docsIndex = documents.find((document) => document.uri === 'docs/index.md');
   const cliReference = readmeMetadata.cli?.reference ?? findCliReference(documents);
@@ -169,20 +164,17 @@ export function renderRepositoryReadme(
     '- Check generated surfaces: `atlas maintain check --path .`.',
   ];
 
+  appendConfiguredSections(lines, readmeMetadata.sections);
   appendReadmeTextSection(lines, 'Current Truth Order', readmeMetadata.current_truth_order);
   appendReadmeLinkSection(lines, 'Key Docs', readmeMetadata.key_docs);
   appendReadmePathSection(lines, 'Durable State', readmeMetadata.durable_state);
   appendReadmeTextSection(lines, 'Operational Notes', readmeMetadata.operational_notes);
   appendCliSection(lines, readmeMetadata.cli, cliReference, cliInterfaces);
-  appendGeneratedSourceSection(lines, generatedSourceSummary);
-  appendConfiguredSections(lines, readmeMetadata.sections);
   appendReadmeSection(lines, 'Domains', domains);
   appendReadmeSection(lines, 'Common Workflows', workflows);
-  appendReadmeSection(lines, 'Agent Capabilities', capabilities);
-  appendPackageSection(lines, packageComponents);
   appendReadmeSection(lines, 'Key Implementation Surfaces', components);
-  appendReadmeSection(lines, 'Documentation', documents);
-  appendReadmeSection(lines, 'Verification', tests);
+  appendDrillDownSection(lines, documents);
+  appendVerificationSection(lines, tests);
 
   if (commands.length > 0) {
     lines.push('', '## Commands', '');
@@ -193,34 +185,6 @@ export function renderRepositoryReadme(
 
   lines.push('', '## Source Of Truth', '', ...sourceNotes.map((note) => `- ${note}`));
   return `${lines.join('\n')}\n`;
-}
-
-function summarizeGeneratedSources(entities: AtlasEntity[]): Array<{ family: string; count: number }> {
-  const counts = new Map<string, number>();
-  for (const entity of entities) {
-    const generatedSource = entity.metadata?.generated_source;
-    if (!isRecord(generatedSource) || typeof generatedSource.family !== 'string') {
-      continue;
-    }
-    counts.set(generatedSource.family, (counts.get(generatedSource.family) ?? 0) + 1);
-  }
-  return [...counts.entries()]
-    .map(([family, count]) => ({ family, count }))
-    .sort((left, right) => left.family.localeCompare(right.family));
-}
-
-function appendGeneratedSourceSection(
-  lines: string[],
-  summary: Array<{ family: string; count: number }>,
-): void {
-  if (summary.length === 0) {
-    return;
-  }
-  lines.push('', '## Source-Derived Surfaces', '');
-  for (const item of summary) {
-    lines.push(`- ${titleCase(item.family.replaceAll('_', ' '))}: ${item.count}`);
-  }
-  lines.push('- Full generated reference: `docs/generated/source-derived-reference.md`.');
 }
 
 export function renderEntityCard(
@@ -551,19 +515,44 @@ function appendReadmeSection(lines: string[], title: string, entities: AtlasEnti
   }
 }
 
-function appendPackageSection(lines: string[], packages: AtlasEntity[]): void {
-  if (packages.length === 0) {
-    return;
+function appendDrillDownSection(lines: string[], documents: AtlasEntity[]): void {
+  lines.push('', '## Drill Down', '');
+  lines.push('- Atlas overview: `docs/agents/atlas.md`.');
+  lines.push('- Entity indexes: `docs/agents/domains/`, `docs/agents/workflows/`, `docs/agents/components/`, and `docs/agents/capabilities/`.');
+  lines.push('- Source-derived inventory: `docs/generated/source-derived-reference.md`.');
+  const docsIndex = documents.find((document) => document.uri === 'docs/index.md');
+  if (docsIndex?.uri) {
+    lines.push(`- Documentation map: [${docsIndex.title}](${docsIndex.uri}).`);
+  } else {
+    lines.push('- Documentation map: `docs/index.md` when present.');
   }
+}
 
-  lines.push('', '## Packages', '');
-  for (const entity of packages) {
-    const packageMetadata = readPackageMetadata(entity);
-    const root = packageMetadata.root ?? packageMetadata.path ?? entity.uri;
-    const scripts = packageMetadata.scripts?.length ? ` Scripts: ${packageMetadata.scripts.slice(0, 6).map((script) => `\`${script}\``).join(', ')}.` : '';
-    const target = `docs/agents/components/${entitySlug(entity.id)}.md`;
-    lines.push(`- [${entity.title}](${target}) - ${entity.summary}${root ? ` Root: \`${root}\`.` : ''}${scripts}`);
+function appendVerificationSection(lines: string[], tests: AtlasEntity[]): void {
+  lines.push('', '## Verification', '');
+  const commands = collectTestCommands(tests).slice(0, 8);
+  if (commands.length > 0) {
+    for (const command of commands) {
+      lines.push(`- \`${command.command}\`${command.purpose ? ` - ${command.purpose}` : ''}`);
+    }
+  } else {
+    lines.push('- Use the repo-local test and check scripts advertised by package metadata.');
   }
+  lines.push('- Scoped verification map: `docs/agents/verification.md`.');
+  lines.push('- Task-specific verification: `atlas context-pack "<task>" --path . --budget 4000`.');
+}
+
+function collectTestCommands(tests: AtlasEntity[]): NonNullable<AtlasEntity['commands']> {
+  const seen = new Set<string>();
+  const commands: NonNullable<AtlasEntity['commands']> = [];
+  for (const command of tests.flatMap((test) => test.commands ?? [])) {
+    if (seen.has(command.command)) {
+      continue;
+    }
+    seen.add(command.command);
+    commands.push(command);
+  }
+  return commands;
 }
 
 function isAgentSkillDocument(entity: AtlasEntity): boolean {
