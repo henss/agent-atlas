@@ -374,6 +374,20 @@ describe('generateMarkdownViews', () => {
             visibility: 'public',
           },
           {
+            id: 'interface:example-core-cli.inspect',
+            kind: 'interface',
+            title: 'example core inspect',
+            summary: 'Inspect core package state.',
+            visibility: 'public',
+            metadata: {
+              cli: {
+                cli_name: 'example',
+                command: 'core:inspect',
+                usage: 'example core:inspect --json',
+              },
+            },
+          },
+          {
             id: 'test-scope:generated.package.example-core',
             kind: 'test-scope',
             title: '@example/core tests',
@@ -383,6 +397,7 @@ describe('generateMarkdownViews', () => {
         ],
         edges: [
           { source: 'interface:package-script.example-core.test', target: 'component:package.example-core', type: 'part-of', provenance: 'generated' },
+          { source: 'interface:example-core-cli.inspect', target: 'component:package.example-core', type: 'part-of', provenance: 'generated' },
           { source: 'test-scope:generated.package.example-core', target: 'component:package.example-core', type: 'part-of', provenance: 'generated' },
         ],
       },
@@ -396,6 +411,10 @@ describe('generateMarkdownViews', () => {
     expect(files[0]?.content).toContain('## Code');
     expect(files[0]?.content).toContain('- `pnpm --dir packages/core test` - Run package tests.');
     expect(files[0]?.content).toContain('## Interfaces');
+    expect(files[0]?.content).toContain(
+      '- `example core:inspect --json` - Inspect core package state. (`interface:example-core-cli.inspect`)',
+    );
+    expect(files[0]?.content).toContain('- `interface:package-script.example-core.test` - Run package tests.');
     expect(files[0]?.content).toContain('## Verification');
   });
 

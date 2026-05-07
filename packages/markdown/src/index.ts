@@ -532,7 +532,7 @@ function renderPackageReadme(
   }
 
   if (related.interfaces.length > 0) {
-    lines.push('', '## Interfaces', '', ...related.interfaces.slice(0, 10).map((item) => `- \`${item.id}\` - ${item.summary}`));
+    lines.push('', '## Interfaces', '', ...related.interfaces.slice(0, 10).map(renderPackageInterfaceReadmeItem));
   }
   if (related.tests.length > 0) {
     lines.push('', '## Verification', '', ...related.tests.slice(0, 6).map((item) => `- \`${item.id}\` - ${item.summary}`));
@@ -547,6 +547,18 @@ function renderPackageReadme(
 
   lines.push('', '## Generated Source', '', '- This package README is generated from Agent Atlas metadata and source-derived package surfaces.');
   return `${lines.join('\n')}\n`;
+}
+
+function renderPackageInterfaceReadmeItem(entity: AtlasEntity): string {
+  const cli = isRecord(entity.metadata?.cli) ? entity.metadata.cli : undefined;
+  const usage = readString(cli?.usage);
+  const cliName = readString(cli?.cli_name);
+  const command = readString(cli?.command);
+  const executable = usage ?? [cliName, command].filter(Boolean).join(' ');
+  if (executable) {
+    return `- \`${executable}\` - ${entity.summary} (\`${entity.id}\`)`;
+  }
+  return `- \`${entity.id}\` - ${entity.summary}`;
 }
 
 function collectPackageReadmeRelated(
