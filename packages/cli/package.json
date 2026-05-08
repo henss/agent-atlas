@@ -1,6 +1,6 @@
 {
   "name": "@agent-atlas/cli",
-  "version": "0.18.1",
+  "version": "0.18.2",
   "description": "Command-line interface for Agent Atlas.",
   "license": "Apache-2.0",
   "type": "module",

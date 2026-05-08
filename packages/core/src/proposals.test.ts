@@ -131,8 +131,9 @@ relations: []
 
   it('does not report static gaps for this repository atlas', async () => {
     const repoRoot = path.resolve(process.cwd(), '../..');
+    const emptyReceiptDir = await mkdtemp(path.join(os.tmpdir(), 'agent-atlas-empty-receipts-'));
     const report = await discoverAtlasGaps(repoRoot, {
-      receiptsPath: '.runtime/agent-atlas/usage',
+      receiptsPath: emptyReceiptDir,
     });
 
     expect(report.gaps).toHaveLength(0);
