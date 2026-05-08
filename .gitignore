@@ -8,3 +8,4 @@ coverage/
 .agent-atlas/private.local/
 .agent-atlas/**/*.private.yaml
 *.log
+/.runtime/
