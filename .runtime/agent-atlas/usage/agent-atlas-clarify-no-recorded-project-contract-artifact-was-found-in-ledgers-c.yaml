@@ -1,8 +1,7 @@
 version: 1
-recorded_at: 2026-05-07T23:20:06.871Z
+recorded_at: 2026-05-08T00:41:20.994Z
 task: "Agent Atlas: Clarify No recorded project contract artifact was found in
-  ledgers\\\\contracts; runtime launch packets can still be authoritative for an
-  active execution."
+  ledgers\\\\contracts; runtime launch packets can still be authoritative"
 command: context-pack
 profile: public
 selected_entities: []
