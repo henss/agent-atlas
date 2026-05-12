@@ -191,7 +191,7 @@ Profiles:
 - `private`: load base atlas files plus private overlays, then include all visible entities.
 - `company`: load base atlas files plus company overlays, then include all visible entities.
 
-The generator refreshes known generated files and directories while preserving non-generated files such as `docs/agents/README.md`.
+The generator refreshes generated Markdown files under the configured output tree while preserving non-generated files such as `docs/agents/README.md`.
 
 When `agent-atlas.maintenance.yaml` enables `generated_readme`, the same command also refreshes or checks the configured root README as a generated Atlas artifact.
 

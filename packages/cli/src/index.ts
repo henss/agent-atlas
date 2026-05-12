@@ -2534,19 +2534,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 async function cleanGeneratedMarkdownOutput(outputPath: string): Promise<void> {
   await mkdir(outputPath, { recursive: true });
-  for (const generatedPath of [
-    'atlas.md',
-    'verification.md',
-    'components',
-    'documents',
-    'domains',
-    'resources',
-    'workflows',
-  ]) {
-    await rm(path.join(outputPath, generatedPath), {
-      recursive: true,
-      force: true,
-    });
+  for (const generatedPath of await collectExistingGeneratedMarkdownFiles(outputPath)) {
+    await rm(path.join(outputPath, generatedPath), { force: true });
   }
 }
 
